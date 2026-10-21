@@ -193,7 +193,7 @@ export function HomeScreen({ orgSlug }: { orgSlug: string }) {
             ) : null}
             <label className="inline-flex items-center gap-2">
               {t(locale, "home.accent")}
-              <input type="color" value={editing.accent || "#a855f7"} onChange={(e) => setDraft({ ...editing, accent: e.target.value })} />
+              <input type="color" value={editing.accent || "#7c6bff"} onChange={(e) => setDraft({ ...editing, accent: e.target.value })} />
             </label>
           </fieldset>
           <label className="mt-3 flex items-center gap-2 text-sm">

@@ -82,7 +82,7 @@ export function WorkspaceHeader({ orgSlug }: { orgSlug: string }) {
           </select>
         </label>
         {enabled ? (
-          <div role="radiogroup" aria-label={tr("Cockpit view")} className="hidden rounded-lg p-0.5 ring-1 ring-inset ring-[color:var(--fb-v2-border)] sm:inline-flex">
+          <div role="radiogroup" aria-label={tr("Cockpit view")} className="hidden gap-0.5 rounded-[11px] bg-[color:var(--fb-v2-surface)] p-[3px] ring-1 ring-inset ring-[color:var(--fb-v2-border)] sm:inline-flex">
             {MODES.map((m) => (
               <button
                 key={m.value}
@@ -90,7 +90,10 @@ export function WorkspaceHeader({ orgSlug }: { orgSlug: string }) {
                 role="radio"
                 aria-checked={cockpit.mode === m.value}
                 onClick={() => void save({ mode: m.value }).catch(() => undefined)}
-                className={cn("rounded-md px-2.5 py-0.5 text-sm", cockpit.mode === m.value && "bg-[color:var(--fb-v2-accent)] text-white")}
+                className={cn(
+                  "rounded-lg px-3 py-1 text-[13px] font-medium text-[color:var(--fb-v2-text-faint)] transition-colors hover:text-[color:var(--fb-v2-text)]",
+                  cockpit.mode === m.value && "bg-[color:var(--fb-v2-raised)] text-[color:var(--fb-v2-text)] shadow-[inset_0_0_0_1px_var(--fb-v2-border-strong)]",
+                )}
               >
                 {tr(m.label)}
               </button>

@@ -1,33 +1,91 @@
-@import url("https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@400;500;600;700&display=swap");
-/* V2 semantic tokens. V1 --fb-* page tokens are untouched. */
+@import url("https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&family=IBM+Plex+Sans+Arabic:wght@400;500;600;700&display=swap");
+/*
+ * V2 semantic tokens ("mission control" system, see docs/v2/DESIGN.md).
+ * V1 --fb-* page tokens are untouched, so V1 pages keep their look.
+ */
 .v2-root {
-  --fb-v2-accent: var(--fb-brain-accent, #a855f7);
-  --fb-v2-accent-strong: var(--fb-brain-btn, #9333ea);
-  --fb-v2-surface: var(--fb-card-bg, #120018);
-  --fb-v2-page: var(--fb-page-bg, #070014);
-  --fb-v2-text: var(--fb-text, #e2e8f0);
-  --fb-v2-text-muted: var(--fb-text-muted, #94a3b8);
-  --fb-v2-success: #34d399;
-  --fb-v2-error: #f87171;
-  --fb-v2-border: color-mix(in srgb, var(--fb-v2-text) 12%, transparent);
-  --fb-v2-radius: 0.75rem;
+  /* Surfaces, darkest to lightest. */
+  --fb-v2-void: #05040a;
+  --fb-v2-page: #08070f;
+  --fb-v2-bg: var(--fb-v2-page);
+  --fb-v2-surface: #14111f;
+  --fb-v2-raised: #1c1829;
+  --fb-v2-track: #25203a;
+  /* Text. */
+  --fb-v2-text: #eeebf7;
+  --fb-v2-text-muted: #a29db8;
+  --fb-v2-text-faint: #827d9a;
+  --fb-v2-border: rgba(255, 255, 255, 0.09);
+  --fb-v2-border-strong: rgba(255, 255, 255, 0.16);
+  /* Brand. Violet acts, the aurora is the one signature (flobrain.ai magenta to v2 cyan). */
+  --fb-v2-accent: #7c6bff;
+  --fb-v2-accent-strong: #6a58f5;
+  --fb-v2-accent-soft: rgba(124, 107, 255, 0.16);
+  --fb-v2-magenta: #cc34ff;
+  --fb-v2-cyan: #00d4ff;
+  --fb-v2-aurora: linear-gradient(90deg, #cc34ff 0%, #7c6bff 50%, #00d4ff 100%);
+  /* Signal colours, one job each. */
+  --fb-v2-success: #2bd97e;
+  --fb-v2-error: #ff4d6d;
   /* Anything waiting for a person's decision (approvals, pending listings) uses this one colour. */
-  --fb-v2-waiting: #f2b134;
-  --fb-v2-raised: color-mix(in srgb, var(--fb-v2-surface) 82%, var(--fb-v2-text) 4%);
-  font-family: "IBM Plex Sans Arabic", "Inter", system-ui, sans-serif;
+  --fb-v2-waiting: #ffb547;
+  --fb-v2-radius: 0.75rem;
+  --fb-v2-font-display: "Space Grotesk", "IBM Plex Sans Arabic", "Inter", system-ui, sans-serif;
+  --fb-v2-font-mono: "JetBrains Mono", ui-monospace, Menlo, monospace;
+  font-family: var(--fb-v2-font-display);
   font-size: 15px;
   line-height: 1.55;
   color: var(--fb-v2-text);
   background: var(--fb-v2-page);
   min-height: 100dvh;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
 }
 
 .light .v2-root {
-  --fb-v2-accent: var(--fb-brain-accent, #7c3aed);
-  --fb-v2-surface: var(--fb-card-bg, #ffffff);
-  --fb-v2-page: var(--fb-page-bg, #f8fafc);
-  --fb-v2-text: var(--fb-text, #0f172a);
-  --fb-v2-text-muted: var(--fb-text-muted, #64748b);
+  --fb-v2-void: #eceaf4;
+  --fb-v2-page: #f6f5fb;
+  --fb-v2-surface: #ffffff;
+  --fb-v2-raised: #f0eef8;
+  --fb-v2-track: #e3e0ef;
+  --fb-v2-text: #14111f;
+  --fb-v2-text-muted: #5b5670;
+  --fb-v2-text-faint: #6e6984;
+  --fb-v2-border: rgba(20, 17, 31, 0.1);
+  --fb-v2-border-strong: rgba(20, 17, 31, 0.18);
+  --fb-v2-accent: #5b4ae6;
+  --fb-v2-accent-strong: #4a39d4;
+  --fb-v2-accent-soft: rgba(91, 74, 230, 0.1);
+  --fb-v2-success: #0f8a4f;
+  --fb-v2-error: #d1243f;
+  --fb-v2-waiting: #b86e00;
+}
+
+.v2-root h1,
+.v2-root h2,
+.v2-root h3 {
+  letter-spacing: -0.02em;
+}
+.v2-root h1 {
+  letter-spacing: -0.035em;
+}
+.v2-root .v2-mono,
+.v2-root time {
+  font-family: var(--fb-v2-font-mono);
+  font-feature-settings: "zero";
+}
+.v2-root .v2-aurora-text {
+  background: var(--fb-v2-aurora);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+.v2-root .v2-card {
+  border-radius: 14px;
+  background: var(--fb-v2-surface);
+  box-shadow:
+    inset 0 0 0 1px var(--fb-v2-border),
+    inset 0 1px 0 rgba(255, 255, 255, 0.03);
 }
 
 .v2-root :focus-visible {
@@ -36,14 +94,19 @@
 }
 .v2-root .v2-input {
   width: 100%;
-  border-radius: 0.5rem;
-  background: transparent;
+  border-radius: 0.625rem;
+  background: color-mix(in srgb, var(--fb-v2-page) 60%, transparent);
   padding: 0.5rem 0.75rem;
-  box-shadow: inset 0 0 0 1px var(--fb-v2-border);
+  box-shadow: inset 0 0 0 1px var(--fb-v2-border-strong);
 }
 .v2-root .v2-input:focus {
-  box-shadow: inset 0 0 0 1px var(--fb-v2-accent);
+  box-shadow:
+    inset 0 0 0 1px var(--fb-v2-accent),
+    0 0 0 3px var(--fb-v2-accent-soft);
   outline: none;
+}
+.v2-root ::selection {
+  background: var(--fb-v2-accent-soft);
 }
 @media (prefers-reduced-motion: reduce) {
   .v2-root * {

@@ -163,7 +163,7 @@ export default function PulsePage() {
                             contentStyle={{ background: "var(--fb-v2-page)", border: "1px solid var(--fb-v2-border)", borderRadius: 8, color: "var(--fb-v2-text)" }}
                             formatter={(value, _n, item) => [tr("{calls} calls, {failed} failed", { calls: Number(value ?? 0), failed: (item?.payload as { errors?: number } | undefined)?.errors ?? 0 }), ""]}
                           />
-                          <Bar dataKey="calls" fill="#a855f7" radius={[4, 4, 0, 0]} maxBarSize={28} />
+                          <Bar dataKey="calls" fill="#7c6bff" radius={[4, 4, 0, 0]} maxBarSize={28} />
                         </BarChart>
                       </ResponsiveContainer>
                     </div>

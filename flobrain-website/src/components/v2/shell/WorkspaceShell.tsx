@@ -18,6 +18,7 @@ import { roomTabHref, useLayout } from "@/lib/v2/LayoutContext";
 import { roomFromHref } from "@/lib/v2/layoutRules";
 import { cn } from "@/lib/utils";
 
+import { BrandMark } from "./BrandMark";
 import { DemoBar } from "./DemoBar";
 import { ICONS } from "./icons";
 import { usePageViews } from "./usePageViews";
@@ -80,14 +81,15 @@ export function WorkspaceShell({ orgSlug, children }: { orgSlug: string; childre
   const groups = navFor(orgSlug, access);
   const nav = (
     <nav aria-label={tr("Workspace")} className="flex h-full flex-col overflow-y-auto">
-      <div className="px-5 pb-3 pt-5">
-        <Link href={`/w/${orgSlug}`} className="block text-base font-semibold">
-          {access?.org.name ?? "FloBrain"}
+      <div className="px-4 pb-3 pt-4">
+        <Link href={`/w/${orgSlug}`} className="flex items-center gap-2.5 rounded-lg px-1 py-1 text-[15px] font-semibold tracking-tight">
+          <BrandMark size={24} />
+          <span className="truncate">{access?.org.name ?? "FloBrain"}</span>
         </Link>
       </div>
       {groups.map((group) => (
         <div key={group.label} className="px-3 pb-3">
-          <p className="mb-1 px-2 text-xs font-medium text-[color:var(--fb-v2-text-muted)]">{label(group.label)}</p>
+          <p className="v2-mono mb-1 px-2 text-[11px] font-medium tracking-wide text-[color:var(--fb-v2-text-faint)]">{label(group.label)}</p>
           <ul>
             {group.items.map((item) => {
               const Icon = ICONS[item.icon];
@@ -98,8 +100,8 @@ export function WorkspaceShell({ orgSlug, children }: { orgSlug: string; childre
                     href={item.href}
                     aria-current={active ? "page" : undefined}
                     className={cn(
-                      "flex items-center gap-2.5 rounded-lg px-2 py-1.5 text-sm hover:bg-[color:var(--fb-v2-border)]",
-                      active && "bg-[color:var(--fb-v2-border)] font-medium",
+                      "flex items-center gap-2.5 rounded-lg px-2 py-1.5 text-sm text-[color:var(--fb-v2-text-muted)] transition-colors hover:bg-[color:var(--fb-v2-border)] hover:text-[color:var(--fb-v2-text)]",
+                      active && "bg-[color:var(--fb-v2-raised)] font-medium text-[color:var(--fb-v2-text)] shadow-[inset_0_0_0_1px_var(--fb-v2-border-strong)]",
                     )}
                   >
                     {Icon ? <Icon size={16} aria-hidden /> : null}
@@ -149,7 +151,7 @@ export function WorkspaceShell({ orgSlug, children }: { orgSlug: string; childre
       {access?.demo_role ? <DemoBar access={access} /> : null}
       <div className="flex min-h-0 flex-1">
         {cockpit.mode !== "focus" || !layout.panels.compact ? <ToolsRail orgSlug={orgSlug} /> : null}
-        <aside className="hidden w-64 shrink-0 border-e border-[color:var(--fb-v2-border)] lg:block">{nav}</aside>
+        <aside className="hidden w-64 shrink-0 border-e border-[color:var(--fb-v2-border)] bg-[linear-gradient(180deg,var(--fb-v2-surface),var(--fb-v2-page)_60%)] lg:block">{nav}</aside>
         {open ? (
           <div className="fixed inset-0 z-40 lg:hidden" role="dialog" aria-modal="true" aria-label={t(locale, "nav.menu")}>
             <button
@@ -167,7 +169,7 @@ export function WorkspaceShell({ orgSlug, children }: { orgSlug: string; childre
           </div>
         ) : null}
         <div className="flex min-w-0 flex-1 flex-col">
-          <div className="flex items-center gap-2 border-b border-[color:var(--fb-v2-border)]">
+          <div className="flex items-center gap-2 border-b border-[color:var(--fb-v2-border)] bg-[color:color-mix(in_srgb,var(--fb-v2-page)_85%,transparent)] backdrop-blur">
             <button type="button" className="p-3 lg:hidden" aria-label={t(locale, "nav.openMenu")} onClick={() => setOpenFor(pathname)}>
               <Menu size={20} />
             </button>

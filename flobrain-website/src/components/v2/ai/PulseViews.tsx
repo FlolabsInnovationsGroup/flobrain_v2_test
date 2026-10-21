@@ -204,7 +204,7 @@ export function PulseCost() {
                         contentStyle={{ background: "var(--fb-v2-page)", border: "1px solid var(--fb-v2-border)", borderRadius: 8, color: "var(--fb-v2-text)" }}
                         formatter={(value) => [`$${Number(value ?? 0).toFixed(4)}`, ""]}
                       />
-                      <Bar dataKey="value" fill="#a855f7" radius={[4, 4, 0, 0]} maxBarSize={28} />
+                      <Bar dataKey="value" fill="#7c6bff" radius={[4, 4, 0, 0]} maxBarSize={28} />
                     </BarChart>
                   </ResponsiveContainer>
                 </div>

@@ -2,6 +2,14 @@
 
 Newest first. Each entry names the PR, what changed, and any V1 behaviour change.
 
+## Design: "mission control" system, V2 site and sign-in (local, 2026-10-21)
+
+- **Design system:** new V2 tokens in `src/styles/v2-tokens.css`: night surfaces (#08070F), violet action (#7C6BFF), the aurora signature (flobrain.ai magenta #CC34FF to v2 cyan #00D4FF), signal colours with one job each (amber approval, rose blocked, green done), Space Grotesk, JetBrains Mono for numbers, IBM Plex Sans Arabic. A light theme with the same roles. Every `/w` screen picks it up. See `docs/v2/DESIGN.md`.
+- **Shell:** FloLabs hand in the tools rail and sidebar, quieter nav with mono group labels, the cockpit mode switch restyled. `--fb-v2-bg` was used but never defined; it now follows the page colour.
+- **Sign-in (`/w/signin`):** split layout with a still from the cockpit over the aurora horizon; the demo picker is a compact list under the form. Same fields, labels and flows as before (e2e unchanged). New copy translated in ar, tr, fr, pt.
+- **V2 site (`/v2`, `/v2/pricing`):** new marketing pages built from the Claude Design boards: hero with the cockpit, layout tabs, the buddy crew, meetings, approvals, impact and privacy, devices, Arabic, security, FAQ. Product shots are images in `public/v2/shots`. Prices are samples until pricing is decided.
+- V1 behaviour: unchanged. `/`, `/pricing` and `/signin` are the V1 pages as before; `/v2` has its own navigation and footer.
+
 ## Completion round: every area finished, and a demo that works end to end (local, 2026-10-21)
 
 - **Meetings:** demo calls, recording, transcripts by speaker and the meeting assistant work without LiveKit, Whisper or the bot (`meetings/demo.py`, `DEMO_MODE` only). Action items become tasks with an assignee and due date, once (`task_id` written back). Meeting summaries are searchable (`knowledge/0005`). A "summary ready" notification. `meetings/0008` widens the bot status column (`waiting_admission` didn't fit on PostgreSQL).

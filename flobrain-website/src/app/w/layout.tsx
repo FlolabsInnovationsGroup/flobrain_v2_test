@@ -6,7 +6,7 @@ export const metadata: Metadata = {
   icons: { apple: "/icons/flobrain-192.png" },
 };
 
-export const viewport: Viewport = { themeColor: "#120018" };
+export const viewport: Viewport = { themeColor: "#08070f" };
 
 export default function WorkspaceRootLayout({ children }: { children: React.ReactNode }) {
   return children;
