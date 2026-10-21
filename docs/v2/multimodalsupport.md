@@ -2,8 +2,8 @@
 
 **From:** FloBrain team
 **To:** Multimodal team (owners of `FlolabsInnovationsGroup/multi-modal-perception`)
-**Date:** 2026-10-20
-**Status:** Request. FloBrain will not change your repository or your server. Everything below is for your team to decide and build.
+**Date:** 2026-10-21 (first sent 2026-10-20)
+**Status:** Final for handoff. Request: FloBrain will not change your repository or your server. Everything below is for your team to decide and build.
 **Living document:** it lives in FloBrain's `docs/v2/multimodalsupport.md` and is updated as V2 is built. The final version is sent when the V2 code is ready. See the status log at the end.
 
 ---
@@ -222,14 +222,16 @@ Rules:
 
 If you later serve self-hosted models on JarvisLabs (MiniCPM, Qwen through vLLM or Ollama), keep this same contract. FloBrain then needs no change.
 
-#### P1-4. A transcription-only endpoint
+#### P1-4. A transcription-only endpoint (now optional for FloBrain)
+
+**Update 2026-10-21:** FloBrain no longer needs this for meetings. Meeting transcripts now run on FloBrain's own Whisper server (`whisper-server/`, faster-whisper) inside FloBrain's network, so meeting audio never leaves it. Build this only if other callers need it. If you do, keep the shape below so FloBrain could use it as a fallback later.
 
 Add `POST /v1/audio/transcriptions`, OpenAI-compatible: multipart `file`, plus optional `model` and `language`. It returns `{"text": "..."}`, plus `duration_seconds` and `request_id`.
 
 - Validate the file type (wav, mp3, m4a, webm, ogg, flac) and size (≤ 25 MB, the OpenAI upload limit). Anything else → 400.
 - Do not answer the audio. Return only the transcript.
 
-FloBrain uses this for meeting transcripts and voice input. We will compare providers on an Arabic and English word-error-rate set, so a `language` hint matters.
+If FloBrain ever uses it, it would be for voice input, and we would compare it with our Whisper server on an Arabic and English word-error-rate set, so a `language` hint matters.
 
 #### P1-5. HTTPS, or no public exposure at all
 
@@ -313,7 +315,7 @@ FloBrain will run this checklist against the deployed service:
 - [ ] Answers longer than 256 tokens are not cut off.
 - [ ] Memory stays flat after 10,000 different requests (no shared cache).
 - [ ] `/v1/chat/completions` works with the official OpenAI Python SDK by setting `base_url` and `api_key`. Disallowed model → 400.
-- [ ] `/v1/audio/transcriptions` returns only the transcript and rejects files over 25 MB.
+- [ ] (Only if you build P1-4) `/v1/audio/transcriptions` returns only the transcript and rejects files over 25 MB.
 - [ ] Logs contain request_id, status, latency and tokens, and never user text or keys.
 - [ ] The traffic is HTTPS or private-network only.
 
@@ -340,6 +342,15 @@ Thank you. Reply with your plan and dates per step, and we will align FloBrain's
 | V2 stores unknown token counts as unknown (not 0) | Built (Phase 7a) |
 | V2 has an OpenAI-compatible client (`direct`) with a model allowlist and real error mapping. It can point at your `/v1/chat/completions` once P1-3 exists | Built (Phase 7b) |
 | V2 sends no organization documents, memory, files, other members' messages or credentials to the multimodal service | Enforced by design (Decision E29) |
+| Knowledge ask (org documents and room messages) uses only the `direct` provider. Without it the feature returns "Not configured" and never calls the multimodal service | Built (Phase 7i), with a test that the legacy adapter is not called |
+| Live translation of room messages uses only the `direct` provider. Without it the feature returns "Not configured" and never calls the multimodal service | Built (Phase 7j), with a test that the legacy adapter is not called |
+| Customer AI keys (BYOK) are never sent to the multimodal service; a test checks the legacy request body, headers and logs | Built (Phase 7k) |
+| Orgs can choose "private only" AI (Phase 17a). For those orgs FloBrain refuses the multimodal service before any network call, because it is not a self-hosted model host we control end to end | Built, with a test that no call is made |
+| The sovereign package for customer installs (Phase 17f) runs open models in the customer's own network and does not use the multimodal service at all | Built (skeleton) |
+| Meetings (calls inside FloBrain on our own LiveKit server, and our own bot for Zoom, Meet and Teams) are transcribed by FloBrain's own Whisper server. Meeting audio, transcripts and summaries never go to the multimodal service | Built (2026-10-21), with tests |
+| Meeting summaries, action items and Ask over meeting transcripts use only the `direct` provider | Built (2026-10-21) |
+| Pulse routing: when a `direct` provider fails or is unhealthy, FloBrain tries the next allowed provider. The multimodal service is never a failover target | Built (2026-10-21), with tests |
+| SAML sign-in, personal insights and the rest of the 2026-10-21 work never call the multimodal service | Built (2026-10-21) |
 | V1 path to `/process` | Unchanged |
 
 ## 10. Status log
@@ -347,3 +358,10 @@ Thank you. Reply with your plan and dates per step, and we will align FloBrain's
 | Date | What changed |
 |---|---|
 | 2026-10-20 | First version, from `main` at `1d875b8` and a read-only AWS audit. |
+| 2026-10-20 | Phase 7i: knowledge ask is direct-only by design and test. Nothing new is sent to the multimodal service. |
+| 2026-10-20 | Phase 7j: live translation is direct-only. Nothing new is sent to the multimodal service. |
+| 2026-10-20 | Phase 7k: BYOK keys go only to allowlisted HTTPS providers through `direct`. Q13 stays a gate for ever forwarding a key to you. |
+| 2026-10-20 | Phases 8 and 9 built locally (buddies, approved actions, Content Studio). All AI goes through `direct`; nothing new is sent to the multimodal service. |
+| 2026-10-20 | Phases 14 and 17 built locally. The public API, MCP, webhooks, SSO and billing never call the multimodal service. "Private only" orgs and the sovereign package refuse it by design. Nothing new is sent to you; the asks in section 4 are unchanged. |
+| 2026-10-20 | **Final for handoff.** V2 code complete through Phase 17 (local, not deployed). The asks in section 4 and the rollout in section 5 are unchanged. |
+| 2026-10-21 | Meetings built with FloBrain's own Whisper server, so P1-4 is now optional for FloBrain. Pulse failover never uses the multimodal service. P0, P1-1 to P1-3, P1-5 and P1-6 are unchanged and still needed. **This is the final version to send.** |

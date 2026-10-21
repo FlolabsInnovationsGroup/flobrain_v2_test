@@ -65,8 +65,9 @@ def audit(actor, action: str, target=None, payload=None, request=None, org=None,
     )
 
 
-def grant_permission(org, actor, grantee, perm_key: str, *, scope_type="org", scope_id=None, days=None, request=None):
-    expires_at = timezone.now() + timedelta(days=days) if days else None
+def grant_permission(org, actor, grantee, perm_key: str, *, scope_type="org", scope_id=None, days=None, request=None, expires_at=None):
+    if expires_at is None:
+        expires_at = timezone.now() + timedelta(days=days) if days else None
     grant = PermissionGrant.objects.create(
         org=org,
         grantee=grantee,
@@ -80,14 +81,19 @@ def grant_permission(org, actor, grantee, perm_key: str, *, scope_type="org", sc
         actor,
         "perm.grant",
         target=grant,
-        payload={"perm_key": perm_key, "grantee": str(grantee.id)},
+        payload={
+            "perm_key": perm_key,
+            "grantee": str(grantee.id),
+            "scope_type": scope_type,
+            "expires_at": expires_at.isoformat() if expires_at else None,
+        },
         request=request,
         org=org,
     )
     return grant
 
 
-def decide_request(req: PermissionRequest, actor, approve: bool, request=None):
+def decide_request(req: PermissionRequest, actor, approve: bool, request=None, days=None):
     req.status = PermissionRequest.STATUS_APPROVED if approve else PermissionRequest.STATUS_REJECTED
     req.decided_by = actor
     req.decided_at = timezone.now()
@@ -101,6 +107,7 @@ def decide_request(req: PermissionRequest, actor, approve: bool, request=None):
             scope_type=req.scope_type,
             scope_id=req.scope_id,
             request=request,
+            days=days,
         )
     audit(
         actor,

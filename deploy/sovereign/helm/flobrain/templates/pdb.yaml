@@ -1,0 +1,20 @@
+{{- range $component := list "api" "worker" }}
+{{- $pdb := (index $.Values $component).podDisruptionBudget }}
+{{- if $pdb.enabled }}
+---
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: {{ $.Release.Name }}-{{ $component }}
+  labels: {{- include "flobrain.labels" $ | nindent 4 }}
+    app.kubernetes.io/component: {{ $component }}
+spec:
+  {{- if hasKey $pdb "maxUnavailable" }}
+  maxUnavailable: {{ $pdb.maxUnavailable }}
+  {{- else }}
+  minAvailable: {{ $pdb.minAvailable }}
+  {{- end }}
+  selector:
+    matchLabels: {{- include "flobrain.selector" (dict "root" $ "component" $component) | nindent 6 }}
+{{- end }}
+{{- end }}

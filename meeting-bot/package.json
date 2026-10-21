@@ -1,0 +1,15 @@
+{
+  "name": "flobrain-meeting-bot",
+  "version": "0.1.0",
+  "private": true,
+  "description": "FloBrain's own meeting assistant: joins Google Meet, Microsoft Teams or Zoom as a named guest, says it records, records audio and uploads it to FloBrain.",
+  "type": "module",
+  "engines": { "node": ">=20" },
+  "scripts": {
+    "start": "node src/index.js",
+    "test": "node --test test/*.test.js"
+  },
+  "dependencies": {
+    "playwright-core": "1.63.0"
+  }
+}

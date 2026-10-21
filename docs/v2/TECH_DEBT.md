@@ -34,7 +34,28 @@ Still deferred on purpose (see `PLAN.md`): LLM translation, Channels, S3, real m
 
 - **`JWT_SIGNING_KEY` (proposal only).** `users/jwt_utils.py` signs access and refresh tokens with HS256 and `settings.SECRET_KEY`. Password-reset tokens are random and stored as a hash; they do not use `SECRET_KEY`. Add a `JWT_SIGNING_KEY` setting that falls back to `SECRET_KEY` when unset, so the signing key can be rotated later without forcing a logout in the same change as a `SECRET_KEY` rotation. Do not add the setting until a human asks for it.
 - **pgvector on `db.t3.micro`.** PostgreSQL 15.17 can load `vector`. The instance has 1 GB RAM and is single-AZ. An HNSW index keeps graph data in memory; a large embedding table (1536 dimensions) can push the instance into swap or fail the index build. Phase 7 should start with a small list probe, conservative `m` / `ef_construction`, and "Not configured" when the extension is absent. Move to a larger class before production retrieval traffic.
+- **Content Studio (9) shortcuts.** No live social connector (needs company developer apps, Q16) and no metrics refresh. No GPU worker code in this repo (AI team, Q15); the API contract is `/api/v2/workers/*`. Transcripts are pushed to `PUT …/assets/{id}/transcript`; there is no `transcribe` call yet (reuse the meetings route when it lands). Face counts come from the worker; there is no detector here. TTS not configured (Q18). Render GPU seconds are recorded but not yet priced into budgets.
+- **Actions and reports (8c/8d) shortcuts.** Room AI threads do not offer tools yet (only buddies). The double-approve guard is a row lock; there is no two-connection test for it yet (the 7g pattern can be reused). Reports have no model polish and list at most 50 rows per section. `meetings.create` does not create a join URL (voice stays behind its flag).
+- **BYOK (7k) shortcuts.** One encryption key at a time: a different `CREDENTIALS_KEY_VERSION` makes old keys unreadable until re-entered (add a keyring before the first rotation). Decision 50 `private_only` does not disable external keys yet (no `OrgPolicy` model). Knowledge ask and translation do not take a customer key yet. The key check runs inside the request (up to 20 s); move it to the worker if it hurts.
+- **Knowledge ask (7i) shortcuts.** The question's embedding is not written to `UsageEvent` (self-hosted BGE-M3 is a fixed cost today; add `operation=embed` rows if the host bills per token). Backfill lists ids in memory; fine for thousands of sources, page it for millions. On pgvector older than 0.8 the HNSW index filters after scanning, so a small allowed set inside a large org can return fewer than `k` hits (never a forbidden one); RDS 15.17 ships 0.8, so check `SELECT extversion FROM pg_extension WHERE extname='vector'` after `CREATE EXTENSION`. Deleting a room with many chunks deletes vectors one row at a time.
+- **Budget spend is computed row by row** (`telemetry.pricing.month_spend`). Fine at today's volume; move to grouped SQL per provider/model/price window when usage grows. The cap is soft: it blocks the next call after spend reaches it.
 - **No Redis and no SQS.** Background work stays on PostgreSQL until an infra change is approved.
+
+- **SSO (17c) shortcuts.** SAML 2.0 is not built (needs a library choice and an IdP test tenant). JWKS is fetched per login (no cache); fine at login volume. Only one OIDC connection per org. SCIM supports `userName eq` filtering only, no `/Bulk`, no `/Schemas`; group membership is replaced per PATCH operation, not diffed.
+
+- **17e/17f shortcuts.** The export zip is built in one worker job (spooled to disk over 64 MB) and capped by `EXPORT_MAX_MESSAGES` (`truncated: true` in the manifest); no resumable or per-room export. Impersonation audits every request (one row each); a long support session on a busy page writes many rows. A streaming response opened under impersonation is not cut at expiry. The marketplace has no versioning or update notices for installed copies. Helm chart not linted; no ingress, HPA or PodDisruptionBudget yet.
+
+- **Phase 17 review leftovers.** Stripe `checkout.session.completed` still takes the plan from metadata (fine while no client-side checkout exists; derive it from the price when checkout ships). Impersonation blocks only the known GET side effects (translation, read markers); new GET endpoints with side effects must check `console.impersonation.is_impersonated`.
+
+- **Pulse (13) shortcuts.** Routing is applied to platform calls that don't name a model: primary then fallbacks (allowlisted, at most 3), failing over only when the provider failed; skipped models are recorded as error calls and the trace as `fallback`. At call time it doesn't skip models on last-day health or latency the way the preview does, and the max task cost isn't enforced per call yet. Metrics are computed in Python per request (fine for thousands of events a week; move to SQL aggregates or a rollup table when usage grows). No SSE stream: the console polls. Shadow and canary runs are not built (spec: only after evaluations work).
+
+- **Integrations (15) shortcuts.** Only GitHub (fine-grained token) is live. Google Calendar, Drive, Gmail, Zoom, Discord and Notion need company OAuth apps and are declared "not set up yet". No webhook-driven sync: syncs run when asked. OAuth connectors (Google, Zoom, Notion): the owner will register the apps and add them later, by hand, inside FloBrain.
+
+- **Privacy center (16) shortcuts.** Erasure removes a person's room messages (body cleared, vectors deleted), time descriptions and private AI conversations in one org; document revisions they wrote stay (shared documents), and room AI threads they started stay (shared with the room). "Pinned" recordings (Q20) are not built. Retention deletes at most 50,000 messages per org per run. The product-analytics consent is enforced (no product events). `analytics_personal_only` is stored but hidden from the page until a personal-insight screen exists to honour it. The load test ran on the build machine only (`deploy/loadtest/RESULTS.md`); rerun on staging. Sign-in bursts are CPU-bound (PBKDF2), so size API tasks for them.
+
+- **Meetings (2026-10-21) shortcuts.** The call page polls every 10 seconds for the recording state instead of using LiveKit data messages. Recording is audio only (no video file). Transcripts are not indexed for org search yet. The assistant's page selectors for Meet, Teams and Zoom can't be tested here (no access to those sites from the build machine) and will need a first live run and probably adjustments; it records the mixed meeting audio, so there is no per-speaker labelling. Whisper runs one transcription at a time per replica. Losing room access during a call doesn't remove the person from it (tokens last 10 minutes and rooms can't be recreated, but a connected person stays until they leave or the call ends; add `RemoveParticipant`).
+
+- **Review 10–13 leftovers.** Certificate verification stays public whatever the `public_portfolio` flag says (a verifier must be able to check it); internal project and tag names now appear only when the issuer ticks "include details". The demo still trusts `DEMO_MODE` with a warning (`flobrain.W010`) when `DEBUG` is off. Tauri desktop shell (Phase 10): dropped by the owner on 2026-10-21; the web app installs as a PWA instead.
 
 ## Still open (from AUDIT §6 and extras)
 
@@ -52,6 +73,18 @@ Still deferred on purpose (see `PLAN.md`): LLM translation, Channels, S3, real m
 | F5 | Frontend i18n: V2 catalogs only; V1 has none |
 | P1, P2, P4 | No IaC; migrations-on-ECS unanswered (Q28); backend deploy workflow exists but disabled (0f) |
 | P5 | Website still Vercel |
+| C1 | Doc attachments: local storage only; S3 presigned uploads not built (501 on ECS) |
+| C2 | Tasks are not in knowledge search (their visibility rules differ from rooms); meeting summaries and transcripts are |
+| C3 | Content Studio: caption translation, a music control, real TTS, social connectors, GPU worker and face detection wait for Q15, Q16, Q18 |
+| C4 | Notion masterclasses refresh on "Sync now" only; no schedule |
+| C5 | Leads can't grant permissions to their own team (the matrix allows it; leads don't hold `grants.create`) |
+| C6 | Feedback reports carry a written description, no screenshot (no upload storage for it) |
+| C7 | Outside agent calls are approved on the External agents page, not the shared Approvals inbox, and proposing one sends no notification yet |
+| C8 | Support sessions can still read group rooms (a console test expects it); decide with Q40/Q42 |
+| C9 | The task board loads 100 tasks at most (shows a notice when there are more) |
+| C10 | Turkish uses informal "sen" throughout; French uses "vous", Portuguese "você". Native speakers should review all three |
+| C11 | Helm chart checked with a stand-in renderer only; run `helm lint` and a test install |
+| C12 | Expired `SAMLRequest` and `SSOState` rows are never purged |
 
 ## Phase 0 shortcuts to revisit
 

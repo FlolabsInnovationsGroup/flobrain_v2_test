@@ -13,7 +13,7 @@ from organizations.models import (
     Team,
     TeamMembership,
 )
-from organizations.permissions.registry import PERMISSION_CATALOG, ROLE_DEFAULTS
+from organizations.permissions.registry import OWNER_ONLY_KEYS, PERMISSION_CATALOG, ROLE_DEFAULTS
 
 
 def _active_membership(user, org) -> Optional[OrgMembership]:
@@ -32,6 +32,11 @@ def can(user, perm_key: str, obj=None) -> bool:
         return False
     if perm_key not in PERMISSION_CATALOG:
         return False
+    if perm_key in OWNER_ONLY_KEYS:
+        if not isinstance(obj, Organization):
+            return False
+        membership = _active_membership(user, obj)
+        return bool(membership and membership.is_active_member and membership.org_role == OrgMembership.ORG_ROLE_OWNER)
     if getattr(user, "is_platform_admin", False):
         return True
 
@@ -134,3 +139,31 @@ def visible_team_ids(user, org):
     return list(
         TeamMembership.objects.filter(user=user, team__org=org).values_list("team_id", flat=True)
     )
+
+
+def org_permissions(user, org) -> set[str]:
+    """Every key ``can(user, key, org)`` would allow at org level, in three queries instead of one or
+    two per key (load test: ``me/access`` ran 114 queries). Must stay equal to ``can``; the test
+    ``test_org_permissions_matches_can`` checks every key for every kind of member."""
+    if user is None or org is None:
+        return set()
+    membership = _active_membership(user, org)
+    active = bool(membership and membership.is_active_member)
+    out = set()
+    if active and membership.org_role == OrgMembership.ORG_ROLE_OWNER:
+        out |= set(OWNER_ONLY_KEYS)
+    others = set(PERMISSION_CATALOG) - set(OWNER_ONLY_KEYS)
+    if getattr(user, "is_platform_admin", False):
+        return out | others
+    if not active:
+        return out
+    out |= others & set(ROLE_DEFAULTS.get(membership.org_role, frozenset()))
+    now = timezone.now()
+    for key, expires in PermissionGrant.objects.filter(
+        org=org, grantee=user, revoked_at__isnull=True, scope_type=PermissionGrant.SCOPE_ORG, perm_key__in=others
+    ).values_list("perm_key", "expires_at"):
+        if not expires or expires > now:
+            out.add(key)
+    if "mission.view" not in out and TeamMembership.objects.filter(user=user, team__org=org, team_role=TeamMembership.ROLE_LEAD).exists():
+        out.add("mission.view")
+    return out

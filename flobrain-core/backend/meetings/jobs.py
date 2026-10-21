@@ -1,11 +1,3 @@
-from jobs.queue import register
+"""Job handlers live in ``meetings.pipeline``; importing it registers them for the worker."""
 
-
-@register("meetings.transcribe")
-def transcribe_recording(payload):
-    return {"ok": False, "reason": "not_implemented"}
-
-
-@register("meetings.summarize")
-def summarize_meeting(payload):
-    return {"ok": False, "reason": "not_implemented"}
+from meetings import pipeline  # noqa: F401

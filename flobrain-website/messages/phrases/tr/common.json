@@ -1,0 +1,23 @@
+{
+  "Workspace": "Çalışma alanı",
+  "Search": "Ara",
+  "Inbox": "Gelen kutusu",
+  "Something went wrong": "Bir şeyler ters gitti",
+  "This feature is switched off for your organization. An admin can turn it on.": "Bu özellik kuruluşunda kapalı. Bir yönetici açabilir.",
+  "No data yet": "Henüz veri yok",
+  "You do not have access": "Erişimin yok",
+  "Loading": "Yükleniyor",
+  "Retry": "Tekrar dene",
+  "Set the AI policy and billing": "Yapay zeka politikasını ve faturalandırmayı ayarla",
+  "Turn on SSO and provisioning": "SSO ve hesap sağlamayı aç",
+  "Export the org's memory": "Kuruluşun belleğini dışa aktar",
+  "Approve marketplace listings": "Pazar yeri ilanlarını onayla",
+  "Manage members and access": "Üyeleri ve erişimi yönet",
+  "See audit and support sessions": "Denetim ve destek oturumlarını gör",
+  "Generate the weekly team report": "Haftalık ekip raporunu oluştur",
+  "Run the Monday release-notes agent": "Pazartesi sürüm notları ajanını çalıştır",
+  "Unblock Youssef's Android task": "Youssef'in Android görevinin önündeki engeli kaldır",
+  "Ask a question across rooms and docs": "Odalar ve belgeler genelinde soru sor",
+  "Approve the task your buddy proposed": "Yardımcının önerdiği görevi onayla",
+  "Make a short video in Content Studio": "İçerik Stüdyosu'nda kısa bir video hazırla"
+}

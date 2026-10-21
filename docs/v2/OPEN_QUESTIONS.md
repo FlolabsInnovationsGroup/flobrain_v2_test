@@ -199,6 +199,18 @@ PR #250 renamed the `/api/dashboard/error-logs/` response key from `"error-logs"
 - Blocks: none.
 - Answer: **Decided** 2026-10-20. Applied: `memory/mongo_client.py` sets `serverSelectionTimeoutMS` and `connectTimeoutMS` from `MONGO_TIMEOUT_MS` (default 2000). `GET /api/dashboard/health/` still returns the same shape and reports `degraded` when Mongo is missing, without waiting 30 seconds.
 
+### Q40. Can owners and admins read DMs? (new)
+Before 2026-10-20 an org owner or admin could open any room, including direct and group rooms they were not in. E37 removes that for `direct` and `group` rooms.
+- Default: DMs and group rooms are private to their members. Owners/admins still see team, project and org rooms. A future compliance export (Phase 16) would be a separate, audited permission.
+- Blocks: none. Owner: product + legal.
+- Answer: open. Built on the default.
+
+### Q41. Can members use an org AI key? (new)
+7k follows the plan: org keys are used by owners and admins (`credential.manage`). Members can add personal keys.
+- Options: (a) keep it; (b) a new `credential.use` permission so admins can let members use an org key without seeing it; (c) a routing policy per team.
+- Default: (a). Blocks: none. Owner: product.
+- Answer: open.
+
 ### Q35. Chroma storage location in ECS (new)
 `memory/tier_2.py` opens a persistent Chroma client at the hardcoded path `/app/vector_db` at import time. On ECS Fargate that path is the container's ephemeral disk, so vectors are lost on every deploy and are not shared between tasks.
 - Options: EFS volume, Chroma server as its own service, or another vector store (pgvector on the existing RDS needs no new service).
@@ -220,7 +232,7 @@ PR #250 renamed the `/api/dashboard/error-logs/` response key from `"error-logs"
 ### Q2. Voice/video provider
 Zoom SDK, LiveKit, Daily, or another? Where do recordings come from (Zoom cloud, the Strapi meeting system demoed by ops, S3)?
 - Blocks: none for the provider. Phase 5 still waits on the hosting choice in `INFRA_CHANGES.md` before `voice_video` is turned on.
-- Answer: 2026-10-20, closed. **LiveKit** for Phase 5, behind a provider interface and the `voice_video` flag, which stays **default off** (Decision E30). Self-hosted LiveKit versus LiveKit Cloud is an infra decision, not a code decision. Recordings come from that LiveKit deployment once the hosting choice is made.
+- Answer: 2026-10-20, closed. **LiveKit** for Phase 5, behind a provider interface and the `voice_video` flag, which stays **default off** (Decision E30). Self-hosted LiveKit versus LiveKit Cloud is an infra decision, not a code decision. Recordings come from that LiveKit deployment once the hosting choice is made. **2026-10-21 (owner):** self-hosted LiveKit, part of FloBrain itself, with Egress for recording and our own Whisper service for transcription (`deploy/meetings/`).
 
 ### Q15. Existing AI video editor code
 Where does it live, and can its pipeline be called as a library or service from the GPU worker?
@@ -245,7 +257,7 @@ Who holds the Ed25519 signing key, and what text/branding do certificates carry?
 ### Q23. Meeting bot
 Build our own bot per platform or use a meeting-bot API vendor? Platform terms (Zoom, Meet, Teams) must allow it.
 - Blocks: none while the vendor stays behind the Phase 15 interface. Owner: product + legal.
-- Answer: **Default (confirm: product + legal).** Use a meeting-bot vendor first (for example Recall.ai) behind the Phase 15 interface. Build our own only if cost or privacy requires it. The bot always announces itself. Recording consent follows Decision 37. The vendor name is config.
+- Answer: **2026-10-21, decided by the owner: our own bot, part of FloBrain, no outside vendor.** `meeting-bot/` joins Meet, Teams and Zoom (web client) as a named guest, announces itself in the chat, records audio and uploads it; transcription and summary use the same pipeline as calls inside FloBrain. Recording consent follows Decision 37. Legal still needs to confirm each platform's terms for customer meetings; Zoom meetings that require signed-in users can't be joined without a Zoom SDK app.
 
 ---
 
@@ -255,7 +267,7 @@ Build our own bot per platform or use a meeting-bot API vendor? Platform terms (
 How long to keep chat messages, recordings, transcripts and time entries?
 - Default: keep everything until Phase 16 retention policies exist.
 - Blocks: none until Phase 16. Nothing is deleted automatically before then. Owner: legal/ops.
-- Answer: **Default (confirm: legal/ops).** All of these are configurable per org, not constants. Chat, docs, tasks, and time entries: kept while the org is active. Recordings: 90 days, then deleted unless pinned. Transcripts and summaries: 1 year. AI traces: prompt/response content 90 days, metadata 1 year. Audit events: at least 1 year. Deleting a source deletes its vectors. Until Phase 16 nothing is deleted automatically.
+- Answer: **Default (confirm: legal/ops).** All of these are configurable per org, not constants. Chat, docs, tasks, and time entries: kept while the org is active. Recordings: 90 days, then deleted unless pinned. Transcripts and summaries: 1 year. AI traces: prompt/response content 90 days, metadata 1 year. Audit events: at least 1 year. Deleting a source deletes its vectors. Until Phase 16 nothing is deleted automatically. **Phase 16 (built):** per-org `RetentionPolicy` for messages, recordings, transcripts and time entries, set by the owner, applied daily by `apply_retention` with vectors. Because deletion can't be undone, the suggested periods (recordings 90 days, transcripts 1 year) are shown in the form but nothing is deleted until an owner saves a policy. "Pinned" recordings are not built yet (TECH_DEBT). AI traces hold no content, so there is nothing to expire there. Audit events are never deleted by retention.
 
 ### Q21. Target markets for Phase 17
 Which first external customers (bootcamps, universities, SMBs, MENA enterprises) and which identity providers and data regions do they need?
@@ -278,6 +290,13 @@ Which external agents and MCP servers should be on the default allowlist?
 - Blocks: none while the tables stay untouched. Owner: backend lead.
 - Answer: **Default (confirm: backend lead).** Leave `customer_billing`, `payment_history`, `group_billing`, and `group_payment_history` untouched. Phase 17 builds new billing tables and reuses the old ones only if a count proves they hold data worth keeping. Do not drop or rewrite them in the meantime.
 
+### Q42. Should platform admins keep silent access to every org? (new, 17e)
+Since Phase 0, `can()` and `IsActiveOrgMember` return true for any `is_platform_admin` user in any org, with no reason and no audit (`organizations.tests.test_matrix.test_platform_admin_bypasses`). Phase 17e adds the audited path: read-only impersonation with a reason, a time limit, a notification to the person and the org's owners/admins, and an audit row per request. The old bypass still works alongside it, so a customer cannot rely on "every support access is visible".
+- Options: (a) keep the bypass (today); (b) remove it for org data and keep platform admins to `/platform/*` plus impersonation; (c) keep it only for non-content endpoints (org list, billing, flags).
+- Default: (a) until the console UI exists, then (b). Changing it removes a tested Phase 0 behaviour, so it needs an owner decision.
+- Blocks: enterprise contracts that promise audited support access. Owner: leadership + security.
+- Answer: **Decided 2026-10-20: (a), keep the bypass as it is.** The three owner-only keys (`exports.memory`, `policy.manage`, `sso.manage`) stay outside it (Phase 17 review). Do not promise customers that every staff access is audited.
+
 ---
 
 ## Waiting for a person
@@ -286,12 +305,14 @@ These stay open. Use the default, and keep it configurable. Do not hard-code it.
 
 | Question | Owner | What they must confirm |
 |---|---|---|
+| Q41 org AI keys | product | Members use only personal keys; org keys stay with owner/admin (E38) |
+| Q40 DM privacy | product + legal | Owners/admins cannot read DMs or group rooms they are not in (E37) |
 | Q37 billing tables | backend lead | Leave the old billing tables untouched unless a count shows rows worth keeping |
 | Q25 `private_only` models | AI team | The self-hosted list (vLLM or Ollama on JarvisLabs). Final names come from Pulse evals |
 | Q15 AI video editor | AI team | The repo location. Content Studio calls a worker API and does not import the editor |
 | Q18 TTS | content team | The first cloud provider for Arabic (Egyptian and MSA) and English |
 | Q16 social publishing | marketing + engineering | Company-owned apps, YouTube and LinkedIn first, private-until-audit, X as a cost line |
-| Q23 meeting bot | product + legal | A vendor first (for example Recall.ai), the bot announces itself, Decision 37 consent |
+| Q23 meeting bot | legal | Decided: our own bot. Legal confirms platform terms for customer meetings |
 | Q24 MCP allowlist | owner | Empty allowlist. Notion, GitHub, and Google Drive are candidates only, read-only, after a scan |
 | Q5 commission and leads | finance/ops | `commissions.manage` reviews and pays. The rate is per project. 35% is not hard-coded |
 | Q6 masterclass | ops | The Notion people or team property, or the full list ordered by title |

@@ -1,0 +1,13 @@
+# Sovereign image: the backend plus a production server. Built from flobrain-core/backend.
+# The main backend Dockerfile is unchanged (Q29 decides gunicorn for the hosted deploy).
+FROM python:3.11-slim
+ENV PYTHONDONTWRITEBYTECODE=1 PYTHONUNBUFFERED=1
+WORKDIR /app
+RUN apt-get update && apt-get install -y --no-install-recommends postgresql-client && rm -rf /var/lib/apt/lists/*
+COPY requirements.txt /app/
+RUN pip install --no-cache-dir -r requirements.txt "gunicorn==23.0.0"
+COPY . /app/
+RUN useradd --create-home --uid 10001 flobrain && chown -R flobrain /app
+USER flobrain
+EXPOSE 8000
+CMD ["gunicorn", "flobrain.wsgi:application", "--bind", "0.0.0.0:8000", "--workers", "3", "--timeout", "120"]

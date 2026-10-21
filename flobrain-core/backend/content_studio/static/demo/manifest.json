@@ -1,0 +1,32 @@
+{
+ "source": {
+  "file": "source-recording.mp4",
+  "width": 1280,
+  "height": 720,
+  "duration_seconds": 39.415
+ },
+ "renders": {
+  "9x16_1080": {
+   "file": "render-9x16.mp4",
+   "width": 1080,
+   "height": 1920,
+   "duration_seconds": 4.0
+  },
+  "1x1_1080": {
+   "file": "render-1x1.mp4",
+   "width": 1080,
+   "height": 1080,
+   "duration_seconds": 4.0
+  },
+  "16x9_1080": {
+   "file": "render-16x9.mp4",
+   "width": 1920,
+   "height": 1080,
+   "duration_seconds": 4.0
+  }
+ },
+ "voiceover": {
+  "file": "voiceover.m4a",
+  "duration_seconds": 6.54
+ }
+}

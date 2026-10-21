@@ -12,12 +12,18 @@ from rest_framework.response import Response
 from core_v2.views import V2PublicAPIView
 from organizations.services.members import v2_workspace_signin_allowed
 from users.authentication import BearerJWTAuthentication
-from users.jwt_utils import decode_token, make_access_token, make_refresh_token
+from users.jwt_utils import (
+    decode_token,
+    issued_before_password_change,
+    make_access_token,
+    make_refresh_token,
+)
 from users.models import BlacklistedRefreshToken, PasswordResetToken, User
 from users.v2.serializers import (
     V2FirstLoginSerializer,
     V2ForgotPasswordSerializer,
     V2MeSerializer,
+    V2MeUpdateSerializer,
     V2RefreshSerializer,
     V2ResetPasswordSerializer,
     V2SignInSerializer,
@@ -46,6 +52,13 @@ class V2SignInView(V2PublicAPIView):
         serializer = V2SignInSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         user = serializer.validated_data["user"]
+        from sso.views import password_signin_blocked
+
+        if password_signin_blocked(user):
+            return Response(
+                {"error": "sso_required", "details": "Your organization signs in with SSO"},
+                status=status.HTTP_403_FORBIDDEN,
+            )
         if not v2_workspace_signin_allowed(user):
             return Response(
                 {
@@ -81,12 +94,11 @@ class V2RefreshView(V2PublicAPIView):
                 {"error": "invalid_token", "details": "User not found"},
                 status=status.HTTP_401_UNAUTHORIZED,
             )
-        if user.password_changed_at and payload.get("iat") is not None:
-            if int(payload["iat"]) < int(user.password_changed_at.timestamp()):
-                return Response(
-                    {"error": "stale_token", "details": "Token issued before last password change"},
-                    status=status.HTTP_401_UNAUTHORIZED,
-                )
+        if issued_before_password_change(payload, user):
+            return Response(
+                {"error": "stale_token", "details": "Token issued before last password change"},
+                status=status.HTTP_401_UNAUTHORIZED,
+            )
         return Response({"access": make_access_token(str(user.id))})
 
 
@@ -123,7 +135,7 @@ class V2ForgotPasswordView(V2PublicAPIView):
         serializer.is_valid(raise_exception=True)
         email = serializer.validated_data["email"]
         user = _UserManager.filter(email=email).first()
-        if user:
+        if user and getattr(user, "provider", "") != "demo":  # demo seats never get a password
             raw = secrets.token_urlsafe(32)
             PasswordResetToken.objects.create(
                 user=user,
@@ -175,6 +187,8 @@ class V2FirstLoginView(V2PublicAPIView):
     permission_classes = [IsAuthenticated]
 
     def post(self, request):
+        if getattr(request.user, "provider", "") == "demo":  # demo seats never get a password
+            return Response({"error": "forbidden", "details": "Demo accounts can't set a password"}, status=403)
         serializer = V2FirstLoginSerializer(data=request.data, context={"user": request.user})
         serializer.is_valid(raise_exception=True)
         user = request.user
@@ -182,14 +196,11 @@ class V2FirstLoginView(V2PublicAPIView):
         user.password_changed_at = timezone.now()
         user.must_change_password = False
         user.temp_password_expires_at = None
-        user.save(
-            update_fields=[
-                "password_hash",
-                "password_changed_at",
-                "must_change_password",
-                "temp_password_expires_at",
-            ]
-        )
+        fields = ["password_hash", "password_changed_at", "must_change_password", "temp_password_expires_at"]
+        if serializer.validated_data.get("phone"):
+            user.phone = serializer.validated_data["phone"]
+            fields.append("phone")
+        user.save(update_fields=fields)
         return Response(_tokens_for(user))
 
 
@@ -199,3 +210,17 @@ class V2MeView(V2PublicAPIView):
 
     def get(self, request):
         return Response(V2MeSerializer(request.user).data)
+
+    def patch(self, request):
+        """Edit my own profile (name, phone, time zone, language, about me, links). Demo seats are locked."""
+        if getattr(request.user, "provider", "") == "demo":
+            return Response({"error": "forbidden", "details": "Demo profiles can't be changed"}, status=403)
+        serializer = V2MeUpdateSerializer(data=request.data if isinstance(request.data, dict) else {})
+        serializer.is_valid(raise_exception=True)
+        if not serializer.validated_data:
+            return Response({"error": "invalid", "details": "Nothing to change"}, status=400)
+        user = request.user
+        for field, value in serializer.validated_data.items():
+            setattr(user, field, value)
+        user.save(update_fields=list(serializer.validated_data))
+        return Response(V2MeSerializer(user).data)

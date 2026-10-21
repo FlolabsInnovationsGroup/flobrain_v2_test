@@ -6,6 +6,7 @@ class RoomCreateSerializer(serializers.Serializer):
     name = serializers.CharField(required=False, allow_blank=True, max_length=200)
     user_id = serializers.UUIDField(required=False)
     team = serializers.UUIDField(required=False)
+    user_ids = serializers.ListField(child=serializers.UUIDField(), required=False, max_length=50)
 
 
 class RoomPatchSerializer(serializers.Serializer):

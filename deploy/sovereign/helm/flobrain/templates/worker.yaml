@@ -1,0 +1,36 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ .Release.Name }}-worker
+  labels: {{- include "flobrain.labels" . | nindent 4 }}
+    app.kubernetes.io/component: worker
+spec:
+  {{- if not .Values.worker.autoscaling.enabled }}
+  replicas: {{ .Values.worker.replicas }}
+  {{- end }}
+  selector:
+    matchLabels: {{- include "flobrain.selector" (dict "root" . "component" "worker") | nindent 6 }}
+  template:
+    metadata:
+      labels: {{- include "flobrain.labels" . | nindent 8 }}
+        app.kubernetes.io/component: worker
+      annotations: {{- include "flobrain.configChecksum" . | nindent 8 }}
+        {{- with .Values.worker.podAnnotations }}
+        {{- toYaml . | nindent 8 }}
+        {{- end }}
+    spec:
+      {{- include "flobrain.podSpec" . | nindent 6 }}
+      {{- include "flobrain.scheduling" .Values | nindent 6 }}
+      terminationGracePeriodSeconds: {{ .Values.worker.terminationGracePeriodSeconds }}
+      volumes: [{ name: tmp, emptyDir: {} }]
+      containers:
+        # No HTTP port: a liveness probe would have to start Django in an exec, so there is none.
+        # run_jobs exits on fatal errors and the Deployment restarts it.
+        - name: worker
+          image: {{ include "flobrain.image" . }}
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          command: ["python", "manage.py", "run_jobs"]
+          {{- include "flobrain.env" . | nindent 10 }}
+          {{- include "flobrain.containerSecurity" . | nindent 10 }}
+          {{- include "flobrain.tmp" . | nindent 10 }}
+          resources: {{- toYaml .Values.worker.resources | nindent 12 }}

@@ -2,10 +2,34 @@
 
 **To:** Arsema, Lucas (AWS / DevOps)
 **From:** FloBrain team
-**Status:** Living document. It lives in `docs/v2/awssupport.md` and is updated as V2 is built. The final version is sent when the V2 code is ready.
-**Last update:** 2026-10-20
+**Status:** Final for handoff (V2 code complete: Phases 0 to 17, self-hosted meetings, SAML, and the 2026-10-21 completion work, on a local branch, not deployed). Source: `docs/v2/awssupport.md`.
+**Last update:** 2026-10-21
 
 Nothing in this document has been applied to AWS. Everything came from read-only audits (Describe/List/Get only). The detailed engineering source is `docs/v2/INFRA_CHANGES.md`. This file is the human summary of it.
+
+---
+
+## 0. What each team needs to do (short version)
+
+Each step is safe to do on its own. Until a step is done, the matching FloBrain feature says "not set up" and nothing else breaks.
+
+**AWS / DevOps (Arsema, Lucas)**
+1. Security items S1 to S6 (section 2), S1 and S3 first.
+2. Staging environment (3.1), then the settings in 3.2 as secrets. The two red items block boot.
+3. `/healthz` health check, then strict `ALLOWED_HOSTS` (3.3); gunicorn (3.4); migrations as a one-off task (3.5).
+4. The worker service `run_jobs` (3.6) and the scheduled commands (3.11, seven of them now).
+5. RDS upgrade and pgvector (3.7); private S3 bucket with the prefixes in 3.11.
+6. Meetings stack (3.12): Redis, LiveKit with TLS, Egress, Whisper, the meeting bot.
+7. Static hosting for the public status page (3.14).
+8. Optional: a separate demo environment (3.15). Never `DEMO_MODE` on production.
+
+**Multimodal team:** `multimodalsupport.md` (P0 security this week; meetings no longer need them).
+
+**AI team (JarvisLabs):** the OpenAI-compatible endpoint for `AI_DIRECT_*`, the BGE-M3 embeddings endpoint, and the self-hosted model names for "private only" orgs (Q25), all over HTTPS, accepting only the NAT IP or an API key.
+
+**Owners / product:** answers to the open questions in `OPEN_QUESTIONS.md` (the "Waiting for a person" table): billing plans and prices (Q22), the TTS provider (Q18), social apps (Q16), the MCP allowlist (Q24), legal terms for the meeting bot (Q23).
+
+**Website (Vercel):** set `NEXT_PUBLIC_STATUS_JSON_URL` once the status file is hosted (3.14). Nothing else changes on Vercel.
 
 ---
 
@@ -74,9 +98,23 @@ Two of these break production if they are missing:
 | `SMTP_HOST/PORT/USER/PASS` | not set | Reset and invite emails are dropped | The mail provider |
 | `DRF_NUM_PROXIES` | not set | Rate limits and audit logs see the ALB IP, not the user | `1` |
 | `HR_WEBHOOK_SECRET` | not set | The HR intake webhook returns 503 | A random secret, shared with the n8n flow |
-| `CREDENTIALS_ENCRYPTION_KEY` | not set | Customer API keys (BYOK) cannot be stored | A random 32-byte key in Secrets Manager |
+| `CREDENTIALS_ENCRYPTION_KEY` | not set | Customer API keys (BYOK) cannot be stored (feature shows "Not configured") | 64 random hex characters (`openssl rand -hex 32`) in Secrets Manager. Never all zeros. If it is lost, customers re-enter their keys |
 | `MULTIMODAL_API_KEY` | not set | Calls to the multimodal service carry no key | The key the multimodal team issues (`multimodalsupport.md`, step 3) |
-| Platform AI provider key (name to be confirmed in `INFRA_CHANGES.md`) | none | The V2 AI features (`direct` provider) stay "Not configured" | An OpenAI (or other) key in Secrets Manager, never plain text |
+| `AI_DIRECT_BASE_URL`, `AI_DIRECT_API_KEY`, `AI_DIRECT_MODEL_ALLOWLIST`, `AI_DIRECT_DEFAULT_MODEL` | none | V2 AI features (knowledge ask, translation, room AI on `direct`) stay "Not configured" | Base URL over HTTPS (for example `https://api.openai.com`), the key in Secrets Manager, and the allowed model names. `AI_PROVIDER_BACKEND=direct` moves room AI off the multimodal host |
+| `EMBEDDINGS_BACKEND=http`, `EMBEDDINGS_BASE_URL`, `EMBEDDINGS_MODEL`, `EMBEDDINGS_DIMENSION=1024`, `EMBEDDINGS_API_KEY` | none | Memory search stays "Not configured" | The BGE-M3 endpoint on JarvisLabs (HTTPS) and its key |
+| `PUBLIC_API_BASE_URL` | none | SSO and social-account sign-in send people back to `localhost` (both fail) | `https://api.flobrain.ai`. Customers register `https://api.flobrain.ai/api/v2/sso/callback` as the SSO redirect URI |
+| `STRIPE_WEBHOOK_SECRET` | none | The Stripe webhook returns 501 (billing stays manual) | The endpoint signing secret from the Stripe dashboard, in Secrets Manager. Keep `BILLING_ENFORCE_ENTITLEMENTS` off until plans exist |
+| `AI_SELF_HOSTED_HOSTS` | none | Orgs that choose "private only" get no AI at all | The hostname(s) of our self-hosted models (for example the JarvisLabs vLLM and BGE-M3 hosts). Not secret |
+| `STRIPE_SECRET_KEY` | none | Owners can't start a Stripe checkout or open "Manage billing" (both answer "not set up") | The Stripe secret key, in Secrets Manager. Checkout sessions are created on the server only |
+| `EXTERNAL_AGENT_ALLOWED_HOSTS` | none | No org can connect an outside AI agent (MCP). This is the upper bound; each owner then picks from it | Comma-separated hostnames, decided with the owners (Q24). Empty is a safe default |
+| `PII_DETECTOR` | none | Orgs can't turn on "remove personal details before AI" (answers "not set up") | `regex` for the basic built-in detector, or a stronger detector class later. Not secret |
+| `TTS_PROVIDER` | none | Content Studio voiceover answers "not set up" | Waits for the TTS decision (Q18) |
+| `CONTENT_STORAGE=s3`, `CONTENT_S3_BUCKET`, `CONTENT_S3_REGION` | none | Content Studio uploads, renders, exports and privacy downloads answer "not set up" | The private bucket from 3.11 |
+| `DEMO_MODE` | not set | Must stay **unset** on production and staging. It turns on the sample data, demo sign-in, the demo identity provider and the demo AI | Only in the separate demo environment (3.15) |
+
+Document attachments (Docs tab) work only with local file storage today; S3 for them is not built yet, so on ECS they answer "not set up". This is in `TECH_DEBT.md`.
+
+New Python packages in this build: `signxml` and `lxml` (SAML). They are in `requirements.txt`; a normal image rebuild installs them.
 
 There is a test in the repo (`ProductionEnvBootTests`) that boots the app with exactly the production variable names. It proves the two red items are the only boot blockers.
 
@@ -113,6 +151,10 @@ python manage.py run_jobs
 
 It has no public port and no ALB, and uses the same database and secrets. Until it exists, background features (indexing, transcription jobs) show "unavailable".
 
+- After the worker service is running, set `JOBS_WORKER_ENABLED=True` on both services.
+- The worker stops cleanly on SIGTERM, so normal ECS deploys are safe.
+- One task is enough to start.
+
 ### 3.7 Database
 
 - **pgvector:** V2 runs `CREATE EXTENSION IF NOT EXISTS vector` in a migration. PostgreSQL 15.17 on RDS supports it, and the master user can create it. Nothing else to install.
@@ -133,6 +175,13 @@ It has no public port and no ALB, and uses the same database and secrets. Until 
 | Embeddings (BGE-M3 on JarvisLabs) | Memory search | The JarvisLabs endpoint should accept only the NAT IP `98.89.195.180` (or use an API key), over HTTPS |
 | LiveKit (Cloud or self-hosted) | Voice and video (Phase 5) | Decision pending. Cloud needs only keys in Secrets Manager. Self-hosted needs its own host with UDP ports. |
 | Social platforms (YouTube, LinkedIn, TikTok, Meta, X) | Content Studio publishing (Phase 9) | Nothing on AWS. App credentials go in Secrets Manager. |
+| Customer identity providers (Google Workspace, Entra ID, Okta) | SSO (Phase 17c) | Outbound HTTPS from the NAT (works today). Domain verification makes DNS TXT lookups from the task through the VPC resolver (default VPC DNS is enough) |
+| Customer webhook URLs | Outbound webhooks (Phase 14) | Outbound HTTPS from the NAT to public IPs only; the code refuses private and metadata addresses |
+| Stripe | Billing webhook (Phase 17b) and checkout | Inbound: Stripe calls `POST /api/v2/billing/stripe/webhook` through the ALB. Outbound HTTPS to `api.stripe.com` for checkout. No new rule if the ALB already accepts public HTTPS |
+| Customer SAML identity providers | SAML sign-in | Nothing outbound: the browser carries the signed answer to `https://api.flobrain.ai/api/v2/sso/saml/acs`. Needs `PUBLIC_API_BASE_URL` set correctly, because it is part of every org's SAML address |
+| Notion | Masterclasses (learning) | Outbound HTTPS to `api.notion.com` from the NAT (works today). Each org pastes its own internal integration token; it is stored encrypted with `CREDENTIALS_ENCRYPTION_KEY` |
+| Outside AI agents (MCP servers) | External agents | Outbound HTTPS from the NAT, only to hosts in `EXTERNAL_AGENT_ALLOWED_HOSTS`. Private and metadata addresses are refused in code |
+| SMTP | Status page subscriptions, invites, resets | Same `SMTP_*` settings as 3.2 |
 
 ### 3.10 Rough monthly cost impact (to confirm with AWS Pricing Calculator)
 
@@ -140,6 +189,50 @@ It has no public port and no ALB, and uses the same database and secrets. Until 
 - Worker service: one more small Fargate task.
 - Larger RDS class and Multi-AZ: the main cost increase.
 - Secrets Manager: a small per-secret monthly charge.
+
+### 3.11 Scheduled commands and S3 prefixes
+
+All run from the same image and env as the API, as one-off ECS tasks (EventBridge Scheduler → ECS RunTask), never inside the web tasks:
+
+| Command | Schedule | Why |
+|---|---|---|
+| `python manage.py tick_agents` | every minute | Scheduled AI agents (Phase 8) |
+| `python manage.py tick_webhooks` | every minute | Webhook retries (Phase 14) |
+| `python manage.py tick_content` | every minute | Content Studio queue and scheduled posts (Phase 9) |
+| `python manage.py tick_pulse` | every 5 minutes | Pulse alert rules (Phase 13) |
+| `python manage.py tick_tasks` | every hour | "Due tomorrow" and "overdue" task reminders. Safe to run twice |
+| `python manage.py purge_exports` | daily | Deletes expired org memory exports (Phase 17e). An S3 lifecycle rule that expires `exports/` after 8 days is an acceptable replacement |
+| `python manage.py apply_retention` | daily | Deletes data older than each org's retention policy, with its search vectors (Phase 16). Nothing is deleted until an owner sets a policy |
+
+S3 (the private Content Studio bucket, `CONTENT_S3_BUCKET`): the task role needs `s3:PutObject`, `s3:GetObject` and `s3:DeleteObject` on `content/*`, `exports/*`, `privacy/*` (personal data downloads, Phase 16) and `meetings/*` (call recordings, 3.12). Downloads are 5-minute presigned links; the bucket stays private.
+
+### 3.12 Meetings: calls, recording, transcription, assistant (decided 2026-10-21)
+
+The owner decided meetings run on our own servers, with no outside vendor. Four services, all in `deploy/meetings/` (compose for reference). This is the AWS version:
+
+| Service | AWS shape (proposal) | Notes |
+|---|---|---|
+| LiveKit server `livekit/livekit-server:v1.9.11` | ECS on **EC2** (not Fargate: it needs a UDP port range and host networking), 2 vCPU / 4 GB to start | Public: TCP 7880 behind TLS as `wss://calls.flobrain.ai` (NLB TLS listener or ALB), TCP 7881 and **UDP 50000–50100** through an NLB or an Elastic IP. TURN on 443 for users behind strict firewalls |
+| LiveKit Egress `livekit/egress:v1.10.0` | ECS on EC2, needs `SYS_ADMIN`, 4 vCPU / 8 GB per concurrent recording | Writes audio straight to the content bucket under `meetings/` (`s3:PutObject` on `meetings/*`) |
+| Redis 7 | ElastiCache `cache.t4g.micro` | Used only by LiveKit and Egress, not by the API |
+| Whisper `whisper-server/` | ECS task, CPU (4 vCPU, `small`) or one GPU instance (`g4dn.xlarge`, `large-v3`) | Private only; the API calls it at `ASR_BASE_URL`. Arabic needs `large-v3` for good quality |
+| Meeting assistant `meeting-bot/` | ECS Fargate service, 1 vCPU / 2 GB per task, one meeting per task | Outbound internet to Meet, Teams and Zoom; no inbound ports |
+
+API environment (Secrets Manager for the secrets): `LIVEKIT_URL`, `LIVEKIT_API_URL`, `LIVEKIT_API_KEY`, `LIVEKIT_API_SECRET`, `ASR_BACKEND=http`, `ASR_BASE_URL`, `ASR_API_KEY` (optional), `MEETING_BOT_VENDOR=self_hosted`, `MEETING_BOT_MAX_MINUTES`, `MEETING_UPLOAD_MAX_MB`. The API task role also needs `s3:GetObject` on `meetings/*` (to read recordings for transcription). LiveKit's webhook must reach `https://api.flobrain.ai/api/v2/livekit/webhook` (it is signed with the API secret).
+
+Order: Redis, LiveKit + TLS, Egress, Whisper, then the assistant. Until each is set, the matching button in FloBrain answers "not set up" and nothing breaks.
+
+### 3.13 Sovereign package (not for our AWS)
+
+`deploy/sovereign/` (compose and a Helm chart, version 0.2.0: probes, autoscaling, ingress, network policies, and optional Whisper and meeting bot) is for customers who run FloBrain inside their own network with open models only. It is not meant for FloBrain's AWS account and changes nothing there. Its two settings, `AI_FORCE_PRIVATE_ONLY` and `AI_ALLOW_PLAINTEXT_HOSTS`, must stay unset on our deploy. The chart was checked with a stand-in renderer only; run `helm lint` and a test install before giving it to a customer.
+
+### 3.14 Public status page
+
+`python manage.py export_status` writes a cleaned-up `status.json` (public incidents and component states, no org data). Host it somewhere that does not depend on ECS, for example a public S3 object behind CloudFront, refreshed every minute by a scheduled task, and set `NEXT_PUBLIC_STATUS_JSON_URL` on Vercel to its address. Until then, the status page reads the API, which won't help during an API outage.
+
+### 3.15 Demo environment (optional)
+
+The demo (every role and feature working with sample data, `docs/v2/DEMO.md`) can run as its own small environment: one ECS service, its own small database, `DEMO_MODE=True`, `CREDENTIALS_ENCRYPTION_KEY` set, and `CONTENT_LOCAL_DIR` on the task's disk. In demo mode the scheduled commands run inside the web process (turn off with `DEMO_TICKS=0`), so it needs no worker or EventBridge rules. It must never share a database, bucket or secrets with production.
 
 ---
 
@@ -159,3 +252,12 @@ It has no public port and no ALB, and uses the same database and secrets. Until 
 | Date | What changed |
 |---|---|
 | 2026-10-20 | First version. Read-only audit of both accounts. Security items S1–S6. V2 deploy checklist. Phases 0–7c built locally, not deployed. |
+| 2026-10-20 | Job worker (7g) built: `run_jobs` service, `JOBS_WORKER_ENABLED` switch. |
+| 2026-10-20 | Vector store (7h) and knowledge ask (7i) built. To enable later: pgvector extension, embeddings env, AI provider key, worker service, then the org flag. No AWS change needed until then. |
+| 2026-10-20 | Translation (7j) and BYOK (7k) built. BYOK will need one new secret, `CREDENTIALS_ENCRYPTION_KEY` (64 random hex), in Secrets Manager before it is turned on. |
+| 2026-10-20 | Phase 8 built (buddies, approved actions, reports, skills, scheduled agents). Later need: a once-a-minute `manage.py tick_agents` task (EventBridge Scheduler → ECS RunTask) next to the worker service. Nothing to change today. |
+| 2026-10-20 | Content Studio (Phase 9) built locally. When it is turned on it needs a private S3 media bucket and S3 permissions for the task role (`INFRA_CHANGES.md`). GPU workers run outside AWS (JarvisLabs) with presigned URLs only. |
+| 2026-10-20 | Phase 14 built locally (public API, webhooks, MCP, status page). Later need: separate static hosting for `status.json` that does not depend on ECS, and two more once-a-minute commands (`tick_webhooks`, `tick_content`) next to `tick_agents`. |
+| 2026-10-20 | Phase 17 built locally: org AI policy (private-only), plans and a verified Stripe webhook, SSO (OIDC) and SCIM, owner-only memory export, in-org marketplace, platform console with audited read-only support access, and a sovereign package for customer installs. New later needs: `STRIPE_WEBHOOK_SECRET`, `PUBLIC_API_BASE_URL`, `AI_SELF_HOSTED_HOSTS`, a daily `purge_exports` (3.11). Nothing to change today. |
+| 2026-10-20 | **Final for handoff.** Phase 17 independent review fixed; 424 tests pass on SQLite and PostgreSQL 16. Nothing in this document has been applied to AWS. |
+| 2026-10-21 | Self-hosted meetings (3.12), SAML sign-in, and the completion work (rooms, tasks, time, docs, people, AI admin, external agents, status page, billing checkout, Content Studio). New: the team to-do list (0), settings in 3.2, external services in 3.9, `tick_tasks` (3.11), status page hosting (3.14), demo environment (3.15). 757 tests pass on SQLite and PostgreSQL 16. **This is the final version to send.** Nothing has been applied to AWS. |

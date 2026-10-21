@@ -56,6 +56,20 @@ class BudgetApiTests(TestCase):
         got = self.client.get(self.url)
         self.assertEqual(got.json()["cap_amount"], "5.0000")
 
+    def test_invalid_cap_or_currency_is_400(self):
+        self.org.settings = {"flags": {"budgets": True}}
+        self.org.save(update_fields=["settings"])
+        self._auth(self.owner)
+        for body in (
+            {"cap_amount": "abc"},
+            {"cap_amount": "-1"},
+            {"cap_amount": "NaN"},
+            {},
+            {"cap_amount": "5", "currency": "dollars"},
+        ):
+            res = self.client.put(self.url, body, format="json")
+            self.assertEqual(res.status_code, 400, (body, res.content))
+
 
 class BudgetEnforcementTests(TestCase):
     def setUp(self):
@@ -120,3 +134,58 @@ class BudgetEnforcementTests(TestCase):
         self.assertIsNotNone(filled.total_tokens)
         self.assertNotEqual(filled.total_tokens, 0)
         self.assertGreaterEqual(estimate_tokens("hello there"), 1)
+
+
+class PricingMathTests(TestCase):
+    """Cost uses both input and output prices; a total without a split uses the higher price."""
+
+    def setUp(self):
+        self.org = Organization.objects.create(name="Price Org", slug="price-org", settings={"flags": {}})
+        self.user = User.objects.create(email="price@example.com", password_hash=make_password("x"))
+        PriceTable.objects.create(
+            provider="openai", model="m1", input_price=Decimal("1.00"), output_price=Decimal("10.00")
+        )
+
+    def _event(self, **kw):
+        from telemetry.pricing import money_for_event
+
+        row = UsageEvent.objects.create(
+            org=self.org, user=self.user, provider="openai", model="m1",
+            credential_source=UsageEvent.CREDENTIAL_PLATFORM, **kw
+        )
+        return money_for_event(row)
+
+    def test_input_and_output_are_priced_separately(self):
+        cost = self._event(input_tokens=1_000_000, output_tokens=1_000_000, total_tokens=2_000_000)
+        self.assertEqual(cost, Decimal("11.00"))
+
+    def test_total_only_uses_the_higher_price(self):
+        cost = self._event(input_tokens=None, output_tokens=None, total_tokens=1_000_000)
+        self.assertEqual(cost, Decimal("10.00"))
+
+    def test_customer_key_is_never_platform_spend(self):
+        from telemetry.pricing import money_for_event
+
+        row = UsageEvent.objects.create(
+            org=self.org, user=self.user, provider="openai", model="m1", total_tokens=1000,
+            credential_source=UsageEvent.CREDENTIAL_CUSTOMER,
+        )
+        self.assertIsNone(money_for_event(row))
+
+    def test_unknown_provider_has_no_price(self):
+        from telemetry.pricing import money_for_event
+
+        row = UsageEvent.objects.create(
+            org=self.org, user=self.user, provider="other", model="m1", total_tokens=1000,
+            credential_source=UsageEvent.CREDENTIAL_PLATFORM,
+        )
+        self.assertIsNone(money_for_event(row))
+
+    def test_estimate_covers_prompt_and_reply(self):
+        result = ProviderResult(text="a reply with several words", model="legacy", total_tokens=None)
+        filled, estimated = fill_missing_tokens(result, "system line\nuser history\nnew question", result.text)
+        self.assertTrue(estimated)
+        self.assertGreater(filled.input_tokens, 0)
+        self.assertGreater(filled.output_tokens, 0)
+        self.assertEqual(filled.total_tokens, filled.input_tokens + filled.output_tokens)
+

@@ -147,6 +147,32 @@ class V2AuthTests(TestCase):
         )
         self.assertEqual(signin.status_code, 200)
 
+    def test_token_minted_in_same_second_as_password_change(self):
+        """A fresh token right after a change works; a pre-change token from that same second does not."""
+        import datetime as _dt
+        import time as _time
+
+        import jwt
+        from django.conf import settings
+        from django.utils import timezone
+
+        self.user.password_changed_at = timezone.now() - _dt.timedelta(milliseconds=1)
+        self.user.save(update_fields=["password_changed_at"])
+        fresh = make_access_token(str(self.user.id))
+        self.client.credentials(HTTP_AUTHORIZATION=f"Bearer {fresh}")
+        self.assertEqual(self.client.get("/api/v2/me").status_code, 200)
+
+        changed = (timezone.now() - _dt.timedelta(seconds=5)).replace(microsecond=500000)
+        self.user.password_changed_at = changed
+        self.user.save(update_fields=["password_changed_at"])
+        legacy = jwt.encode(
+            {"sub": str(self.user.id), "type": "access", "iat": int(changed.timestamp()), "exp": int(_time.time()) + 600},
+            settings.SECRET_KEY,
+            algorithm="HS256",
+        )
+        self.client.credentials(HTTP_AUTHORIZATION=f"Bearer {legacy}")
+        self.assertEqual(self.client.get("/api/v2/me").status_code, 401)
+
     def test_password_change_rejects_old_access_token(self):
         old = make_access_token(str(self.user.id))
         self.user.must_change_password = True
@@ -154,7 +180,7 @@ class V2AuthTests(TestCase):
         self.client.credentials(HTTP_AUTHORIZATION=f"Bearer {old}")
         res = self.client.post(
             "/api/v2/auth/first-login",
-            {"password": "BrandNewPass99"},
+            {"password": "BrandNewPass99", "phone": "+20 100 123 4567"},
             format="json",
         )
         self.assertEqual(res.status_code, 200, res.content)

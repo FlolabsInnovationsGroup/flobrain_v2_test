@@ -67,9 +67,33 @@ PERMISSION_CATALOG: dict[str, dict] = {
     "tools.manage": {"label": "Manage external tools", "matrix": "org"},
     "search.use": {"label": "Use global search", "matrix": "org"},
     "ai.use": {"label": "Use AI", "matrix": "org"},
+    "knowledge.ask": {"label": "Ask org knowledge", "matrix": "org"},
     "ai.usage.view": {"label": "View AI usage", "matrix": "org"},
     "budget.view": {"label": "View AI budgets", "matrix": "org"},
     "budget.manage": {"label": "Manage AI budgets", "matrix": "org"},
+    "credential.manage": {"label": "Manage org AI keys", "matrix": "org"},
+    "buddy.create": {"label": "Create private buddies", "matrix": "org"},
+    "buddy.manage": {"label": "Manage and share buddies org-wide", "matrix": "org"},
+    "report.generate": {"label": "Generate team reports (leads)", "matrix": "team"},
+    "content.use": {"label": "Use Content Studio (own projects)", "matrix": "org"},
+    "content.manage": {"label": "Manage all Content Studio projects, brand kits and templates", "matrix": "org"},
+    "content.publish": {"label": "Publish or schedule social posts", "matrix": "org"},
+    "content.approve": {"label": "Approve social posts", "matrix": "org"},
+    "social.connect": {"label": "Connect social accounts", "matrix": "org"},
+    "consent.manage": {"label": "Manage the consent registry", "matrix": "org"},
+    "webhooks.manage": {"label": "Manage webhooks and API apps", "matrix": "org"},
+    "integrations.manage": {"label": "Manage external agents and integrations", "matrix": "org"},
+    "incidents.manage": {"label": "Manage the org's incidents", "matrix": "org"},
+    "policy.manage": {"label": "Manage the org AI and data policy", "matrix": "org"},
+    "billing.view": {"label": "View billing and usage", "matrix": "org"},
+    "sso.manage": {"label": "Manage SSO and SCIM", "matrix": "org"},
+    "exports.memory": {"label": "Export the org's team and project memory (owner)", "matrix": "org"},
+    "marketplace.submit": {"label": "Offer your buddies and templates in the org marketplace", "matrix": "org"},
+    "marketplace.manage": {"label": "Approve marketplace listings", "matrix": "org"},
+    "learning.manage": {"label": "Manage learning paths, quizzes, mentorships and cohorts", "matrix": "org"},
+    "certificates.issue": {"label": "Issue and revoke certificates", "matrix": "org"},
+    "pulse.view": {"label": "Use the Pulse console (AI quality, cost, traces, evaluations, routing)", "matrix": "org"},
+    "commissions.manage": {"label": "Record commissions and change their amounts and statuses", "matrix": "org"},
 }
 
 _MEMBER_DEFAULTS = {
@@ -95,10 +119,18 @@ _MEMBER_DEFAULTS = {
     "chat.use",
     "ai.use",
     "ai.usage.view",
+    "knowledge.ask",
+    "buddy.create",
+    "content.use",
+    "marketplace.submit",
 }
 
+# Phase 17 review: held only by a real, active owner. Not in admin defaults, never grantable,
+# and not covered by the platform-admin bypass (Q42).
+OWNER_ONLY_KEYS = frozenset({"exports.memory", "policy.manage", "sso.manage"})
+
 _ADMIN_DEFAULTS = {
-    key for key in PERMISSION_CATALOG if not key.startswith("payroll.")
+    key for key in PERMISSION_CATALOG if not key.startswith("payroll.") and key not in OWNER_ONLY_KEYS
 }
 
 ROLE_DEFAULTS: dict[str, frozenset[str]] = {

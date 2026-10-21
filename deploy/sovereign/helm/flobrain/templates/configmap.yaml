@@ -1,0 +1,23 @@
+{{- $w := .Values.meetings.whisper }}
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ .Release.Name }}-config
+  labels: {{- include "flobrain.labels" . | nindent 4 }}
+data:
+{{- range $k, $v := .Values.config }}
+  {{ $k }}: {{ $v | quote }}
+{{- end }}
+{{- /* Meetings defaults, only where config does not already set the key. */}}
+{{- if and $w.enabled (not (hasKey .Values.config "ASR_BACKEND")) }}
+  ASR_BACKEND: "http"
+{{- end }}
+{{- if and $w.enabled (not (hasKey .Values.config "ASR_BASE_URL")) }}
+  ASR_BASE_URL: {{ printf "http://%s-whisper:8000" .Release.Name | quote }}
+{{- end }}
+{{- if and $w.enabled $w.asrModel (not (hasKey .Values.config "ASR_MODEL")) }}
+  ASR_MODEL: {{ $w.asrModel | quote }}
+{{- end }}
+{{- if and .Values.meetings.meetingBot.enabled (not (hasKey .Values.config "MEETING_BOT_VENDOR")) }}
+  MEETING_BOT_VENDOR: "self_hosted"
+{{- end }}

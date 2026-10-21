@@ -1,6 +1,6 @@
-import { ReportsScreen } from "@/components/v2/screens/ReportsScreen";
+import { TimeReports } from "@/components/v2/timer/TimeReports";
 
-export default async function ReportsPage({ params }: { params: Promise<{ orgSlug: string }> }) {
+export default async function TimeReportsPage({ params }: { params: Promise<{ orgSlug: string }> }) {
   const { orgSlug } = await params;
-  return <ReportsScreen orgSlug={orgSlug} />;
+  return <TimeReports orgSlug={orgSlug} />;
 }

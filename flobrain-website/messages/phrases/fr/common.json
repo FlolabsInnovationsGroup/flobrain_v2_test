@@ -1,0 +1,23 @@
+{
+  "Workspace": "Espace de travail",
+  "Search": "Rechercher",
+  "Inbox": "Boîte de réception",
+  "Something went wrong": "Une erreur est survenue",
+  "This feature is switched off for your organization. An admin can turn it on.": "Cette fonctionnalité est désactivée pour votre organisation. Un administrateur peut l'activer.",
+  "No data yet": "Aucune donnée pour l'instant",
+  "You do not have access": "Vous n'avez pas accès",
+  "Loading": "Chargement",
+  "Retry": "Réessayer",
+  "Set the AI policy and billing": "Définir la politique IA et la facturation",
+  "Turn on SSO and provisioning": "Activer le SSO et le provisionnement",
+  "Export the org's memory": "Exporter la mémoire de l'organisation",
+  "Approve marketplace listings": "Approuver les offres de la marketplace",
+  "Manage members and access": "Gérer les membres et les accès",
+  "See audit and support sessions": "Voir l'audit et les sessions d'assistance",
+  "Generate the weekly team report": "Générer le rapport hebdomadaire de l'équipe",
+  "Run the Monday release-notes agent": "Lancer l'agent des notes de version du lundi",
+  "Unblock Youssef's Android task": "Débloquer la tâche Android de Youssef",
+  "Ask a question across rooms and docs": "Poser une question sur les salons et les documents",
+  "Approve the task your buddy proposed": "Approuver la tâche proposée par votre assistant",
+  "Make a short video in Content Studio": "Créer une courte vidéo dans Content Studio"
+}

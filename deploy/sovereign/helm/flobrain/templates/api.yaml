@@ -1,0 +1,54 @@
+{{- $probes := .Values.api.probes }}
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ .Release.Name }}-api
+  labels: {{- include "flobrain.labels" . | nindent 4 }}
+    app.kubernetes.io/component: api
+spec:
+  {{- if not .Values.api.autoscaling.enabled }}
+  replicas: {{ .Values.api.replicas }}
+  {{- end }}
+  selector:
+    matchLabels: {{- include "flobrain.selector" (dict "root" . "component" "api") | nindent 6 }}
+  template:
+    metadata:
+      labels: {{- include "flobrain.labels" . | nindent 8 }}
+        app.kubernetes.io/component: api
+      annotations: {{- include "flobrain.configChecksum" . | nindent 8 }}
+        {{- with .Values.api.podAnnotations }}
+        {{- toYaml . | nindent 8 }}
+        {{- end }}
+    spec:
+      {{- include "flobrain.podSpec" . | nindent 6 }}
+      {{- include "flobrain.scheduling" .Values | nindent 6 }}
+      volumes: [{ name: tmp, emptyDir: {} }]
+      containers:
+        - name: api
+          image: {{ include "flobrain.image" . }}
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          ports: [{ name: http, containerPort: 8000 }]
+          {{- include "flobrain.env" . | nindent 10 }}
+          {{- include "flobrain.containerSecurity" . | nindent 10 }}
+          {{- include "flobrain.tmp" . | nindent 10 }}
+          startupProbe:
+            httpGet: { path: {{ $probes.path }}, port: http }
+            {{- toYaml $probes.startup | nindent 12 }}
+          livenessProbe:
+            httpGet: { path: {{ $probes.path }}, port: http }
+            {{- toYaml $probes.liveness | nindent 12 }}
+          readinessProbe:
+            httpGet: { path: {{ $probes.path }}, port: http }
+            {{- toYaml $probes.readiness | nindent 12 }}
+          resources: {{- toYaml .Values.api.resources | nindent 12 }}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ .Release.Name }}-api
+  labels: {{- include "flobrain.labels" . | nindent 4 }}
+    app.kubernetes.io/component: api
+spec:
+  type: {{ .Values.api.service.type }}
+  selector: {{- include "flobrain.selector" (dict "root" . "component" "api") | nindent 4 }}
+  ports: [{ name: http, port: {{ .Values.api.service.port }}, targetPort: http }]

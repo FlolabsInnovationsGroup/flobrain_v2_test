@@ -1,0 +1,14 @@
+# Same as flobrain-core/backend/.dockerignore: never bake secrets or local data into the image.
+.git
+.env
+.env.*
+.venv/
+venv/
+flobrain-backend-venv/
+__pycache__/
+*.py[cod]
+*.log
+db.sqlite3
+*.sqlite3
+vector_db/
+node_modules/

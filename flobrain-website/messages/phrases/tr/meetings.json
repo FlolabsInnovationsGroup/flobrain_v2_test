@@ -1,0 +1,20 @@
+{
+  "Demo call: no call server is connected, so the other people here are simulated. Recording produces a sample transcript by speaker.": "Demo görüşme: bağlı bir görüşme sunucusu yok, bu yüzden buradaki diğer kişiler simüle ediliyor. Kayıt, konuşmacıya göre örnek bir döküm oluşturur.",
+  "{name} (you)": "{name} (sen)",
+  "Microphone on": "Mikrofon açık",
+  "Muted": "Sessiz",
+  "Speaking": "Konuşuyor",
+  "Listening": "Dinliyor",
+  "camera on": "kamera açık",
+  "Mute": "Sesi kapat",
+  "Unmute": "Sesi aç",
+  "Turn camera off": "Kamerayı kapat",
+  "Turn camera on": "Kamerayı aç",
+  "Leave": "Ayrıl",
+  "Task created": "Görev oluşturuldu",
+  "Task created and assigned.": "Görev oluşturuldu ve atandı.",
+  "Who does it": "Kim yapacak",
+  "Me": "Ben",
+  "Due date (optional)": "Son tarih (isteğe bağlı)",
+  "Create the task": "Görevi oluştur"
+}

@@ -1,0 +1,57 @@
+# Meetings inside FloBrain: LiveKit (calls), Egress (recording), Redis (for Egress), Whisper (speech
+# to text) and our meeting assistant (Zoom/Meet/Teams). Run next to the API; nothing here is AWS-specific.
+#   cp livekit.yaml.example livekit.yaml && cp egress.yaml.example egress.yaml   # then fill in keys
+#   docker compose -f deploy/meetings/docker-compose.yml up -d
+services:
+  redis:
+    image: redis:7.4-alpine
+    restart: unless-stopped
+    networks: [meetings]
+
+  livekit:
+    image: livekit/livekit-server:v1.9.11
+    command: --config /etc/livekit.yaml
+    restart: unless-stopped
+    depends_on: [redis]
+    volumes: ["./livekit.yaml:/etc/livekit.yaml:ro"]
+    ports:
+      - "7880:7880"            # signalling (put TLS in front: wss://calls.example.com)
+      - "7881:7881"            # WebRTC over TCP
+      - "50000-50100:50000-50100/udp"  # WebRTC media
+    networks: [meetings]
+
+  egress:
+    image: livekit/egress:v1.10.0
+    restart: unless-stopped
+    cap_add: [SYS_ADMIN]       # required by room composite egress
+    environment:
+      EGRESS_CONFIG_FILE: /etc/egress.yaml
+    volumes: ["./egress.yaml:/etc/egress.yaml:ro"]
+    depends_on: [redis, livekit]
+    networks: [meetings]
+
+  whisper:
+    build: ../../whisper-server
+    restart: unless-stopped
+    environment:
+      WHISPER_MODEL: ${WHISPER_MODEL:-small}
+      WHISPER_DEVICE: ${WHISPER_DEVICE:-cpu}
+      WHISPER_COMPUTE_TYPE: ${WHISPER_COMPUTE_TYPE:-int8}
+      WHISPER_API_KEY: ${WHISPER_API_KEY:?set a key; the API sends it as ASR_API_KEY}
+    volumes: ["whisper-models:/home/whisper/.cache"]
+    networks: [meetings]
+
+  meeting-bot:
+    build: ../../meeting-bot
+    restart: unless-stopped
+    shm_size: 1gb
+    environment:
+      FLOBRAIN_API_URL: ${FLOBRAIN_API_URL:?set the API's public URL}
+      FLOBRAIN_WORKER_TOKEN: ${MEETING_BOT_WORKER_TOKEN:?issue one with manage.py worker_token --kind meeting_bot}
+    networks: [meetings]
+
+volumes:
+  whisper-models:
+
+networks:
+  meetings:

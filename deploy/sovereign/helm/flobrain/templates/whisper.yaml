@@ -1,0 +1,97 @@
+{{- $w := .Values.meetings.whisper }}
+{{- if $w.enabled }}
+{{- $claim := default (printf "%s-whisper-models" .Release.Name) $w.persistence.existingClaim }}
+{{- if and $w.persistence.enabled (not $w.persistence.existingClaim) }}
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: {{ $claim }}
+  labels: {{- include "flobrain.labels" . | nindent 4 }}
+    app.kubernetes.io/component: whisper
+  annotations:
+    "helm.sh/resource-policy": keep   # model weights survive uninstall
+spec:
+  accessModes: [ReadWriteOnce]
+  {{- with $w.persistence.storageClass }}
+  storageClassName: {{ . }}
+  {{- end }}
+  resources: { requests: { storage: {{ $w.persistence.size }} } }
+---
+{{- end }}
+# Speech to text (whisper-server). Private: ClusterIP only, reachable from the API/worker (network policy).
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ .Release.Name }}-whisper
+  labels: {{- include "flobrain.labels" . | nindent 4 }}
+    app.kubernetes.io/component: whisper
+spec:
+  replicas: {{ $w.replicas }}
+  {{- if $w.persistence.enabled }}
+  strategy: { type: Recreate }   # ReadWriteOnce model volume
+  {{- end }}
+  selector:
+    matchLabels: {{- include "flobrain.selector" (dict "root" . "component" "whisper") | nindent 6 }}
+  template:
+    metadata:
+      labels: {{- include "flobrain.labels" . | nindent 8 }}
+        app.kubernetes.io/component: whisper
+    spec:
+      {{- include "flobrain.podSpec" . | nindent 6 }}
+      {{- include "flobrain.scheduling" $w | nindent 6 }}
+      volumes:
+        - { name: tmp, emptyDir: {} }
+        {{- if $w.persistence.enabled }}
+        - { name: models, persistentVolumeClaim: { claimName: {{ $claim }} } }
+        {{- else }}
+        - { name: models, emptyDir: {} }
+        {{- end }}
+      containers:
+        - name: whisper
+          image: {{ required "meetings.whisper.image.tag is required" $w.image.tag | printf "%s:%s" $w.image.repository }}
+          imagePullPolicy: {{ $w.image.pullPolicy }}
+          ports: [{ name: http, containerPort: 8000 }]
+          env:
+            - { name: WHISPER_MODEL, value: {{ $w.model | quote }} }
+            - { name: WHISPER_DEVICE, value: {{ $w.device | quote }} }
+            - { name: WHISPER_COMPUTE_TYPE, value: {{ $w.computeType | quote }} }
+            - { name: PORT, value: "8000" }
+            - { name: HOME, value: /home/whisper }
+            - { name: HF_HOME, value: /home/whisper/.cache }
+            {{- if $w.offline }}
+            - { name: HF_HUB_OFFLINE, value: "1" }
+            {{- end }}
+            - name: WHISPER_API_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: {{ default .Values.existingSecret $w.apiKeySecret.name }}
+                  key: {{ $w.apiKeySecret.key }}
+          {{- include "flobrain.containerSecurity" . | nindent 10 }}
+          volumeMounts:
+            - { name: tmp, mountPath: /tmp }
+            - { name: models, mountPath: /home/whisper/.cache }
+          # Model load can take minutes on first start.
+          startupProbe:
+            httpGet: { path: /health, port: http }
+            periodSeconds: 10
+            failureThreshold: 60
+          livenessProbe:
+            httpGet: { path: /health, port: http }
+            periodSeconds: 30
+            timeoutSeconds: 5
+          readinessProbe:
+            httpGet: { path: /health, port: http }
+            periodSeconds: 10
+          resources: {{- toYaml $w.resources | nindent 12 }}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ .Release.Name }}-whisper
+  labels: {{- include "flobrain.labels" . | nindent 4 }}
+    app.kubernetes.io/component: whisper
+spec:
+  type: ClusterIP
+  selector: {{- include "flobrain.selector" (dict "root" . "component" "whisper") | nindent 4 }}
+  ports: [{ name: http, port: 8000, targetPort: http }]
+{{- end }}

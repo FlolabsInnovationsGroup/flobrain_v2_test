@@ -22,3 +22,4 @@ class Job(models.Model):
 
     class Meta:
         db_table = "jobs_queue"
+        indexes = [models.Index(fields=["status", "run_after"], name="jobs_status_run_after")]

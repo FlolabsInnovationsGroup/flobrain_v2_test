@@ -27,6 +27,9 @@ from drf_spectacular.views import (
 urlpatterns = [
     path("admin/", admin.site.urls),
     path("api/v2/", include("flobrain.urls_v2")),
+    path("", include("platform_api.public_urls")),
+    path("", include("learning.public_urls")),
+    path("", include("sso.scim_urls")),
 
     # Existing app routes
     path("", include("users.urls")),

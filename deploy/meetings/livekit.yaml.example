@@ -1,0 +1,21 @@
+# LiveKit server for FloBrain calls. Generate a key pair once, e.g. `openssl rand -hex 16` for the key
+# name and `openssl rand -base64 32` for the secret; put the same pair in the API env
+# (LIVEKIT_API_KEY / LIVEKIT_API_SECRET) and in egress.yaml. Never commit the filled-in file.
+port: 7880
+rtc:
+  tcp_port: 7881
+  port_range_start: 50000
+  port_range_end: 50100
+  use_external_ip: true
+redis:
+  address: redis:6379
+keys:
+  REPLACE_WITH_KEY: REPLACE_WITH_SECRET
+webhook:
+  api_key: REPLACE_WITH_KEY
+  urls:
+    - https://api.example.com/api/v2/livekit/webhook
+room:
+  auto_create: false   # only FloBrain creates rooms, so an old token can't reopen an ended call
+  empty_timeout: 300
+  max_participants: 50

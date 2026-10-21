@@ -1,0 +1,36 @@
+{{- if .Values.ingress.enabled }}
+{{- $svc := printf "%s-api" .Release.Name }}
+{{- $port := .Values.api.service.port }}
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: {{ .Release.Name }}-api
+  labels: {{- include "flobrain.labels" . | nindent 4 }}
+    app.kubernetes.io/component: api
+  {{- with .Values.ingress.annotations }}
+  annotations: {{- toYaml . | nindent 4 }}
+  {{- end }}
+spec:
+  {{- with .Values.ingress.className }}
+  ingressClassName: {{ . }}
+  {{- end }}
+  {{- with .Values.ingress.tls }}
+  tls:
+    {{- range . }}
+    - secretName: {{ required "ingress.tls[].secretName is required" .secretName }}
+      hosts: {{- toYaml .hosts | nindent 8 }}
+    {{- end }}
+  {{- end }}
+  rules:
+    {{- range .Values.ingress.hosts }}
+    - host: {{ .host | quote }}
+      http:
+        paths:
+          {{- range .paths }}
+          - path: {{ .path }}
+            pathType: {{ default "Prefix" .pathType }}
+            backend:
+              service: { name: {{ $svc }}, port: { number: {{ $port }} } }
+          {{- end }}
+    {{- end }}
+{{- end }}

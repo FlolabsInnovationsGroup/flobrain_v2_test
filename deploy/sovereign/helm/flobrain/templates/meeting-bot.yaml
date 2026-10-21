@@ -1,0 +1,51 @@
+{{- $b := .Values.meetings.meetingBot }}
+{{- if $b.enabled }}
+# Meeting assistant (meeting-bot/): polls the API for sessions, joins Zoom/Meet/Teams, uploads audio.
+# One meeting per pod at a time; scale with replicas. No Service: nothing connects to it.
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ .Release.Name }}-meeting-bot
+  labels: {{- include "flobrain.labels" . | nindent 4 }}
+    app.kubernetes.io/component: meeting-bot
+spec:
+  replicas: {{ $b.replicas }}
+  selector:
+    matchLabels: {{- include "flobrain.selector" (dict "root" . "component" "meeting-bot") | nindent 6 }}
+  template:
+    metadata:
+      labels: {{- include "flobrain.labels" . | nindent 8 }}
+        app.kubernetes.io/component: meeting-bot
+    spec:
+      {{- include "flobrain.podSpec" . | nindent 6 }}
+      {{- include "flobrain.scheduling" $b | nindent 6 }}
+      # Time to leave the call cleanly on rollout or drain.
+      terminationGracePeriodSeconds: 120
+      volumes:
+        - { name: tmp, emptyDir: {} }
+        - { name: home, emptyDir: {} }
+        - { name: dshm, emptyDir: { medium: Memory, sizeLimit: {{ $b.shmSize }} } }
+      containers:
+        - name: meeting-bot
+          image: {{ required "meetings.meetingBot.image.tag is required" $b.image.tag | printf "%s:%s" $b.image.repository }}
+          imagePullPolicy: {{ $b.image.pullPolicy }}
+          env:
+            - { name: FLOBRAIN_API_URL, value: {{ default (printf "http://%s-api:%v" .Release.Name .Values.api.service.port) $b.apiUrl | quote }} }
+            - { name: POLL_SECONDS, value: {{ $b.pollSeconds | quote }} }
+            # $HOME is an emptyDir so PulseAudio and Chromium can write with a read-only root filesystem.
+            - { name: HOME, value: /home/bot }
+            - name: FLOBRAIN_WORKER_TOKEN
+              valueFrom:
+                secretKeyRef:
+                  name: {{ default .Values.existingSecret $b.tokenSecret.name }}
+                  key: {{ $b.tokenSecret.key }}
+          securityContext:
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: {{ $b.readOnlyRootFilesystem }}
+            capabilities: { drop: ["ALL"] }   # Playwright starts Chromium with --no-sandbox, so no SYS_ADMIN
+          volumeMounts:
+            - { name: tmp, mountPath: /tmp }
+            - { name: home, mountPath: /home/bot }
+            - { name: dshm, mountPath: /dev/shm }
+          resources: {{- toYaml $b.resources | nindent 12 }}
+{{- end }}

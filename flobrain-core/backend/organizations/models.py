@@ -298,3 +298,47 @@ class AuditEvent(models.Model):
 
     def delete(self, *args, **kwargs):
         raise ValidationError("AuditEvent rows cannot be deleted")
+
+
+class SkillTag(models.Model):
+    """A skill name in one org (spec 6.19). Used by assignment suggestions."""
+
+    org = models.ForeignKey(Organization, on_delete=models.CASCADE, related_name="skill_tags")
+    name = models.CharField(max_length=60)
+
+    class Meta:
+        db_table = "skill_tags"
+        constraints = [models.UniqueConstraint(fields=["org", "name"], name="unique_skill_tag")]
+
+
+class MemberSkill(models.Model):
+    org = models.ForeignKey(Organization, on_delete=models.CASCADE, related_name="member_skills")
+    user = models.ForeignKey("users.User", on_delete=models.CASCADE, related_name="member_skills")
+    skill = models.ForeignKey(SkillTag, on_delete=models.CASCADE, related_name="members")
+    confirmed_by = models.ForeignKey(
+        "users.User", on_delete=models.SET_NULL, null=True, blank=True, related_name="skills_confirmed"
+    )
+    created_at = models.DateTimeField(default=timezone.now)
+
+    class Meta:
+        db_table = "member_skills"
+        constraints = [models.UniqueConstraint(fields=["user", "skill"], name="unique_member_skill")]
+
+
+class OrgPolicy(models.Model):
+    """Org-wide AI and data policy (Decision 50, spec 6.19). Absent row = external_allowed, redaction off."""
+
+    SCOPE_EXTERNAL = "external_allowed"
+    SCOPE_PRIVATE = "private_only"
+    SCOPES = (SCOPE_EXTERNAL, SCOPE_PRIVATE)
+    REDACTION = ("off", "external_only", "always")
+
+    org = models.OneToOneField(Organization, on_delete=models.CASCADE, primary_key=True, related_name="policy")
+    inference_scope = models.CharField(max_length=20, default=SCOPE_EXTERNAL)
+    pii_redaction = models.CharField(max_length=16, default="off")
+    data_region = models.CharField(max_length=32, blank=True, default="")
+    updated_by = models.ForeignKey("users.User", on_delete=models.SET_NULL, null=True, related_name="+")
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        db_table = "org_policies"

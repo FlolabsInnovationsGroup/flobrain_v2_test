@@ -1,0 +1,20 @@
+{
+  "Demo call: no call server is connected, so the other people here are simulated. Recording produces a sample transcript by speaker.": "مكالمة تجريبية: لا يوجد خادم مكالمات متصل، لذلك المشاركون الآخرون هنا محاكاة. التسجيل ينتج نصًا تجريبيًا مقسّمًا حسب المتحدث.",
+  "{name} (you)": "{name} (أنت)",
+  "Microphone on": "الميكروفون يعمل",
+  "Muted": "الميكروفون مكتوم",
+  "Speaking": "يتحدث",
+  "Listening": "يستمع",
+  "camera on": "الكاميرا تعمل",
+  "Mute": "كتم الميكروفون",
+  "Unmute": "تشغيل الميكروفون",
+  "Turn camera off": "إيقاف الكاميرا",
+  "Turn camera on": "تشغيل الكاميرا",
+  "Leave": "مغادرة",
+  "Task created": "أُنشئت المهمة",
+  "Task created and assigned.": "أُنشئت المهمة وأُسندت.",
+  "Who does it": "من سينفذها",
+  "Me": "أنا",
+  "Due date (optional)": "تاريخ الاستحقاق (اختياري)",
+  "Create the task": "إنشاء المهمة"
+}

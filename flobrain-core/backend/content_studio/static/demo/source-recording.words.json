@@ -1,0 +1,560 @@
+[
+ {
+  "w": "This",
+  "start": 0.1,
+  "end": 0.392,
+  "speaker": "S1"
+ },
+ {
+  "w": "is",
+  "start": 0.417,
+  "end": 0.563,
+  "speaker": "S1"
+ },
+ {
+  "w": "a",
+  "start": 0.575,
+  "end": 0.648,
+  "speaker": "S1"
+ },
+ {
+  "w": "demo",
+  "start": 0.655,
+  "end": 0.946,
+  "speaker": "S1"
+ },
+ {
+  "w": "recording",
+  "start": 0.971,
+  "end": 1.627,
+  "speaker": "S1"
+ },
+ {
+  "w": "for",
+  "start": 1.684,
+  "end": 1.903,
+  "speaker": "S1"
+ },
+ {
+  "w": "FloBrain",
+  "start": 1.922,
+  "end": 2.505,
+  "speaker": "S1"
+ },
+ {
+  "w": "Content",
+  "start": 2.556,
+  "end": 3.066,
+  "speaker": "S1"
+ },
+ {
+  "w": "Studio.",
+  "start": 3.11,
+  "end": 3.621,
+  "speaker": "S1"
+ },
+ {
+  "w": "Welcome",
+  "start": 4.115,
+  "end": 4.6,
+  "speaker": "S1"
+ },
+ {
+  "w": "to",
+  "start": 4.642,
+  "end": 4.781,
+  "speaker": "S1"
+ },
+ {
+  "w": "the",
+  "start": 4.793,
+  "end": 5.001,
+  "speaker": "S1"
+ },
+ {
+  "w": "Nile",
+  "start": 5.019,
+  "end": 5.296,
+  "speaker": "S1"
+ },
+ {
+  "w": "Labs",
+  "start": 5.32,
+  "end": 5.597,
+  "speaker": "S1"
+ },
+ {
+  "w": "launch",
+  "start": 5.621,
+  "end": 6.037,
+  "speaker": "S1"
+ },
+ {
+  "w": "update.",
+  "start": 6.073,
+  "end": 6.558,
+  "speaker": "S1"
+ },
+ {
+  "w": "So,",
+  "start": 7.05,
+  "end": 7.268,
+  "speaker": "S1"
+ },
+ {
+  "w": "um,",
+  "start": 7.287,
+  "end": 7.506,
+  "speaker": "S1"
+ },
+ {
+  "w": "the",
+  "start": 7.525,
+  "end": 7.743,
+  "speaker": "S1"
+ },
+ {
+  "w": "mobile",
+  "start": 7.762,
+  "end": 8.199,
+  "speaker": "S1"
+ },
+ {
+  "w": "app",
+  "start": 8.237,
+  "end": 8.455,
+  "speaker": "S1"
+ },
+ {
+  "w": "passed",
+  "start": 8.474,
+  "end": 8.911,
+  "speaker": "S1"
+ },
+ {
+  "w": "store",
+  "start": 8.949,
+  "end": 9.313,
+  "speaker": "S1"
+ },
+ {
+  "w": "review",
+  "start": 9.344,
+  "end": 9.781,
+  "speaker": "S1"
+ },
+ {
+  "w": "last",
+  "start": 9.819,
+  "end": 10.11,
+  "speaker": "S1"
+ },
+ {
+  "w": "night.",
+  "start": 10.135,
+  "end": 10.572,
+  "speaker": "S1"
+ },
+ {
+  "w": "The",
+  "start": 12.46,
+  "end": 12.657,
+  "speaker": "S1"
+ },
+ {
+  "w": "Android",
+  "start": 12.674,
+  "end": 13.134,
+  "speaker": "S1"
+ },
+ {
+  "w": "login",
+  "start": 13.174,
+  "end": 13.502,
+  "speaker": "S1"
+ },
+ {
+  "w": "timeout",
+  "start": 13.531,
+  "end": 13.99,
+  "speaker": "S1"
+ },
+ {
+  "w": "is",
+  "start": 14.03,
+  "end": 14.162,
+  "speaker": "S1"
+ },
+ {
+  "w": "fixed,",
+  "start": 14.173,
+  "end": 14.567,
+  "speaker": "S1"
+ },
+ {
+  "w": "and",
+  "start": 14.601,
+  "end": 14.798,
+  "speaker": "S1"
+ },
+ {
+  "w": "the",
+  "start": 14.816,
+  "end": 15.013,
+  "speaker": "S1"
+ },
+ {
+  "w": "crash",
+  "start": 15.03,
+  "end": 15.358,
+  "speaker": "S1"
+ },
+ {
+  "w": "rate",
+  "start": 15.387,
+  "end": 15.649,
+  "speaker": "S1"
+ },
+ {
+  "w": "is",
+  "start": 15.672,
+  "end": 15.803,
+  "speaker": "S1"
+ },
+ {
+  "w": "down",
+  "start": 15.815,
+  "end": 16.078,
+  "speaker": "S1"
+ },
+ {
+  "w": "by",
+  "start": 16.1,
+  "end": 16.232,
+  "speaker": "S1"
+ },
+ {
+  "w": "half.",
+  "start": 16.243,
+  "end": 16.571,
+  "speaker": "S1"
+ },
+ {
+  "w": "Uh,",
+  "start": 17.05,
+  "end": 17.273,
+  "speaker": "S1"
+ },
+ {
+  "w": "we",
+  "start": 17.293,
+  "end": 17.441,
+  "speaker": "S1"
+ },
+ {
+  "w": "also",
+  "start": 17.454,
+  "end": 17.752,
+  "speaker": "S1"
+ },
+ {
+  "w": "finished",
+  "start": 17.778,
+  "end": 18.373,
+  "speaker": "S1"
+ },
+ {
+  "w": "the",
+  "start": 18.425,
+  "end": 18.648,
+  "speaker": "S1"
+ },
+ {
+  "w": "Arabic",
+  "start": 18.668,
+  "end": 19.114,
+  "speaker": "S1"
+ },
+ {
+  "w": "screens.",
+  "start": 19.153,
+  "end": 19.748,
+  "speaker": "S1"
+ },
+ {
+  "w": "Here",
+  "start": 21.85,
+  "end": 22.114,
+  "speaker": "S1"
+ },
+ {
+  "w": "is",
+  "start": 22.137,
+  "end": 22.269,
+  "speaker": "S1"
+ },
+ {
+  "w": "the",
+  "start": 22.281,
+  "end": 22.479,
+  "speaker": "S1"
+ },
+ {
+  "w": "big",
+  "start": 22.496,
+  "end": 22.694,
+  "speaker": "S1"
+ },
+ {
+  "w": "news.",
+  "start": 22.712,
+  "end": 23.042,
+  "speaker": "S1"
+ },
+ {
+  "w": "We",
+  "start": 23.071,
+  "end": 23.203,
+  "speaker": "S1"
+ },
+ {
+  "w": "launch",
+  "start": 23.214,
+  "end": 23.61,
+  "speaker": "S1"
+ },
+ {
+  "w": "at",
+  "start": 23.645,
+  "end": 23.777,
+  "speaker": "S1"
+ },
+ {
+  "w": "the",
+  "start": 23.789,
+  "end": 23.987,
+  "speaker": "S1"
+ },
+ {
+  "w": "end",
+  "start": 24.004,
+  "end": 24.202,
+  "speaker": "S1"
+ },
+ {
+  "w": "of",
+  "start": 24.219,
+  "end": 24.351,
+  "speaker": "S1"
+ },
+ {
+  "w": "next",
+  "start": 24.363,
+  "end": 24.627,
+  "speaker": "S1"
+ },
+ {
+  "w": "month,",
+  "start": 24.65,
+  "end": 25.046,
+  "speaker": "S1"
+ },
+ {
+  "w": "in",
+  "start": 25.081,
+  "end": 25.213,
+  "speaker": "S1"
+ },
+ {
+  "w": "English",
+  "start": 25.224,
+  "end": 25.687,
+  "speaker": "S1"
+ },
+ {
+  "w": "and",
+  "start": 25.727,
+  "end": 25.925,
+  "speaker": "S1"
+ },
+ {
+  "w": "Arabic.",
+  "start": 25.942,
+  "end": 26.405,
+  "speaker": "S1"
+ },
+ {
+  "w": "Like,",
+  "start": 26.895,
+  "end": 27.272,
+  "speaker": "S1"
+ },
+ {
+  "w": "every",
+  "start": 27.304,
+  "end": 27.681,
+  "speaker": "S1"
+ },
+ {
+  "w": "screen",
+  "start": 27.713,
+  "end": 28.165,
+  "speaker": "S1"
+ },
+ {
+  "w": "was",
+  "start": 28.205,
+  "end": 28.43,
+  "speaker": "S1"
+ },
+ {
+  "w": "tested",
+  "start": 28.45,
+  "end": 28.902,
+  "speaker": "S1"
+ },
+ {
+  "w": "with",
+  "start": 28.941,
+  "end": 29.242,
+  "speaker": "S1"
+ },
+ {
+  "w": "real",
+  "start": 29.269,
+  "end": 29.57,
+  "speaker": "S1"
+ },
+ {
+  "w": "users",
+  "start": 29.596,
+  "end": 29.972,
+  "speaker": "S1"
+ },
+ {
+  "w": "in",
+  "start": 30.005,
+  "end": 30.156,
+  "speaker": "S1"
+ },
+ {
+  "w": "Cairo.",
+  "start": 30.169,
+  "end": 30.621,
+  "speaker": "S1"
+ },
+ {
+  "w": "If",
+  "start": 32.31,
+  "end": 32.456,
+  "speaker": "S1"
+ },
+ {
+  "w": "you",
+  "start": 32.468,
+  "end": 32.687,
+  "speaker": "S1"
+ },
+ {
+  "w": "want",
+  "start": 32.706,
+  "end": 32.997,
+  "speaker": "S1"
+ },
+ {
+  "w": "early",
+  "start": 33.022,
+  "end": 33.386,
+  "speaker": "S1"
+ },
+ {
+  "w": "access,",
+  "start": 33.418,
+  "end": 33.927,
+  "speaker": "S1"
+ },
+ {
+  "w": "sign",
+  "start": 33.971,
+  "end": 34.262,
+  "speaker": "S1"
+ },
+ {
+  "w": "up",
+  "start": 34.288,
+  "end": 34.433,
+  "speaker": "S1"
+ },
+ {
+  "w": "on",
+  "start": 34.446,
+  "end": 34.592,
+  "speaker": "S1"
+ },
+ {
+  "w": "our",
+  "start": 34.604,
+  "end": 34.823,
+  "speaker": "S1"
+ },
+ {
+  "w": "website",
+  "start": 34.842,
+  "end": 35.351,
+  "speaker": "S1"
+ },
+ {
+  "w": "today.",
+  "start": 35.395,
+  "end": 35.832,
+  "speaker": "S1"
+ },
+ {
+  "w": "Thanks",
+  "start": 36.32,
+  "end": 36.741,
+  "speaker": "S1"
+ },
+ {
+  "w": "for",
+  "start": 36.778,
+  "end": 36.988,
+  "speaker": "S1"
+ },
+ {
+  "w": "watching,",
+  "start": 37.006,
+  "end": 37.638,
+  "speaker": "S1"
+ },
+ {
+  "w": "and",
+  "start": 37.693,
+  "end": 37.903,
+  "speaker": "S1"
+ },
+ {
+  "w": "see",
+  "start": 37.921,
+  "end": 38.132,
+  "speaker": "S1"
+ },
+ {
+  "w": "you",
+  "start": 38.15,
+  "end": 38.36,
+  "speaker": "S1"
+ },
+ {
+  "w": "at",
+  "start": 38.379,
+  "end": 38.519,
+  "speaker": "S1"
+ },
+ {
+  "w": "launch.",
+  "start": 38.531,
+  "end": 39.022,
+  "speaker": "S1"
+ }
+]

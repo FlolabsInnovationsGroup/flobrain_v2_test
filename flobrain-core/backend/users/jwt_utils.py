@@ -21,6 +21,7 @@ def make_access_token(user_id: str) -> str:
         "jti": uuid.uuid4().hex,
         "exp": int(time.time()) + ACCESS_LIFETIME,
         "iat": int(time.time()),
+        "iat_ms": int(time.time() * 1000),
     }
     return jwt.encode(
         payload,
@@ -36,12 +37,33 @@ def make_refresh_token(user_id: str) -> str:
         "jti": uuid.uuid4().hex,
         "exp": int(time.time()) + REFRESH_LIFETIME,
         "iat": int(time.time()),
+        "iat_ms": int(time.time() * 1000),
     }
     return jwt.encode(
         payload,
         settings.SECRET_KEY,
         algorithm=ALGORITHM,
     )
+
+
+def issued_before_password_change(payload: dict, user) -> bool:
+    """True when the token predates the user's last password change.
+
+    `iat` has one-second precision, so a token minted right after a change
+    can carry the same second. New tokens also carry `iat_ms`; older tokens
+    without it are compared at the start of their second (rejected if the
+    change happened in that same second).
+    """
+    changed_at = getattr(user, "password_changed_at", None)
+    if not changed_at:
+        return False
+    issued_ms = payload.get("iat_ms")
+    if issued_ms is None:
+        iat = payload.get("iat")
+        if iat is None:
+            return False
+        issued_ms = int(iat) * 1000
+    return int(issued_ms) < int(changed_at.timestamp() * 1000)
 
 
 def decode_token(token: str) -> Optional[dict]:

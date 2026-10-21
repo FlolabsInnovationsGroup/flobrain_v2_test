@@ -17,6 +17,8 @@ export function clearV2Tokens() {
   if (typeof window === "undefined") return;
   localStorage.removeItem(ACCESS_TOKEN_KEY);
   localStorage.removeItem(REFRESH_TOKEN_KEY);
+  localStorage.removeItem("flobrain_outbox_v1"); // queued messages never outlive the session (review 10-13)
+  void navigator.serviceWorker?.getRegistration?.().then((reg) => reg?.pushManager?.getSubscription()).then((sub) => sub?.unsubscribe()).catch(() => undefined);
 }
 
 export function v2Client() {

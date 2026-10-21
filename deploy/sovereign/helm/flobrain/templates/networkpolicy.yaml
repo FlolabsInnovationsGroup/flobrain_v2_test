@@ -1,0 +1,128 @@
+{{- if .Values.networkPolicy.enabled }}
+{{- $np := .Values.networkPolicy }}
+{{- $rel := .Release.Name }}
+{{- $whisper := .Values.meetings.whisper.enabled }}
+{{- $bot := .Values.meetings.meetingBot.enabled }}
+# Egress allowlist: no inference or data leaves the cluster from the API, worker, cron or migrate pods.
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: {{ $rel }}-egress
+  labels: {{- include "flobrain.labels" . | nindent 4 }}
+spec:
+  podSelector:
+    matchLabels: { app.kubernetes.io/instance: {{ $rel }} }
+    # Whisper and the meeting bot have their own egress policies below.
+    matchExpressions:
+      - { key: app.kubernetes.io/component, operator: NotIn, values: [whisper, meeting-bot] }
+  policyTypes: [Egress]
+  egress:
+    - to:
+        - namespaceSelector: {}
+          podSelector:
+            matchLabels: {{- toYaml $np.dns.podLabels | nindent 14 }}
+      ports: [{ protocol: UDP, port: 53 }, { protocol: TCP, port: 53 }]
+    {{- range $np.services }}
+    # {{ .name }}
+    - to:
+        - podSelector:
+            matchLabels: {{- toYaml .podLabels | nindent 14 }}
+      ports: [{ protocol: TCP, port: {{ .port }} }]
+    {{- end }}
+    {{- if $whisper }}
+    - to:
+        - podSelector:
+            matchLabels: {{- include "flobrain.selector" (dict "root" $ "component" "whisper") | nindent 14 }}
+      ports: [{ protocol: TCP, port: 8000 }]
+    {{- end }}
+    {{- with $np.extraEgress }}
+    {{- toYaml . | nindent 4 }}
+    {{- end }}
+---
+# Default deny: no pod of this release accepts traffic unless a policy below allows it.
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: {{ $rel }}-default-deny-ingress
+  labels: {{- include "flobrain.labels" . | nindent 4 }}
+spec:
+  podSelector:
+    matchLabels: { app.kubernetes.io/instance: {{ $rel }} }
+  policyTypes: [Ingress]
+---
+# Only the API accepts outside traffic, and only from the listed sources (plus the meeting bot).
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: {{ $rel }}-ingress
+  labels: {{- include "flobrain.labels" . | nindent 4 }}
+spec:
+  podSelector:
+    matchLabels: {{- include "flobrain.selector" (dict "root" $ "component" "api") | nindent 6 }}
+  policyTypes: [Ingress]
+  ingress:
+    - from:
+        {{- with $np.ingressFrom }}
+        {{- toYaml . | nindent 8 }}
+        {{- end }}
+        {{- if $bot }}
+        - podSelector:
+            matchLabels: {{- include "flobrain.selector" (dict "root" $ "component" "meeting-bot") | nindent 14 }}
+        {{- end }}
+      ports: [{ protocol: TCP, port: 8000 }]
+{{- if $whisper }}
+---
+# Whisper: reachable only from this release's API, worker and cron pods; DNS out (plus extraEgress).
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: {{ $rel }}-whisper
+  labels: {{- include "flobrain.labels" . | nindent 4 }}
+spec:
+  podSelector:
+    matchLabels: {{- include "flobrain.selector" (dict "root" $ "component" "whisper") | nindent 6 }}
+  policyTypes: [Ingress, Egress]
+  ingress:
+    - from:
+        - podSelector:
+            matchLabels: { app.kubernetes.io/instance: {{ $rel }} }
+            matchExpressions:
+              - { key: app.kubernetes.io/component, operator: In, values: [api, worker, cronjob] }
+      ports: [{ protocol: TCP, port: 8000 }]
+  egress:
+    - to:
+        - namespaceSelector: {}
+          podSelector:
+            matchLabels: {{- toYaml $np.dns.podLabels | nindent 14 }}
+      ports: [{ protocol: UDP, port: 53 }, { protocol: TCP, port: 53 }]
+    {{- with .Values.meetings.whisper.extraEgress }}
+    {{- toYaml . | nindent 4 }}
+    {{- end }}
+{{- end }}
+{{- if $bot }}
+---
+# Meeting bot: DNS, the API, and the meeting platforms (meetings.meetingBot.egress). Nothing comes in.
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: {{ $rel }}-meeting-bot
+  labels: {{- include "flobrain.labels" . | nindent 4 }}
+spec:
+  podSelector:
+    matchLabels: {{- include "flobrain.selector" (dict "root" $ "component" "meeting-bot") | nindent 6 }}
+  policyTypes: [Egress]
+  egress:
+    - to:
+        - namespaceSelector: {}
+          podSelector:
+            matchLabels: {{- toYaml $np.dns.podLabels | nindent 14 }}
+      ports: [{ protocol: UDP, port: 53 }, { protocol: TCP, port: 53 }]
+    - to:
+        - podSelector:
+            matchLabels: {{- include "flobrain.selector" (dict "root" $ "component" "api") | nindent 14 }}
+      ports: [{ protocol: TCP, port: 8000 }]
+    {{- with .Values.meetings.meetingBot.egress }}
+    {{- toYaml . | nindent 4 }}
+    {{- end }}
+{{- end }}
+{{- end }}

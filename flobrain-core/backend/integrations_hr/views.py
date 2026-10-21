@@ -33,12 +33,19 @@ class HRApplicantWebhookView(APIView):
         email = (data.get("email") or "").strip().lower()
         if not email:
             return Response({"error": "invalid", "details": "email is required"}, status=400)
-        membership, user, _temp = register_member(
-            org,
-            None,
-            email,
-            username=data.get("full_name") or "",
-        )
+        from django.db import transaction
+
+        from billing_v2.entitlements import seat_blocked
+
+        with transaction.atomic():
+            if seat_blocked(org, email=email) is not None:
+                return Response({"error": "seat_limit", "details": "All seats are taken"}, status=409)
+            membership, user, _temp = register_member(
+                org,
+                None,
+                email,
+                username=data.get("full_name") or "",
+            )
         applicant = HRApplicant.objects.create(
             org=org,
             email=email,

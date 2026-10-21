@@ -25,3 +25,21 @@ describe("mission control logic", () => {
     expect(isMissionControlEmpty({ assigned_open: 1, accomplishments: [], blockers: [], deadlines: [] })).toBe(false);
   });
 });
+
+import { drilldownTasks, peopleLine } from "./missionControl";
+
+describe("mission control drill-down", () => {
+  it("shows titles, not ids", () => {
+    const row = {
+      user_id: "u1",
+      open_tasks: 1,
+      done_tasks: 0,
+      seconds_7d: 0,
+      task_ids: ["11111111-aaaa"],
+      tasks: [{ id: "11111111-aaaa", title: "Fix login", status: "in_progress", due_on: null }],
+    };
+    expect(drilldownTasks(row).map((t) => t.title)).toEqual(["Fix login"]);
+    expect(drilldownTasks({ ...row, tasks: undefined })[0].title).toBe("11111111");
+    expect(peopleLine([{ name: "Ada" }, { name: "" }, { name: "Ben" }])).toBe("Ada, Ben");
+  });
+});

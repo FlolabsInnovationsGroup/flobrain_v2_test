@@ -15,7 +15,7 @@ ACTIVE = OrgMembership.STATUS_ACTIVE
 
 def register_member(org, actor, email: str, *, org_role=OrgMembership.ORG_ROLE_MEMBER, username=""):
     """Q34: attach to the existing users row when the email already exists."""
-    user = User.objects.filter(email=email).first()
+    user = User.objects.filter(email__iexact=email).first()  # review: a mixed-case stored email is the same person
     created = False
     temp_password = None
     if user is None:

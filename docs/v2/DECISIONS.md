@@ -166,6 +166,12 @@ Each item: decision, reason, how to reverse.
 
 **E36. A flag that is off returns 501.** New Phase 7 endpoints use `501` and `{"error": "not_implemented", "details": "..."}` when their feature flag is off. `503` is for a dependency that is down while the feature is on. The realtime ticket already shipped as 503 while its flag is off; that path stays until a later change. Decided 2026-10-20 with the Phase 7 plan.
 
+**E37. Room access follows live membership; DMs and group rooms are private.** 2026-10-20 (found while preparing 7i). Leaving a team or a project removes the user from that team's room and from project rooms that no longer include them (`post_delete` signals plus pruning in `ensure_*`). Owners and admins can open team, project and org rooms without being members, so they can moderate. They cannot read `direct` or `group` rooms they are not in. Every list, search and retrieval path uses `rooms.services.accessible_rooms`. Q40 asks product/legal to confirm the DM rule.
+
+**E38. BYOK keys go only to allowlisted HTTPS hosts, and org keys are for managers.** 2026-10-20 (7k). A customer key is sent only to a host in `BYOK_ALLOWED_HOSTS` over HTTPS, with redirects off, so a key cannot be used to reach an internal address or be forwarded. Org keys are visible and usable by `credential.manage` holders (owner, admin), as in `PHASE_7_PLAN.md`. Whether members may use an org key is Q41. Knowledge ask and translation still use the platform `direct` key only.
+
+**E39. The person a proposal was made for approves it, and reports are built from rows.** 2026-10-20 (8c/8d). Decision 33 says FloBrain shows the approval card to the user; nobody else can decide another person's proposal (404). An approval re-checks the target for the approver at that moment, and a lost permission leaves the proposal open rather than failing it. Team reports are deterministic drafts that cite task and time-entry ids; a model rewrite can be added later behind the same citations.
+
 ### Deployment
 
 **E26. Container command changes are infra changes.** The Dockerfile runs Django's development server (`runserver`). Decided in principle 2026-10-20 (Q29): switch to gunicorn with the first V2 deploy, through staging, in the ECS task definition. Not applied from this branch. ASGI/uvicorn waits until Channels lands.

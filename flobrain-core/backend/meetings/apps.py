@@ -7,4 +7,4 @@ class MeetingsConfig(AppConfig):
     verbose_name = "Meetings"
 
     def ready(self):
-        from meetings import jobs  # noqa: F401
+        from meetings import jobs, signals  # noqa: F401

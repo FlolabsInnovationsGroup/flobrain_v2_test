@@ -86,10 +86,14 @@ class LosslessContextAssembler:
             
             def _fetch_node_payload(node: MemoryNode) -> Tuple[str, str]:
                 try:
-                    res = retrieve_from_cold_storage(node)
+                    # The adapter expects the vault URI string, not the node (Phase 7i fix).
+                    vault_uri = (node.metadata or {}).get("vault_uri", "")
+                    if not vault_uri:
+                        return node.id, (node.metadata or {}).get("raw_text", "")
+                    res = retrieve_from_cold_storage(vault_uri)
                     if res and "metadata" in res and "raw_text" in res["metadata"]:
                         return node.id, res["metadata"]["raw_text"]
-                    return node.id, node.metadata.get("raw_text", "")
+                    return node.id, (node.metadata or {}).get("raw_text", "")
                 except Exception as e:
                     logger.error(f"[Assembler] Critical error downloading node {node.id}: {e}")
                     return node.id, node.metadata.get("raw_text", "")

@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useState } from "react";
 
 import { ScreenBody } from "@/components/v2/screens/ScreenBody";
+import { useTr } from "@/i18n/phrases";
 import { v2Client } from "@/lib/v2/client";
 import { weeklyTotalMatchesEntries } from "@/lib/v2/screens/reports";
 import { screenStateFromHttp, type ScreenState } from "@/lib/v2/screens/status";
@@ -10,15 +11,15 @@ import { useWorkspaceOrg } from "@/lib/v2/useWorkspaceOrg";
 
 export function ReportsScreen({ orgSlug }: { orgSlug: string }) {
   const { orgId, state: orgState, error: orgError } = useWorkspaceOrg(orgSlug);
+  const tr = useTr();
   const [seconds, setSeconds] = useState(0);
   const [entries, setEntries] = useState(0);
   const [matches, setMatches] = useState(true);
-  const [state, setState] = useState<ScreenState>("loading");
+  const [loadState, setState] = useState<ScreenState>("loading");
   const [error, setError] = useState<string | null>(null);
 
-  const load = useCallback(() => {
+  const fetchNow = useCallback(() => {
     if (!orgId) return;
-    setState("loading");
     Promise.all([v2Client().reportMe(orgId, "week"), v2Client().timeEntries(orgId)])
       .then(([report, list]) => {
         setSeconds(report.seconds);
@@ -32,23 +33,30 @@ export function ReportsScreen({ orgSlug }: { orgSlug: string }) {
         setState(report.entries === 0 ? "empty" : "ready");
       })
       .catch((err: { response?: { status?: number } }) => {
-        setError("Could not load reports");
+        setError(tr("Could not load reports"));
         setState(screenStateFromHttp(err.response?.status ?? 500));
       });
-  }, [orgId]);
+  }, [orgId, tr]);
+
+  // Until the workspace resolves, show its state. The first fetch starts in "loading"; setState runs only in callbacks.
+  const state = orgState === "ready" ? loadState : orgState;
+
+  const load = useCallback(() => {
+    setState("loading");
+    fetchNow();
+  }, [fetchNow]);
 
   useEffect(() => {
-    if (orgState === "ready") load();
-    else setState(orgState);
-  }, [orgState, load]);
+    if (orgState === "ready") fetchNow();
+  }, [orgState, fetchNow]);
 
   return (
     <section>
-      <h1 className="mb-4 text-2xl font-semibold">Weekly report</h1>
-      <ScreenBody state={state} error={error || orgError} emptyLabel="No time logged this week" onRetry={load}>
-        <p>{seconds} seconds across {entries} entries</p>
+      <h1 className="mb-4 text-2xl font-semibold">{tr("Weekly report")}</h1>
+      <ScreenBody state={state} error={error || orgError} emptyLabel={tr("No time logged this week")} onRetry={load}>
+        <p>{tr("{seconds} seconds across {entries} entries", { seconds, entries })}</p>
         <p className="text-sm text-[color:var(--fb-v2-text-muted)]">
-          {matches ? "Totals match time entries" : "Totals do not match time entries"}
+          {matches ? tr("Totals match time entries") : tr("Totals do not match time entries")}
         </p>
       </ScreenBody>
     </section>
