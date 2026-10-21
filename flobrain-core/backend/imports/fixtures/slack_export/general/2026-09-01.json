@@ -1,0 +1,47 @@
+[
+ {
+  "type": "message",
+  "subtype": "channel_join",
+  "ts": "1788246000.000000",
+  "user": "U07MONA",
+  "text": "<@U07MONA> has joined the channel"
+ },
+ {
+  "type": "message",
+  "ts": "1788267120.000000",
+  "user": "U01NADIA",
+  "text": "Good morning everyone. Reminder: all-hands on Thursday at 11:00.",
+  "user_profile": {
+   "real_name": "Nadia Hassan",
+   "display_name": "nadia"
+  },
+  "reactions": [
+   {
+    "name": "tada",
+    "users": [
+     "U06KARIM"
+    ],
+    "count": 1
+   }
+  ],
+  "replies": [
+   {
+    "user": "U01NADIA",
+    "ts": "1788285360.000000"
+   },
+   {
+    "user": "U05SARA",
+    "ts": "1788332880.000000"
+   }
+  ],
+  "reply_count": 2
+ },
+ {
+  "type": "message",
+  "ts": "1788285360.000000",
+  "user": "U01NADIA",
+  "text": "Agreed.",
+  "thread_ts": "1788267120.000000",
+  "parent_user_id": "U01NADIA"
+ }
+]

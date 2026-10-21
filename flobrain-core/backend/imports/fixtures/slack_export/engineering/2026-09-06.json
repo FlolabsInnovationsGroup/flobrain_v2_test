@@ -1,0 +1,46 @@
+[
+ {
+  "type": "message",
+  "ts": "1788680580.000000",
+  "user": "U03LAYLA",
+  "text": "Works for me.",
+  "thread_ts": "1788587280.000000",
+  "parent_user_id": "U06KARIM"
+ },
+ {
+  "type": "message",
+  "ts": "1788687660.000000",
+  "user": "U04YOUSSEF",
+  "text": "I'll check this afternoon.",
+  "thread_ts": "1788585180.000000",
+  "parent_user_id": "U02OMAR"
+ },
+ {
+  "type": "message",
+  "ts": "1788703080.000000",
+  "user": "U06KARIM",
+  "text": "I'm moving the API timeouts to 15 seconds.",
+  "user_profile": {
+   "real_name": "Karim Fawzy",
+   "display_name": "karim"
+  },
+  "reactions": [
+   {
+    "name": "thumbsup",
+    "users": [
+     "U02OMAR",
+     "U04YOUSSEF"
+    ],
+    "count": 2
+   }
+  ]
+ },
+ {
+  "type": "message",
+  "ts": "1788715320.000000",
+  "user": "U02OMAR",
+  "text": "Agreed.",
+  "thread_ts": "1788285240.000000",
+  "parent_user_id": "U06KARIM"
+ }
+]

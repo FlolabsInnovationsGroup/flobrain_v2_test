@@ -1,0 +1,28 @@
+[
+ {
+  "type": "message",
+  "ts": "1789371660.000000",
+  "user": "U03LAYLA",
+  "text": "We need a decision on the analytics SDK by Wednesday.",
+  "user_profile": {
+   "real_name": "Layla Mansour",
+   "display_name": "layla"
+  }
+ },
+ {
+  "type": "message",
+  "ts": "1789377480.000000",
+  "user": "U04YOUSSEF",
+  "text": "Done, please take a look.",
+  "thread_ts": "1788522480.000000",
+  "parent_user_id": "U06KARIM"
+ },
+ {
+  "type": "message",
+  "ts": "1789392420.000000",
+  "user": "U06KARIM",
+  "text": "Done, please take a look.",
+  "thread_ts": "1788850860.000000",
+  "parent_user_id": "U06KARIM"
+ }
+]

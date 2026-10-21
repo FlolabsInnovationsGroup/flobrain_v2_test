@@ -4,6 +4,10 @@ Read tools answer directly. Write tools only create an ``ActionProposal`` that
 the token's owner approves in FloBrain (Decision 33). The token needs the
 ``mcp`` scope plus the tool's own scope. Tool names use ``_`` (``tasks_list``)
 for client compatibility; they map to the ``ToolDefinition`` keys.
+
+Growth round M1 (flag ``mcp_hub``): OAuth 2.1 access tokens (``platform_api.oauth_mcp``) work
+here next to PATs, more tools (``platform_api.mcp_tools_extra``), MCP tool annotations, and a
+call log with redacted arguments (``platform_api.mcp_hub``).
 """
 
 import json
@@ -11,7 +15,7 @@ import json
 from django.http import HttpResponse, JsonResponse
 from rest_framework.views import APIView
 
-from platform_api.authentication import PATAuthentication
+from platform_api.oauth_mcp import MCPAuthentication, metadata_url
 from platform_api.public_views import PATThrottle, PATUserThrottle
 
 PROTOCOL = "2025-06-18"
@@ -56,8 +60,33 @@ TOOLS = {
 }
 
 
+def _spec(name):
+    """A base tool, or a hub tool (``mcp_tools_extra``); availability is checked by the caller."""
+    from platform_api import mcp_tools_extra
+
+    return TOOLS.get(name) or mcp_tools_extra.TOOLS.get(name)
+
+
+def _membership(org, user):
+    from organizations.models import OrgMembership
+
+    return OrgMembership.objects.filter(org=org, user=user).first()
+
+
+def _offered(user, token):
+    """Tool names this token may see: its scopes, plus hub tools while their flags are on."""
+    from platform_api import mcp_tools_extra
+
+    names = [n for n, spec in TOOLS.items() if spec["scope"] in token.scopes]
+    membership = _membership(token.org, user)
+    for name, spec in mcp_tools_extra.TOOLS.items():
+        if spec["scope"] in token.scopes and mcp_tools_extra.available(name, user, token.org, membership):
+            names.append(name)
+    return names
+
+
 def _schema(name):
-    tool = TOOLS[name]
+    tool = _spec(name)
     if "action" in tool:
         from actions.registry import TOOLS as ACTIONS
 
@@ -80,8 +109,14 @@ def _tool_result(data, is_error=False):
 def _call(user, token, name, args):
     from actions.schema import SchemaError, validate
 
+    from platform_api import mcp_tools_extra
+
     org = token.org
     tool = TOOLS.get(name)
+    if tool is None and name in mcp_tools_extra.TOOLS:
+        if not mcp_tools_extra.available(name, user, org, _membership(org, user)):
+            return _tool_result({"error": "unknown_tool"}, True)
+        tool = mcp_tools_extra.TOOLS[name]
     if tool is None:
         return _tool_result({"error": "unknown_tool"}, True)
     if tool["scope"] not in token.scopes:
@@ -117,6 +152,9 @@ def _call(user, token, name, args):
         return _tool_result({"days": args.get("days", 7), "hours": round(seconds / 3600, 2)})
     if name == "knowledge_search":
         return _knowledge(user, org, args["query"])
+    if name in mcp_tools_extra.TOOLS and "action" not in tool:
+        data, is_error = mcp_tools_extra.handle(user, org, name, args)
+        return _tool_result(data, is_error)
     # write tools → proposals only
     from actions.service import ActionDenied, check, payload
     from organizations.flags import effective_flag
@@ -125,6 +163,10 @@ def _call(user, token, name, args):
     membership = OrgMembership.objects.filter(org=org, user=user).first()
     if not effective_flag(org, membership, "ai_actions", default=False):
         return _tool_result({"error": "not_available", "details": "approved actions are not enabled"}, True)
+    from actions.service import _flag_allows
+
+    if not _flag_allows(user, org, tool["action"]):
+        return _tool_result({"error": "not_available", "details": "this feature is not enabled"}, True)
     try:
         summary = check(tool["action"], user, org, args)
     except ActionDenied as exc:
@@ -171,20 +213,37 @@ def _knowledge(user, org, query):
     except EmbeddingError:
         return _tool_result({"error": "embeddings_unavailable"}, True)
     hits = retrieve(user, org, vector, embedder.info.model, store, k=8)
-    return _tool_result({"results": citations(hits)})
+    results = citations(hits)
+    # Cited snippets: "[n] title: excerpt", so a client can quote and cite without parsing.
+    snippets = [f"[{r['n']}] {r['title']}: {r['excerpt']}" for r in results]
+    return _tool_result({"results": results, "snippets": snippets})
+
+
+def _client_label(token):
+    from platform_api.models import OAuthAccessToken
+
+    if isinstance(token, OAuthAccessToken):
+        return token.grant.client.name, token.grant
+    return f"Personal token: {token.name}"[:80], None
+
+
+def _unauthorized(request, message):
+    response = JsonResponse(_err(None, -32001, message), status=401)
+    response["WWW-Authenticate"] = f'Bearer resource_metadata="{metadata_url(request)}"'
+    return response
 
 
 class MCPView(APIView):
-    authentication_classes = [PATAuthentication]
+    authentication_classes = [MCPAuthentication]
     permission_classes = []
     throttle_classes = [PATThrottle, PATUserThrottle]
 
     def post(self, request):
-        from platform_api.models import PersonalAccessToken
+        from platform_api.models import OAuthAccessToken, PersonalAccessToken
 
         token = request.auth
-        if not isinstance(token, PersonalAccessToken):
-            return JsonResponse(_err(None, -32001, "a personal access token is required"), status=401)
+        if not isinstance(token, (PersonalAccessToken, OAuthAccessToken)):
+            return _unauthorized(request, "a personal access token is required")
         if "mcp" not in (token.scopes or []):
             return JsonResponse(_err(None, -32001, "token lacks the mcp scope"), status=403)
         msg = request.data if isinstance(request.data, dict) else None
@@ -200,16 +259,20 @@ class MCPView(APIView):
         if method == "ping":
             return JsonResponse(_ok(rid, {}))
         if method == "tools/list":
-            tools = [
-                {
-                    "name": name,
-                    "description": spec["description"],
-                    "inputSchema": _schema(name),
-                    "annotations": {"readOnlyHint": spec["readOnly"]},
-                }
-                for name, spec in TOOLS.items()
-                if spec["scope"] in token.scopes
-            ]
+            from platform_api.mcp_tools_extra import annotations
+
+            tools = []
+            for name in _offered(request.user, token):
+                spec = _spec(name)
+                tools.append(
+                    {
+                        "name": name,
+                        "title": annotations(name, spec)["title"],
+                        "description": spec["description"],
+                        "inputSchema": _schema(name),
+                        "annotations": annotations(name, spec),
+                    }
+                )
             return JsonResponse(_ok(rid, {"tools": tools}))
         if method == "tools/call":
             if not isinstance(params, dict) or not isinstance(params.get("name"), str):
@@ -217,5 +280,15 @@ class MCPView(APIView):
             args = params.get("arguments") or {}
             if not isinstance(args, dict):
                 return JsonResponse(_err(rid, -32602, "params.arguments must be an object"))
-            return JsonResponse(_ok(rid, _call(request.user, token, params["name"], args)))
+            from platform_api import mcp_hub
+
+            timer = mcp_hub.Timer().__enter__()
+            result = _call(request.user, token, params["name"], args)
+            client, grant = _client_label(token)
+            structured = result.get("structuredContent") if isinstance(result.get("structuredContent"), dict) else {}
+            mcp_hub.log_call(
+                token.org, request.user, params["name"], not result.get("isError"), error=structured.get("error", "") if result.get("isError") else "",
+                duration_ms=timer.elapsed_ms, args=args, client_name=client, grant=grant,
+            )
+            return JsonResponse(_ok(rid, result))
         return JsonResponse(_err(rid, -32601, "method not found"))

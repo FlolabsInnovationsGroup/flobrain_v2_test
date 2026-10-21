@@ -1,0 +1,27 @@
+[
+ {
+  "type": "message",
+  "ts": "1788335460.000000",
+  "user": "U05SARA",
+  "text": "Done, please take a look.",
+  "thread_ts": "1788251100.000000",
+  "parent_user_id": "U07MONA"
+ },
+ {
+  "type": "message",
+  "ts": "1788354960.000000",
+  "user": "U07MONA",
+  "text": "Let's test the flow with three customers next week.",
+  "user_profile": {
+   "real_name": "Mona Saleh",
+   "display_name": "mona"
+  },
+  "replies": [
+   {
+    "user": "U05SARA",
+    "ts": "1789055100.000000"
+   }
+  ],
+  "reply_count": 1
+ }
+]

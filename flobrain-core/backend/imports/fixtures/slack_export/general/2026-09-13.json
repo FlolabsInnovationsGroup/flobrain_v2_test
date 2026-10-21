@@ -1,0 +1,73 @@
+[
+ {
+  "type": "message",
+  "ts": "1789283400.000000",
+  "user": "U07MONA",
+  "text": "Water delivery comes on Sunday morning.",
+  "user_profile": {
+   "real_name": "Mona Saleh",
+   "display_name": "mona"
+  },
+  "reactions": [
+   {
+    "name": "heart",
+    "users": [
+     "U06KARIM",
+     "U01NADIA"
+    ],
+    "count": 2
+   }
+  ]
+ },
+ {
+  "type": "message",
+  "ts": "1789288440.000000",
+  "user": "U06KARIM",
+  "text": "Customer feedback from the pilot is in the shared folder: <https://example.com/demo/feedback|pilot feedback>",
+  "user_profile": {
+   "real_name": "Karim Fawzy",
+   "display_name": "karim"
+  },
+  "reactions": [
+   {
+    "name": "heart",
+    "users": [
+     "U06KARIM"
+    ],
+    "count": 1
+   }
+  ]
+ },
+ {
+  "type": "message",
+  "ts": "1789298040.000000",
+  "user": "U03LAYLA",
+  "text": "Good morning everyone. Reminder: all-hands on Thursday at 11:00. (updated time: 11:30)",
+  "user_profile": {
+   "real_name": "Layla Mansour",
+   "display_name": "layla"
+  },
+  "edited": {
+   "user": "U03LAYLA",
+   "ts": "1789298100.000000"
+  }
+ },
+ {
+  "type": "message",
+  "ts": "1789309740.000000",
+  "user": "U06KARIM",
+  "text": "We signed two new customers in Alexandria this week.",
+  "user_profile": {
+   "real_name": "Karim Fawzy",
+   "display_name": "karim"
+  }
+ },
+ {
+  "type": "message",
+  "ts": "1789311480.000000",
+  "user": "U05SARA",
+  "text": "Agreed.",
+  "thread_ts": "1788592080.000000",
+  "parent_user_id": "U05SARA"
+ }
+]

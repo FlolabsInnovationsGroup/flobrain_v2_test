@@ -61,6 +61,10 @@ export function describe(row: NotificationRow): Described {
     "customer.message": () => ({ text: "{text}", vars: { text: str(p.text) }, link: "customers" }),
     "customer.escalated": () => ({ text: "{text}", vars: { text: str(p.text) }, link: "customers" }),
     "data.report": () => ({ text: "{text}", vars: { text: str(p.title) || str(p.text) }, link: "data" }),
+    "compliance.review_assigned": () => ({ text: "{text}", vars: { text: str(p.text) || str(p.title) }, link: "settings/compliance" }),
+    "compliance.review_reminder": () => ({ text: "{text}", vars: { text: str(p.text) || str(p.title) }, link: "settings/compliance" }),
+    "compliance.policy_published": () => ({ text: "{text}", vars: { text: str(p.text) || str(p.title) }, link: "settings/compliance" }),
+    "compliance.trust_request": () => ({ text: "{text}", vars: { text: str(p.text) || str(p.title) }, link: "settings/compliance" }),
     "academy.badge": () => ({ text: "{text}", vars: { text: str(p.title) }, link: "academy" }),
     "impersonation.started": () => ({ text: "Support access started by {admin}", vars: { admin: str(p.admin) }, link: "settings/support-access" }),
     deletion_request: () =>

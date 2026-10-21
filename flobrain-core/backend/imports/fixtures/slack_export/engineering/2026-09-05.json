@@ -1,0 +1,81 @@
+[
+ {
+  "type": "message",
+  "ts": "1788567060.000000",
+  "user": "U06KARIM",
+  "text": "Can we talk about it at standup?",
+  "thread_ts": "1788370560.000000",
+  "parent_user_id": "U03LAYLA"
+ },
+ {
+  "type": "message",
+  "ts": "1788585180.000000",
+  "user": "U02OMAR",
+  "text": "Crash rate on Android went down to 0.3% after the hotfix.",
+  "user_profile": {
+   "real_name": "Omar Khaled",
+   "display_name": "omar"
+  },
+  "replies": [
+   {
+    "user": "U04YOUSSEF",
+    "ts": "1788687660.000000"
+   },
+   {
+    "user": "U03LAYLA",
+    "ts": "1789042440.000000"
+   }
+  ],
+  "reply_count": 2
+ },
+ {
+  "type": "message",
+  "ts": "1788587280.000000",
+  "user": "U06KARIM",
+  "text": "Database migration ran in 4 minutes on staging.",
+  "user_profile": {
+   "real_name": "Karim Fawzy",
+   "display_name": "karim"
+  },
+  "replies": [
+   {
+    "user": "U03LAYLA",
+    "ts": "1788680580.000000"
+   },
+   {
+    "user": "U06KARIM",
+    "ts": "1788867960.000000"
+   }
+  ],
+  "reply_count": 2
+ },
+ {
+  "type": "message",
+  "ts": "1788601620.000000",
+  "user": "U03LAYLA",
+  "text": "Database migration ran in 4 minutes on staging.",
+  "user_profile": {
+   "real_name": "Layla Mansour",
+   "display_name": "layla"
+  },
+  "reactions": [
+   {
+    "name": "white_check_mark",
+    "users": [
+     "U06KARIM"
+    ],
+    "count": 1
+   }
+  ]
+ },
+ {
+  "type": "message",
+  "ts": "1788615540.000000",
+  "user": "U06KARIM",
+  "text": "The build is green again after the dependency bump.",
+  "user_profile": {
+   "real_name": "Karim Fawzy",
+   "display_name": "karim"
+  }
+ }
+]

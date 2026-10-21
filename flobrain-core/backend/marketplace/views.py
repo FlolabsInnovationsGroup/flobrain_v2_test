@@ -170,6 +170,14 @@ class ListingView(V2APIView):
         source, snapshot = snap(request, org, source_id)
         if source is None:
             return Response({"error": "not_found", "details": "Not found or not yours"}, status=404)
+        # --- M5 hook (evals): a buddy whose eval sets guard the marketplace must pass them first.
+        if kind == Listing.KIND_BUDDY:
+            from evals.gate import marketplace_block
+
+            blocked = marketplace_block(request, org, source)
+            if blocked is not None:
+                return blocked
+        # --- end M5 hook
         try:
             with transaction.atomic():
                 listing = Listing.objects.create(
@@ -382,6 +390,14 @@ class ListingVersionView(V2APIView):
             return Response({"error": "not_found", "details": "The original is gone or no longer yours"}, status=404)
         if snapshot == current.snapshot:
             return Response({"error": "invalid", "details": f"Nothing changed since version {current.version}"}, status=400)
+        # --- M5 hook (evals): a new buddy version must pass its eval sets first.
+        if current.kind == Listing.KIND_BUDDY:
+            from evals.gate import marketplace_block
+
+            blocked = marketplace_block(request, org, source)
+            if blocked is not None:
+                return blocked
+        # --- end M5 hook
         latest = Listing.objects.filter(lineage=current.lineage).order_by("-version").values_list("version", flat=True).first()
         try:
             with transaction.atomic():

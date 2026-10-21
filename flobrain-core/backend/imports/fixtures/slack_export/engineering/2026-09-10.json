@@ -1,0 +1,30 @@
+[
+ {
+  "type": "message",
+  "ts": "1789024140.000000",
+  "user": "U04YOUSSEF",
+  "text": "Who owns the on-call rotation next week?",
+  "user_profile": {
+   "real_name": "Youssef Adel",
+   "display_name": "youssef"
+  }
+ },
+ {
+  "type": "message",
+  "ts": "1789038120.000000",
+  "user": "U03LAYLA",
+  "text": "See <#C01GENERAL|general> for the release announcement.",
+  "user_profile": {
+   "real_name": "Layla Mansour",
+   "display_name": "layla"
+  }
+ },
+ {
+  "type": "message",
+  "ts": "1789042440.000000",
+  "user": "U03LAYLA",
+  "text": "Done, please take a look.",
+  "thread_ts": "1788585180.000000",
+  "parent_user_id": "U02OMAR"
+ }
+]

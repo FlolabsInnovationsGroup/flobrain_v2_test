@@ -1,0 +1,67 @@
+[
+ {
+  "type": "message",
+  "ts": "1789371120.000000",
+  "user": "U02OMAR",
+  "text": "Who has the HDMI adapter from meeting room B?",
+  "user_profile": {
+   "real_name": "Omar Khaled",
+   "display_name": "omar"
+  },
+  "reactions": [
+   {
+    "name": "eyes",
+    "users": [
+     "U03LAYLA"
+    ],
+    "count": 1
+   }
+  ]
+ },
+ {
+  "type": "message",
+  "ts": "1789375740.000000",
+  "user": "U05SARA",
+  "text": "Who has the HDMI adapter from meeting room B?",
+  "user_profile": {
+   "real_name": "Sara Nabil",
+   "display_name": "sara"
+  }
+ },
+ {
+  "type": "message",
+  "ts": "1789382220.000000",
+  "user": "U07MONA",
+  "text": "Welcome <@U04YOUSSEF> to the team!",
+  "user_profile": {
+   "real_name": "Mona Saleh",
+   "display_name": "mona"
+  },
+  "reactions": [
+   {
+    "name": "rocket",
+    "users": [
+     "U07MONA",
+     "U04YOUSSEF"
+    ],
+    "count": 2
+   }
+  ]
+ },
+ {
+  "type": "message",
+  "ts": "1789391340.000000",
+  "user": "U04YOUSSEF",
+  "text": "Agreed.",
+  "thread_ts": "1788456000.000000",
+  "parent_user_id": "U06KARIM"
+ },
+ {
+  "type": "message",
+  "ts": "1789407240.000000",
+  "user": "U03LAYLA",
+  "text": "Done, please take a look.",
+  "thread_ts": "1789200660.000000",
+  "parent_user_id": "U05SARA"
+ }
+]

@@ -54,6 +54,14 @@ def inference_scope(org) -> str:
 
 
 def check_ai(org, kind, target=None) -> str:
+    try:  # a pinned data region refuses AI services outside it (market round, einvoice.residency)
+        from einvoice.residency import check_ai_residency
+
+        blocked = check_ai_residency(org, kind, target)
+    except ImportError:
+        blocked = ""
+    if blocked:
+        return blocked  # "data_region"
     if inference_scope(org) != PRIVATE_ONLY:
         return ""
     private = self_hosted_hosts()

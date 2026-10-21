@@ -1,0 +1,64 @@
+[
+ {
+  "type": "message",
+  "ts": "1789111080.000000",
+  "user": "U06KARIM",
+  "text": "Who owns the on-call rotation next week?",
+  "user_profile": {
+   "real_name": "Karim Fawzy",
+   "display_name": "karim"
+  },
+  "reactions": [
+   {
+    "name": "rocket",
+    "users": [
+     "U04YOUSSEF",
+     "U03LAYLA",
+     "U06KARIM"
+    ],
+    "count": 3
+   }
+  ]
+ },
+ {
+  "type": "message",
+  "ts": "1789116240.000000",
+  "user": "U04YOUSSEF",
+  "text": "<@U06KARIM> can you review the push notification PR?",
+  "user_profile": {
+   "real_name": "Youssef Adel",
+   "display_name": "youssef"
+  }
+ },
+ {
+  "type": "message",
+  "ts": "1789124340.000000",
+  "user": "U04YOUSSEF",
+  "text": "See <#C01GENERAL|general> for the release announcement.",
+  "user_profile": {
+   "real_name": "Youssef Adel",
+   "display_name": "youssef"
+  }
+ },
+ {
+  "type": "message",
+  "ts": "1789128900.000000",
+  "user": "U04YOUSSEF",
+  "text": "Crash rate on Android went down to 0.3% after the hotfix.",
+  "user_profile": {
+   "real_name": "Youssef Adel",
+   "display_name": "youssef"
+  },
+  "reactions": [
+   {
+    "name": "thumbsup",
+    "users": [
+     "U03LAYLA",
+     "U06KARIM",
+     "U02OMAR"
+    ],
+    "count": 3
+   }
+  ]
+ }
+]

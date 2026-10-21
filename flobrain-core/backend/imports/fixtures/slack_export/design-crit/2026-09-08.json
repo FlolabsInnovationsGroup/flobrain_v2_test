@@ -1,0 +1,67 @@
+[
+ {
+  "type": "message",
+  "ts": "1788852840.000000",
+  "user": "U05SARA",
+  "text": "Can we try the Arabic layout with the larger font?",
+  "user_profile": {
+   "real_name": "Sara Nabil",
+   "display_name": "sara"
+  },
+  "reactions": [
+   {
+    "name": "heart",
+    "users": [
+     "U07MONA",
+     "U05SARA"
+    ],
+    "count": 2
+   }
+  ]
+ },
+ {
+  "type": "message",
+  "ts": "1788869100.000000",
+  "user": "U05SARA",
+  "text": "Updated the color tokens, see the Figma file.",
+  "user_profile": {
+   "real_name": "Sara Nabil",
+   "display_name": "sara"
+  },
+  "files": [
+   {
+    "id": "F0DEMO23",
+    "name": "notes.pdf",
+    "title": "Meeting notes (demo).pdf",
+    "permalink": "https://demo-workspace.slack.com/files/U05SARA/F0DEMO23/notes.pdf",
+    "url_private": "https://files.slack.com/files-pri/T0DEMO-F0DEMO23/notes.pdf"
+   }
+  ]
+ },
+ {
+  "type": "message",
+  "ts": "1788877500.000000",
+  "user": "U07MONA",
+  "text": "I prefer option B for the settings page.",
+  "user_profile": {
+   "real_name": "Mona Saleh",
+   "display_name": "mona"
+  },
+  "reactions": [
+   {
+    "name": "white_check_mark",
+    "users": [
+     "U05SARA"
+    ],
+    "count": 1
+   }
+  ],
+  "replies": [
+   {
+    "user": "U07MONA",
+    "ts": "1789112940.000000"
+   }
+  ],
+  "reply_count": 1
+ }
+]

@@ -1,0 +1,28 @@
+[
+ {
+  "type": "message",
+  "ts": "1788679260.000000",
+  "user": "U07MONA",
+  "text": "<@U05SARA> the button contrast fails on the dark theme.",
+  "user_profile": {
+   "real_name": "Mona Saleh",
+   "display_name": "mona"
+  }
+ },
+ {
+  "type": "message",
+  "ts": "1788695580.000000",
+  "user": "U07MONA",
+  "text": "Can we talk about it at standup?",
+  "thread_ts": "1788428880.000000",
+  "parent_user_id": "U04YOUSSEF"
+ },
+ {
+  "type": "message",
+  "ts": "1788714720.000000",
+  "user": "U05SARA",
+  "text": "Agreed.",
+  "thread_ts": "1788520140.000000",
+  "parent_user_id": "U07MONA"
+ }
+]

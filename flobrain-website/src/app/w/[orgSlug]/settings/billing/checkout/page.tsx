@@ -12,7 +12,7 @@ import { useAccess } from "@/lib/v2/AccessContext";
 import { api, errorText } from "@/lib/v2/api";
 import { useOrgData } from "@/lib/v2/useOrgData";
 
-type Plan = { code: string; name: string; price_cents: number; currency: string; interval: string };
+type Plan = { code: string; name: string; price_cents: number; currency: string; interval: string; billing_unit?: string; included_seats?: number | null };
 type Billing = { plan: Plan | null; status: string; seats: number | null; seats_used: number; current_period_end: string | null; checkout: string; can_manage: boolean; plans: Plan[] };
 
 /**
@@ -83,16 +83,20 @@ function DemoCheckout() {
               className="mt-4 rounded-xl bg-[color:var(--fb-v2-surface)] p-4"
               onSubmit={(e) => {
                 e.preventDefault();
-                send({ action: "subscribe", plan: plan.code, seats: Number(seats) || 0 });
+                send({ action: "subscribe", plan: plan.code, seats: Number(seats) || 0, ...(params.get("interval") ? { interval: params.get("interval") } : {}) });
               }}
             >
               <p className="font-semibold">{plan.name}</p>
               <p className="mb-4 text-sm text-[color:var(--fb-v2-text-muted)]">
-                {tr("{price} per seat, per month", { price: (plan.price_cents / 100).toFixed(2) + " " + plan.currency })}
+                {plan.billing_unit === "per_workspace"
+                  ? tr("{price} for the workspace, up to {n} people", { price: (plan.price_cents / 100).toFixed(2) + " " + plan.currency, n: plan.included_seats ?? 0 })
+                  : tr("{price} per seat, per month", { price: (plan.price_cents / 100).toFixed(2) + " " + plan.currency })}
               </p>
-              <Field label={tr("Seats")}>
-                <input className="v2-input w-28" type="number" min={1} max={10000} value={seats} placeholder={String(Math.max(1, data.seats_used))} onChange={(e) => setSeats(e.target.value)} />
-              </Field>
+              {plan.billing_unit === "per_workspace" ? null : (
+                <Field label={tr("Seats")}>
+                  <input className="v2-input w-28" type="number" min={1} max={10000} value={seats} placeholder={String(Math.max(1, data.seats_used))} onChange={(e) => setSeats(e.target.value)} />
+                </Field>
+              )}
               <div className="flex gap-2">
                 <Button type="submit">{tr("Confirm (demo, no payment)")}</Button>
                 <Button variant="ghost" asChild>

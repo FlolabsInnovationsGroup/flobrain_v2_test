@@ -1,0 +1,56 @@
+[
+ {
+  "type": "message",
+  "ts": "1788507300.000000",
+  "user": "U06KARIM",
+  "text": "The iOS review came back approved.",
+  "user_profile": {
+   "real_name": "Karim Fawzy",
+   "display_name": "karim"
+  }
+ },
+ {
+  "type": "message",
+  "ts": "1788522480.000000",
+  "user": "U06KARIM",
+  "text": "Database migration ran in 4 minutes on staging.",
+  "user_profile": {
+   "real_name": "Karim Fawzy",
+   "display_name": "karim"
+  },
+  "replies": [
+   {
+    "user": "U04YOUSSEF",
+    "ts": "1789377480.000000"
+   }
+  ],
+  "reply_count": 1
+ },
+ {
+  "type": "message",
+  "ts": "1788539940.000000",
+  "user": "U03LAYLA",
+  "text": "I'm moving the API timeouts to 15 seconds.",
+  "user_profile": {
+   "real_name": "Layla Mansour",
+   "display_name": "layla"
+  },
+  "reactions": [
+   {
+    "name": "eyes",
+    "users": [
+     "U04YOUSSEF"
+    ],
+    "count": 1
+   }
+  ]
+ },
+ {
+  "type": "message",
+  "ts": "1788543900.000000",
+  "user": "U06KARIM",
+  "text": "Thanks!",
+  "thread_ts": "1788335940.000000",
+  "parent_user_id": "U03LAYLA"
+ }
+]

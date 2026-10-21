@@ -1,0 +1,47 @@
+[
+ {
+  "type": "message",
+  "ts": "1789629240.000000",
+  "user": "U06KARIM",
+  "text": "Load test results: p95 at 180 ms with 200 users.",
+  "user_profile": {
+   "real_name": "Karim Fawzy",
+   "display_name": "karim"
+  },
+  "reactions": [
+   {
+    "name": "heart",
+    "users": [
+     "U04YOUSSEF"
+    ],
+    "count": 1
+   }
+  ]
+ },
+ {
+  "type": "message",
+  "ts": "1789634460.000000",
+  "user": "U03LAYLA",
+  "text": "Thanks!",
+  "thread_ts": "1789489380.000000",
+  "parent_user_id": "U06KARIM"
+ },
+ {
+  "type": "message",
+  "ts": "1789645500.000000",
+  "user": "U06KARIM",
+  "text": "<@U02OMAR> can you review the push notification PR?",
+  "user_profile": {
+   "real_name": "Karim Fawzy",
+   "display_name": "karim"
+  }
+ },
+ {
+  "type": "message",
+  "subtype": "bot_message",
+  "bot_id": "B0DEPLOY",
+  "username": "Deploy Bot",
+  "ts": "1789645800.000000",
+  "text": "Deployed build 2.4.1 to staging"
+ }
+]

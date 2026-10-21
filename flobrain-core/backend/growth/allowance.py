@@ -93,7 +93,13 @@ def summary(org, user, admin: bool, now=None) -> dict:
     rows = counted(org, start, end)
     used = rows.count()
     mine = rows.filter(user=user).count()
-    included = per_seat * seats
+    try:  # a per-workspace plan has one allowance for the whole workspace (billing_v2, market round)
+        from billing_v2.entitlements import ai_allowance
+
+        workspace_total = ai_allowance(org)
+    except ImportError:
+        workspace_total = None
+    included = workspace_total if workspace_total is not None else per_seat * seats
     projected = project(used, now)
     data = {
         "sample": cfg["sample"],

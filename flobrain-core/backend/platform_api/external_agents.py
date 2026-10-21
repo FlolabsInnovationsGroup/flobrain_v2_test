@@ -12,6 +12,9 @@ Rules:
 - A buddy never calls a server directly: it proposes a call and its person approves it, the same
   rule as AI writes (Decision 33). The output is untrusted data: stored as text, shown quoted,
   wrapped when handed to a model, never parsed for instructions or tool calls.
+- MCP hub (growth round M1): the org's policy for a server (``mcp_hub.policy_error``: tool
+  allow/deny, read-only, end date, which buddies) is checked when tools are offered, proposed,
+  tested and sent. Each send is written to the MCP call log with a redacted argument summary.
 """
 
 import hashlib
@@ -250,14 +253,28 @@ def _flag_on(org, user) -> bool:
     return effective_flag(org, OrgMembership.objects.filter(org=org, user=user).first(), "external_agents", default=False)
 
 
+def _hub_check(server, tool_name, buddy=None):
+    """Raise AgentError when the org's MCP hub policy blocks this tool (or this buddy)."""
+    from platform_api import mcp_hub
+
+    code = mcp_hub.policy_error(server, tool_name, buddy)
+    if code:
+        raise AgentError(code, mcp_hub.ERROR_TEXT.get(code, code), 403)
+
+
 def _execute(call):
     """Send one approved call. Records the outcome on ``call``; never raises for server errors."""
-    from platform_api import pii
+    from platform_api import mcp_hub, pii
 
     server = call.server
     _gate(call.org, server.url)
     tool = _tool(server, call.tool)
     args = check_arguments(tool.get("inputSchema"), call.arguments)
+    blocked = mcp_hub.policy_error(server, call.tool, call.buddy if call.via == ExternalAgentCall.VIA_BUDDY else None)
+    if blocked:  # the policy changed after the call was proposed: nothing is sent
+        call.status, call.error, call.is_error = ExternalAgentCall.FAILED, blocked, True
+        mcp_hub.log_call(call.org, call.user, call.tool, False, error=blocked, args=call.arguments, direction="outbound", server=server, client_name=server.name)
+        return call
     flags = []
     if pii.policy_for(call.org) != "off":
         if pii.get_detector() is None:
@@ -265,11 +282,17 @@ def _execute(call):
         args, n = pii.redact_value(call.org, args)
         if n:
             flags.append("redacted")
+    timer = mcp_hub.Timer().__enter__()
     try:
         text, is_error = mcp_client.call_tool(server.url, _server_token(server), call.tool, args)
     except mcp_client.MCPError as exc:
         call.status, call.error, call.is_error = ExternalAgentCall.FAILED, str(exc)[:200], True
+        mcp_hub.log_call(call.org, call.user, call.tool, False, error=exc.code, duration_ms=timer.elapsed_ms, args=call.arguments, direction="outbound", server=server, client_name=server.name)
         return call
+    mcp_hub.log_call(
+        call.org, call.user, call.tool, not is_error, error="tool_error" if is_error else "", duration_ms=timer.elapsed_ms,
+        args=call.arguments, direction="outbound", server=server, client_name=server.name,
+    )
     text = text[:MAX_OUTPUT]
     flags.append("untrusted")
     if instruction_like(text):
@@ -285,6 +308,7 @@ def test_call(org, user, server, tool, arguments):
         raise AgentError("not_implemented", "external_agents is not enabled", 501)
     call = ExternalAgentCall(org=org, server=server, user=user, via=ExternalAgentCall.VIA_TEST, tool=str(tool or "")[:128], arguments=arguments if isinstance(arguments, dict) else {})
     check_arguments(_tool(server, call.tool).get("inputSchema"), call.arguments)
+    _hub_check(server, call.tool)
     _execute(call)
     call.decided_at = timezone.now()
     call.save()
@@ -314,6 +338,7 @@ def propose(org, user, server, tool, arguments, buddy=None, chat=None):
     if not host_allowed(org, demo_hosts.host_of(server.url)):
         raise AgentError("not_allowlisted", "This host is not on the allowlist")
     tool_def = _tool(server, str(tool or "")[:128])
+    _hub_check(server, tool_def["name"], buddy)
     args = check_arguments(tool_def.get("inputSchema"), arguments)
     call = ExternalAgentCall.objects.create(
         org=org, server=server, user=user, buddy=buddy, chat=chat, via=ExternalAgentCall.VIA_BUDDY,
@@ -429,10 +454,12 @@ def usable_servers(org):
     return [s for s in ExternalAgentServer.objects.filter(org=org, allowed=True, status=ExternalAgentServer.STATUS_CONNECTED) if s.tools_approved]
 
 
-def offered_tools(user, org) -> list[dict]:
-    """OpenAI-style tool specs, or [] when external agents are off for this person or org."""
+def offered_tools(user, org, buddy=None) -> list[dict]:
+    """OpenAI-style tool specs, or [] when external agents are off for this person or org.
+    Tools the org's MCP hub policy blocks (for this buddy, when given) are left out."""
     from brain.llm.policy import check_ai
     from organizations.permissions import can
+    from platform_api import mcp_hub
 
     if not _flag_on(org, user) or check_ai(org, "external_agent") or not can(user, "ai.use", org):
         return []
@@ -440,7 +467,10 @@ def offered_tools(user, org) -> list[dict]:
     for server in usable_servers(org):
         if not host_allowed(org, demo_hosts.host_of(server.url)):
             continue
+        policy = mcp_hub.policy_for(server)
         for tool in server.tools_cache or []:
+            if mcp_hub.policy_error(server, tool["name"], buddy, policy=policy):
+                continue
             fn = function_name(server, tool["name"])
             if fn:
                 out.append({

@@ -1,0 +1,16 @@
+[
+ {
+  "id": "G03DESIGNCR",
+  "name": "design-crit",
+  "created": 1767225600,
+  "is_archived": false,
+  "members": [
+   "U04YOUSSEF",
+   "U05SARA",
+   "U07MONA"
+  ],
+  "purpose": {
+   "value": "Private design reviews (demo)"
+  }
+ }
+]

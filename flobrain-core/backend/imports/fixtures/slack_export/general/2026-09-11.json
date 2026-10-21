@@ -1,0 +1,69 @@
+[
+ {
+  "type": "message",
+  "ts": "1789085280.000000",
+  "user": "U07MONA",
+  "text": "Customer feedback from the pilot is in the shared folder: <https://example.com/demo/feedback|pilot feedback>",
+  "user_profile": {
+   "real_name": "Mona Saleh",
+   "display_name": "mona"
+  }
+ },
+ {
+  "type": "message",
+  "ts": "1789088520.000000",
+  "user": "U05SARA",
+  "text": "Good morning everyone. Reminder: all-hands on Thursday at 11:00.",
+  "user_profile": {
+   "real_name": "Sara Nabil",
+   "display_name": "sara"
+  },
+  "reactions": [
+   {
+    "name": "thumbsup",
+    "users": [
+     "U04YOUSSEF",
+     "U05SARA",
+     "U06KARIM"
+    ],
+    "count": 3
+   }
+  ]
+ },
+ {
+  "type": "message",
+  "ts": "1789092480.000000",
+  "user": "U01NADIA",
+  "text": "Thanks all for a great sprint.",
+  "user_profile": {
+   "real_name": "Nadia Hassan",
+   "display_name": "nadia"
+  }
+ },
+ {
+  "type": "message",
+  "ts": "1789111440.000000",
+  "user": "U01NADIA",
+  "text": "On it.",
+  "thread_ts": "1788951600.000000",
+  "parent_user_id": "U03LAYLA"
+ },
+ {
+  "type": "message",
+  "ts": "1789125780.000000",
+  "user": "U05SARA",
+  "text": "Customer feedback from the pilot is in the shared folder: <https://example.com/demo/feedback|pilot feedback>",
+  "user_profile": {
+   "real_name": "Sara Nabil",
+   "display_name": "sara"
+  }
+ },
+ {
+  "type": "message",
+  "ts": "1789134600.000000",
+  "user": "U06KARIM",
+  "text": "Done, please take a look.",
+  "thread_ts": "1788425460.000000",
+  "parent_user_id": "U07MONA"
+ }
+]

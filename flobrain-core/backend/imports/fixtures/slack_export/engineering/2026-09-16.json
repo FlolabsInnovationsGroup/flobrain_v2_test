@@ -1,0 +1,41 @@
+[
+ {
+  "type": "message",
+  "ts": "1789544580.000000",
+  "user": "U06KARIM",
+  "text": "Let's freeze the release branch on Sunday.",
+  "user_profile": {
+   "real_name": "Karim Fawzy",
+   "display_name": "karim"
+  },
+  "reactions": [
+   {
+    "name": "thumbsup",
+    "users": [
+     "U04YOUSSEF",
+     "U03LAYLA"
+    ],
+    "count": 2
+   }
+  ]
+ },
+ {
+  "type": "message",
+  "ts": "1789561860.000000",
+  "user": "U02OMAR",
+  "text": "Feature flag for the new onboarding is on for 10% of users.",
+  "user_profile": {
+   "real_name": "Omar Khaled",
+   "display_name": "omar"
+  },
+  "files": [
+   {
+    "id": "F0DEMO56",
+    "name": "notes.pdf",
+    "title": "Meeting notes (demo).pdf",
+    "permalink": "https://demo-workspace.slack.com/files/U02OMAR/F0DEMO56/notes.pdf",
+    "url_private": "https://files.slack.com/files-pri/T0DEMO-F0DEMO56/notes.pdf"
+   }
+  ]
+ }
+]

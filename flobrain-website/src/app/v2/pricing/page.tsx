@@ -1,7 +1,7 @@
 import { Check } from "lucide-react";
 import Link from "next/link";
 
-import { COMPARE } from "@/components/v2/site/content";
+import { COMPARE, COMPARE_PLANS } from "@/components/v2/site/content";
 import { Plans } from "@/components/v2/site/Plans";
 
 export const metadata = { title: "Pricing" };
@@ -23,7 +23,7 @@ export default function PricingPage() {
             with your crew.
           </h1>
           <p className="lead" style={{ marginTop: 22, textAlign: "center" }}>
-            Every plan includes rooms, buddies and the cockpit. Upgrade when you need meetings, approvals and your own cloud.
+            Every plan includes rooms, buddies and the cockpit. Pay per person, or one flat price for the whole workspace.
           </p>
         </div>
         <div className="wrap">
@@ -36,16 +36,21 @@ export default function PricingPage() {
           <h2 id="compare-title" className="d2" style={{ fontSize: "clamp(30px,3.4vw,46px)" }}>
             Compare plans
           </h2>
+          <p className="lead" style={{ marginTop: 12 }}>
+            Studio has everything in Fleet for one price, up to its people limit. Prices are samples until pricing is final.
+          </p>
           <div className="cmpw" style={{ marginTop: 32 }}>
             <table className="cmp">
               <thead>
                 <tr>
-                  <th scope="col" style={{ width: "34%" }}>
+                  <th scope="col" style={{ width: "28%" }}>
                     <span className="sr-only">Feature</span>
                   </th>
-                  <th scope="col">Crew</th>
-                  <th scope="col">Fleet</th>
-                  <th scope="col">Mission</th>
+                  {COMPARE_PLANS.map((name) => (
+                    <th key={name} scope="col">
+                      {name}
+                    </th>
+                  ))}
                 </tr>
               </thead>
               <tbody>

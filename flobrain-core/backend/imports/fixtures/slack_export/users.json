@@ -1,0 +1,96 @@
+[
+ {
+  "id": "U01NADIA",
+  "name": "nadia",
+  "real_name": "Nadia Hassan",
+  "deleted": false,
+  "is_bot": false,
+  "profile": {
+   "real_name": "Nadia Hassan",
+   "display_name": "nadia",
+   "email": "owner@demo.flobrain.example"
+  }
+ },
+ {
+  "id": "U02OMAR",
+  "name": "omar",
+  "real_name": "Omar Khaled",
+  "deleted": false,
+  "is_bot": false,
+  "profile": {
+   "real_name": "Omar Khaled",
+   "display_name": "omar",
+   "email": "admin@demo.flobrain.example"
+  }
+ },
+ {
+  "id": "U03LAYLA",
+  "name": "layla",
+  "real_name": "Layla Mansour",
+  "deleted": false,
+  "is_bot": false,
+  "profile": {
+   "real_name": "Layla Mansour",
+   "display_name": "layla",
+   "email": "lead@demo.flobrain.example"
+  }
+ },
+ {
+  "id": "U04YOUSSEF",
+  "name": "youssef",
+  "real_name": "Youssef Adel",
+  "deleted": false,
+  "is_bot": false,
+  "profile": {
+   "real_name": "Youssef Adel",
+   "display_name": "youssef",
+   "email": "member@demo.flobrain.example"
+  }
+ },
+ {
+  "id": "U05SARA",
+  "name": "sara",
+  "real_name": "Sara Nabil",
+  "deleted": false,
+  "is_bot": false,
+  "profile": {
+   "real_name": "Sara Nabil",
+   "display_name": "sara",
+   "email": "designer@demo.flobrain.example"
+  }
+ },
+ {
+  "id": "U06KARIM",
+  "name": "karim",
+  "real_name": "Karim Fawzy",
+  "deleted": false,
+  "is_bot": false,
+  "profile": {
+   "real_name": "Karim Fawzy",
+   "display_name": "karim",
+   "email": "karim.fawzy@example.com"
+  }
+ },
+ {
+  "id": "U07MONA",
+  "name": "mona",
+  "real_name": "Mona Saleh",
+  "deleted": false,
+  "is_bot": false,
+  "profile": {
+   "real_name": "Mona Saleh",
+   "display_name": "mona",
+   "email": "mona.saleh@example.com"
+  }
+ },
+ {
+  "id": "U08DEPLOY",
+  "name": "deploybot",
+  "real_name": "Deploy Bot",
+  "is_bot": true,
+  "profile": {
+   "real_name": "Deploy Bot",
+   "bot_id": "B0DEPLOY"
+  }
+ }
+]

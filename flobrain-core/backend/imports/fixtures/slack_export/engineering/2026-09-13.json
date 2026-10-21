@@ -1,0 +1,40 @@
+[
+ {
+  "type": "message",
+  "ts": "1789284900.000000",
+  "user": "U02OMAR",
+  "text": "Load test results: p95 at 180 ms with 200 users.",
+  "user_profile": {
+   "real_name": "Omar Khaled",
+   "display_name": "omar"
+  }
+ },
+ {
+  "type": "message",
+  "ts": "1789293720.000000",
+  "user": "U03LAYLA",
+  "text": "Agreed.",
+  "thread_ts": "1788355200.000000",
+  "parent_user_id": "U04YOUSSEF"
+ },
+ {
+  "type": "message",
+  "ts": "1789307760.000000",
+  "user": "U06KARIM",
+  "text": "I'm moving the API timeouts to 15 seconds.",
+  "user_profile": {
+   "real_name": "Karim Fawzy",
+   "display_name": "karim"
+  },
+  "reactions": [
+   {
+    "name": "rocket",
+    "users": [
+     "U06KARIM",
+     "U02OMAR"
+    ],
+    "count": 2
+   }
+  ]
+ }
+]

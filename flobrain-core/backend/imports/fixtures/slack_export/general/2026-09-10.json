@@ -1,0 +1,73 @@
+[
+ {
+  "type": "message",
+  "ts": "1789024740.000000",
+  "user": "U04YOUSSEF",
+  "text": "The quarterly survey is open until Friday.",
+  "user_profile": {
+   "real_name": "Youssef Adel",
+   "display_name": "youssef"
+  }
+ },
+ {
+  "type": "message",
+  "ts": "1789038600.000000",
+  "user": "U07MONA",
+  "text": "The new office Wi-Fi password is on the board by reception.",
+  "user_profile": {
+   "real_name": "Mona Saleh",
+   "display_name": "mona"
+  },
+  "reactions": [
+   {
+    "name": "heart",
+    "users": [
+     "U02OMAR",
+     "U04YOUSSEF"
+    ],
+    "count": 2
+   }
+  ]
+ },
+ {
+  "type": "message",
+  "ts": "1789042380.000000",
+  "user": "U07MONA",
+  "text": "Customer feedback from the pilot is in the shared folder: <https://example.com/demo/feedback|pilot feedback>",
+  "user_profile": {
+   "real_name": "Mona Saleh",
+   "display_name": "mona"
+  },
+  "reactions": [
+   {
+    "name": "heart",
+    "users": [
+     "U01NADIA"
+    ],
+    "count": 1
+   }
+  ]
+ },
+ {
+  "type": "message",
+  "ts": "1789048980.000000",
+  "user": "U04YOUSSEF",
+  "text": "Lunch order closes at 12:30 today. (updated time: 11:30)",
+  "user_profile": {
+   "real_name": "Youssef Adel",
+   "display_name": "youssef"
+  },
+  "edited": {
+   "user": "U04YOUSSEF",
+   "ts": "1789049040.000000"
+  }
+ },
+ {
+  "type": "message",
+  "ts": "1789062420.000000",
+  "user": "U03LAYLA",
+  "text": "Good catch.",
+  "thread_ts": "1788710460.000000",
+  "parent_user_id": "U05SARA"
+ }
+]

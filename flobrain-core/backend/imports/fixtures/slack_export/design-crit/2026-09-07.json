@@ -1,0 +1,41 @@
+[
+ {
+  "type": "message",
+  "ts": "1788765240.000000",
+  "user": "U04YOUSSEF",
+  "text": "New onboarding screens are ready for critique.",
+  "user_profile": {
+   "real_name": "Youssef Adel",
+   "display_name": "youssef"
+  }
+ },
+ {
+  "type": "message",
+  "ts": "1788773760.000000",
+  "user": "U05SARA",
+  "text": "Icons are exported at 2x and 3x now.",
+  "user_profile": {
+   "real_name": "Sara Nabil",
+   "display_name": "sara"
+  }
+ },
+ {
+  "type": "message",
+  "ts": "1788795480.000000",
+  "user": "U04YOUSSEF",
+  "text": "The empty state illustration feels too busy.",
+  "user_profile": {
+   "real_name": "Youssef Adel",
+   "display_name": "youssef"
+  },
+  "reactions": [
+   {
+    "name": "white_check_mark",
+    "users": [
+     "U07MONA"
+    ],
+    "count": 1
+   }
+  ]
+ }
+]

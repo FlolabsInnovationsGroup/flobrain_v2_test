@@ -82,6 +82,13 @@ def run_buddy_turn(user, org, chat, text, data, surface="buddy") -> tuple[int, d
     from telemetry.pricing import budget_decision, fill_missing_tokens, prompt_text
 
     buddy = chat.buddy
+    # --- M4 hook (buddy memory): "remember / forget / what do you remember" answered without a model.
+    from buddy_memory import hooks as memory_hooks
+
+    early = memory_hooks.before_turn(user, org, chat, text, data, surface)
+    if early is not None:
+        return early
+    # --- end M4 hook
     credential = None
     downgraded_from = None
     model = (data.get("model") or buddy.default_model or "").strip() or None
@@ -115,7 +122,12 @@ def run_buddy_turn(user, org, chat, text, data, surface="buddy") -> tuple[int, d
 
     from brain.llm.policy import check_ai
 
-    if check_ai(org, "byok", credential) if credential is not None else check_ai(org, "direct"):
+    refused = check_ai(org, "byok", credential) if credential is not None else check_ai(org, "direct")
+    if refused == "data_region":
+        from einvoice.residency import refusal_message
+
+        return 409, {"error": "data_region", "details": refusal_message(org)}
+    if refused:
         return 409, {"error": "private_only", "details": "This organization only allows self-hosted models"}
     hits, sources_state = _retrieve(user, org, buddy, text)
     Message.objects.create(chat=chat, role=Message.ROLE_USER, text=text)
@@ -129,6 +141,7 @@ def run_buddy_turn(user, org, chat, text, data, surface="buddy") -> tuple[int, d
 
     system += context_for(buddy, user, org)
     # --- end W5 hook
+    system += memory_hooks.context(user, org, buddy, text)  # M4 hook: the person's own memories, quoted; "" otherwise
     messages =[{"role": "system", "content": system}] + history
     used = 0
     if hits:
@@ -150,7 +163,7 @@ def run_buddy_turn(user, org, chat, text, data, surface="buddy") -> tuple[int, d
     from platform_api import external_agents
 
     # External agents (MCP): offered as tools, but a call is only a proposal its person approves.
-    external_tools = external_agents.offered_tools(user, org)
+    external_tools = external_agents.offered_tools(user, org, buddy=buddy)
     if external_tools:
         tools = (tools or []) + external_tools
     from integrations.credentials import is_demo
@@ -201,6 +214,7 @@ def run_buddy_turn(user, org, chat, text, data, surface="buddy") -> tuple[int, d
             "details": "The provider did not answer",
             "usage": usage,
         }
+    result.text += memory_hooks.after_turn(user, org, chat, text, data, surface)  # M4 hook: "Should I remember this?"
     Message.objects.create(
         chat=chat,
         role=Message.ROLE_ASSISTANT,

@@ -1,0 +1,42 @@
+[
+ {
+  "id": "C01GENERAL",
+  "name": "general",
+  "created": 1767225600,
+  "is_general": true,
+  "is_archived": false,
+  "members": [
+   "U01NADIA",
+   "U02OMAR",
+   "U03LAYLA",
+   "U04YOUSSEF",
+   "U05SARA",
+   "U06KARIM",
+   "U07MONA"
+  ],
+  "purpose": {
+   "value": "Company-wide news (demo)"
+  },
+  "topic": {
+   "value": ""
+  }
+ },
+ {
+  "id": "C02ENGINEER",
+  "name": "engineering",
+  "created": 1767225600,
+  "is_archived": false,
+  "members": [
+   "U02OMAR",
+   "U03LAYLA",
+   "U04YOUSSEF",
+   "U06KARIM"
+  ],
+  "purpose": {
+   "value": "Builds the product (demo)"
+  },
+  "topic": {
+   "value": ""
+  }
+ }
+]

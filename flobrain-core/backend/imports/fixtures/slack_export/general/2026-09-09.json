@@ -1,0 +1,54 @@
+[
+ {
+  "type": "message",
+  "ts": "1788939420.000000",
+  "user": "U06KARIM",
+  "text": "Agreed.",
+  "thread_ts": "1788362700.000000",
+  "parent_user_id": "U03LAYLA"
+ },
+ {
+  "type": "message",
+  "ts": "1788947940.000000",
+  "user": "U07MONA",
+  "text": "Can we talk about it at standup?",
+  "thread_ts": "1788356340.000000",
+  "parent_user_id": "U05SARA"
+ },
+ {
+  "type": "message",
+  "ts": "1788951600.000000",
+  "user": "U03LAYLA",
+  "text": "Water delivery comes on Sunday morning.",
+  "user_profile": {
+   "real_name": "Layla Mansour",
+   "display_name": "layla"
+  },
+  "reactions": [
+   {
+    "name": "tada",
+    "users": [
+     "U05SARA",
+     "U07MONA",
+     "U04YOUSSEF"
+    ],
+    "count": 3
+   }
+  ],
+  "replies": [
+   {
+    "user": "U01NADIA",
+    "ts": "1789111440.000000"
+   }
+  ],
+  "reply_count": 1
+ },
+ {
+  "type": "message",
+  "ts": "1788965580.000000",
+  "user": "U06KARIM",
+  "text": "Good catch.",
+  "thread_ts": "1788421560.000000",
+  "parent_user_id": "U07MONA"
+ }
+]

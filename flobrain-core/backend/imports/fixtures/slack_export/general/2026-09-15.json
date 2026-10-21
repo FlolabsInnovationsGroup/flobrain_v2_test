@@ -1,0 +1,47 @@
+[
+ {
+  "type": "message",
+  "ts": "1789458900.000000",
+  "user": "U04YOUSSEF",
+  "text": "Can we talk about it at standup?",
+  "thread_ts": "1788617280.000000",
+  "parent_user_id": "U03LAYLA"
+ },
+ {
+  "type": "message",
+  "ts": "1789468920.000000",
+  "user": "U07MONA",
+  "text": "We signed two new customers in Alexandria this week.",
+  "user_profile": {
+   "real_name": "Mona Saleh",
+   "display_name": "mona"
+  }
+ },
+ {
+  "type": "message",
+  "ts": "1789486860.000000",
+  "user": "U01NADIA",
+  "text": "The new office Wi-Fi password is on the board by reception.",
+  "user_profile": {
+   "real_name": "Nadia Hassan",
+   "display_name": "nadia"
+  },
+  "reactions": [
+   {
+    "name": "eyes",
+    "users": [
+     "U01NADIA"
+    ],
+    "count": 1
+   }
+  ]
+ },
+ {
+  "type": "message",
+  "subtype": "bot_message",
+  "bot_id": "B0DEPLOY",
+  "username": "Deploy Bot",
+  "ts": "1789487160.000000",
+  "text": "Deployed build 2.4.1 to staging"
+ }
+]

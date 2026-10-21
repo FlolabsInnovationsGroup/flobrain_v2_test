@@ -1,0 +1,85 @@
+[
+ {
+  "type": "message",
+  "ts": "1788421560.000000",
+  "user": "U07MONA",
+  "text": "Good morning everyone. Reminder: all-hands on Thursday at 11:00.",
+  "user_profile": {
+   "real_name": "Mona Saleh",
+   "display_name": "mona"
+  },
+  "replies": [
+   {
+    "user": "U05SARA",
+    "ts": "1788521460.000000"
+   },
+   {
+    "user": "U06KARIM",
+    "ts": "1788965580.000000"
+   }
+  ],
+  "reply_count": 2
+ },
+ {
+  "type": "message",
+  "ts": "1788425460.000000",
+  "user": "U07MONA",
+  "text": "Water delivery comes on Sunday morning.",
+  "user_profile": {
+   "real_name": "Mona Saleh",
+   "display_name": "mona"
+  },
+  "replies": [
+   {
+    "user": "U06KARIM",
+    "ts": "1789134600.000000"
+   }
+  ],
+  "reply_count": 1
+ },
+ {
+  "type": "message",
+  "ts": "1788429060.000000",
+  "user": "U07MONA",
+  "text": "Done, please take a look.",
+  "thread_ts": "1788356340.000000",
+  "parent_user_id": "U05SARA"
+ },
+ {
+  "type": "message",
+  "ts": "1788432960.000000",
+  "user": "U07MONA",
+  "text": "The new office Wi-Fi password is on the board by reception.",
+  "user_profile": {
+   "real_name": "Mona Saleh",
+   "display_name": "mona"
+  },
+  "reactions": [
+   {
+    "name": "rocket",
+    "users": [
+     "U02OMAR",
+     "U03LAYLA"
+    ],
+    "count": 2
+   }
+  ]
+ },
+ {
+  "type": "message",
+  "ts": "1788456000.000000",
+  "user": "U06KARIM",
+  "text": "The new office Wi-Fi password is on the board by reception.",
+  "user_profile": {
+   "real_name": "Karim Fawzy",
+   "display_name": "karim"
+  },
+  "replies": [
+   {
+    "user": "U04YOUSSEF",
+    "ts": "1789391340.000000"
+   }
+  ],
+  "reply_count": 1
+ }
+]

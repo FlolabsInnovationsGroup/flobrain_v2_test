@@ -1,0 +1,47 @@
+[
+ {
+  "type": "message",
+  "ts": "1788422040.000000",
+  "user": "U03LAYLA",
+  "text": "See <#C01GENERAL|general> for the release announcement.",
+  "user_profile": {
+   "real_name": "Layla Mansour",
+   "display_name": "layla"
+  }
+ },
+ {
+  "type": "message",
+  "ts": "1788444660.000000",
+  "user": "U06KARIM",
+  "text": "I'll check this afternoon.",
+  "thread_ts": "1788274560.000000",
+  "parent_user_id": "U03LAYLA"
+ },
+ {
+  "type": "message",
+  "ts": "1788451560.000000",
+  "user": "U06KARIM",
+  "text": "Release 2.4 is on staging. Please test the login flow.",
+  "user_profile": {
+   "real_name": "Karim Fawzy",
+   "display_name": "karim"
+  },
+  "reactions": [
+   {
+    "name": "thumbsup",
+    "users": [
+     "U03LAYLA",
+     "U06KARIM"
+    ],
+    "count": 2
+   }
+  ],
+  "replies": [
+   {
+    "user": "U04YOUSSEF",
+    "ts": "1788964740.000000"
+   }
+  ],
+  "reply_count": 1
+ }
+]

@@ -1,0 +1,81 @@
+[
+ {
+  "type": "message",
+  "ts": "1788335940.000000",
+  "user": "U03LAYLA",
+  "text": "The iOS review came back approved.",
+  "user_profile": {
+   "real_name": "Layla Mansour",
+   "display_name": "layla"
+  },
+  "reactions": [
+   {
+    "name": "heart",
+    "users": [
+     "U04YOUSSEF"
+    ],
+    "count": 1
+   }
+  ],
+  "replies": [
+   {
+    "user": "U06KARIM",
+    "ts": "1788543900.000000"
+   }
+  ],
+  "reply_count": 1
+ },
+ {
+  "type": "message",
+  "ts": "1788355200.000000",
+  "user": "U04YOUSSEF",
+  "text": "Database migration ran in 4 minutes on staging.",
+  "user_profile": {
+   "real_name": "Youssef Adel",
+   "display_name": "youssef"
+  },
+  "replies": [
+   {
+    "user": "U03LAYLA",
+    "ts": "1789293720.000000"
+   }
+  ],
+  "reply_count": 1
+ },
+ {
+  "type": "message",
+  "ts": "1788361860.000000",
+  "user": "U04YOUSSEF",
+  "text": "Who owns the on-call rotation next week?",
+  "user_profile": {
+   "real_name": "Youssef Adel",
+   "display_name": "youssef"
+  }
+ },
+ {
+  "type": "message",
+  "ts": "1788370560.000000",
+  "user": "U03LAYLA",
+  "text": "Load test results: p95 at 180 ms with 200 users.",
+  "user_profile": {
+   "real_name": "Layla Mansour",
+   "display_name": "layla"
+  },
+  "reactions": [
+   {
+    "name": "thumbsup",
+    "users": [
+     "U06KARIM"
+    ],
+    "count": 1
+   }
+  ],
+  "replies": [
+   {
+    "user": "U06KARIM",
+    "ts": "1788567060.000000"
+   }
+  ],
+  "reply_count": 1
+ }
+]

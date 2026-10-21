@@ -1,6 +1,6 @@
 from django.urls import path
 
-from platform_api import views, views_external as ext
+from platform_api import oauth_mcp, views, views_external as ext, views_mcp_hub as hub
 
 urlpatterns = [
     path("me/tokens", views.MyTokensView.as_view(), name="v2-my-tokens"),
@@ -36,4 +36,12 @@ urlpatterns = [
     path("orgs/<uuid:org_id>/incidents/<uuid:incident_id>", views.IncidentDetailView.as_view(), name="v2-incident"),
     path("platform/incidents", views.PlatformIncidentListView.as_view(), name="v2-platform-incidents"),
     path("platform/incidents/<uuid:incident_id>", views.PlatformIncidentDetailView.as_view(), name="v2-platform-incident"),
+    # MCP hub (growth round M1)
+    path("mcp/consent", oauth_mcp.ConsentView.as_view(), name="v2-mcp-consent"),
+    path("orgs/<uuid:org_id>/mcp/overview", hub.MCPOverviewView.as_view(), name="v2-mcp-overview"),
+    path("orgs/<uuid:org_id>/mcp/clients", hub.MCPClientListView.as_view(), name="v2-mcp-clients"),
+    path("orgs/<uuid:org_id>/mcp/clients/<uuid:grant_id>", hub.MCPClientDetailView.as_view(), name="v2-mcp-client"),
+    path("orgs/<uuid:org_id>/mcp/servers", hub.MCPServerListView.as_view(), name="v2-mcp-servers"),
+    path("orgs/<uuid:org_id>/mcp/servers/<uuid:server_id>/policy", hub.MCPServerPolicyView.as_view(), name="v2-mcp-server-policy"),
+    path("orgs/<uuid:org_id>/mcp/calls", hub.MCPCallLogView.as_view(), name="v2-mcp-calls"),
 ]

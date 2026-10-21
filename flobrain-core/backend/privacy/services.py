@@ -23,6 +23,12 @@ def hides_time_details(owner_id, org_id) -> bool:
     return PrivacySettings.objects.filter(user_id=owner_id, org_id=org_id, share_time_details_with_org=False).exists()
 
 
+def _memory_count(user, org) -> int:
+    from buddy_memory.privacy import count_for
+
+    return count_for(user, org)
+
+
 def inventory(user, org) -> dict:
     """Counts of what FloBrain holds about this person in this org, and who can see it."""
     from brain.models import Chat
@@ -46,6 +52,7 @@ def inventory(user, org) -> dict:
             "ai_conversations": Chat.objects.filter(org=org, user=user, room__isnull=True).count(),
             "ai_usage_records": UsageEvent.objects.filter(org=org, user=user).count(),
             "ai_traces": AITrace.objects.filter(org=org, user=user).count(),
+            "buddy_memories": _memory_count(user, org),
         },
         "who_can_see": {
             "team_leads": sorted({f"{m.user.username} ({m.team.name})" for m in leads}),
@@ -102,6 +109,9 @@ def build_export(user) -> tuple[bytes, dict]:
         "leads.json": _rows(Lead.objects.filter(owner_user=user), ["org__name", "project_or_product", "contact_name", "stage", "created_at"]),
         "commissions.json": _rows(Commission.objects.filter(user=user), ["org__name", "amount", "currency", "status", "created_at"]),
     }
+    from buddy_memory.privacy import export_rows
+
+    parts["buddy_memories.json"] = export_rows(user)
     buffer = io.BytesIO()
     counts = {}
     with zipfile.ZipFile(buffer, "w", compression=zipfile.ZIP_DEFLATED) as zf:

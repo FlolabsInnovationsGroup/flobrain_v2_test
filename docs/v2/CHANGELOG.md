@@ -2,6 +2,21 @@
 
 Newest first. Each entry names the PR, what changed, and any V1 behaviour change.
 
+## Market round: MCP hub, Slack and Teams, ZATCA and ETA, memory, evals, imports, compliance, workspace pricing (local, 2026-10-21)
+
+Off by default behind flags, on and simulated in the demo (no network). Details in `docs/v2/features/`.
+
+- **MCP hub** (`platform_api`, flag `mcp_hub`): FloBrain is a remote MCP server for Claude, ChatGPT and other clients: OAuth 2.1 with dynamic client registration, PKCE S256, resource binding, rotating refresh tokens with reuse detection, revoke; a consent page at `/w/oauth/consent`. New tools: knowledge search, ask a buddy, ask data, approvals, recent meetings, create task and run automation (both as approvals). Governance for outside MCP servers: per-tool allow/deny, read-only, expiry, which buddies may use them, and a redacted call log (90 days).
+- **Slack and Teams** (`bridges`, flag `bridges`): buddies and Flo answer @mentions, DMs and `/flo` for linked people; approve or reject from Block Kit or Adaptive Card buttons, only by the right person; notices mirrored to DMs. Slack signatures and Teams Bot Framework JWTs are verified; outbound hosts allowlisted; linking always confirmed inside FloBrain.
+- **E-invoicing and data residency** (`einvoice`, flag `einvoice`): Saudi ZATCA (UBL 2.1, hash chain, ECDSA signing, QR, onboarding with CSIDs, clearance and reporting) and Egypt ETA (document JSON, canonical serialization, an external signer or manual signing with the customer's token, submission). Sending to the authority is approved. A pinned data region now refuses AI calls to services outside it (`brain.llm.policy.check_ai`). Unverified spec details are configurable and listed in `EINVOICE.md`.
+- **Buddy memory** (`buddy_memory`, flag `buddy_memory`): buddies remember short facts a person tells them, after asking; sensitive categories are never stored; people see, edit and delete everything; team memory for managers; included in the privacy export and deleted with the account.
+- **Buddy evals** (`evals`, flag `buddy_evals`): evaluation sets per buddy with deterministic checks and an optional judge, run in a sandbox with no side effects; a quality gate before marketplace publishing and (when a set asks for it) before saving a buddy, with audited admin override.
+- **Imports** (`imports`, flag `imports`): Slack export ZIP (channels, private channels opt-in, threads as quoted replies, people matched by email), Notion (connected pages or export ZIP), Google Drive (Takeout ZIP or files; a direct Drive listing needs the restricted `drive.readonly` scope, not requested yet). Safe unzip, preview, idempotent re-runs, undo. PDF text via `pypdf`.
+- **Compliance** (`compliance`, flag `compliance`): SOC 2 and ISO 27001:2022 readiness with 19 automated checks on real data, access reviews that really revoke, evidence packages with a SHA-256 manifest, policy templates with acknowledgements, and a public trust page at `/trust/<slug>`. Readiness, never a certification claim.
+- **Workspace pricing** (`billing_v2`, flag `workspace_pricing`): a flat per-workspace plan (Studio, up to 25 people) next to per-person plans, a seat cap that blocks new people with an upgrade link (never a silent charge), plan switching through Stripe, a public price calculator and a "per person or per workspace" toggle and slider on `/v2/pricing`. Sample prices until pricing is decided.
+- **Shared:** 6 new apps, 8 flags, 10 permissions, nav entries, notification links, the AI allowance follows a workspace plan, seat-limit errors use one message. New migrations: `bridges/0001`, `einvoice/0001`, `buddy_memory/0001`, `evals/0001`, `imports/0001`, `compliance/0001`, `platform_api/0003`, `billing_v2/0003`. New Python packages: `pypdf==6.20.1`, `defusedxml==0.7.1` (no known vulnerabilities). The Zoho connection also asks for `ZohoBooks.invoices.READ`.
+- V1 behaviour: unchanged. `/trust/*` pages bring their own chrome, like `/v2`.
+
 ## Growth round: automations, channels, data, write-back, Flo, academy, packs, voice (local, 2026-10-21)
 
 Every feature is off by default behind its own flag, on in the demo, and simulated in the demo (no network). Details per area in `docs/v2/features/`.
