@@ -17,7 +17,7 @@ Each step is safe to do on its own. Until a step is done, the matching FloBrain 
 1. Security items S1 to S6 (section 2), S1 and S3 first.
 2. Staging environment (3.1), then the settings in 3.2 as secrets. The two red items block boot.
 3. `/healthz` health check, then strict `ALLOWED_HOSTS` (3.3); gunicorn (3.4); migrations as a one-off task (3.5).
-4. The worker service `run_jobs` (3.6) and the scheduled commands (3.11, seven of them now).
+4. The worker service `run_jobs` (3.6) and the scheduled commands (3.11, nine of them now).
 5. RDS upgrade and pgvector (3.7); private S3 bucket with the prefixes in 3.11.
 6. Meetings stack (3.12): Redis, LiveKit with TLS, Egress, Whisper, the meeting bot.
 7. Static hosting for the public status page (3.14).
@@ -136,7 +136,7 @@ Set it in the task definition `command`. Pick the worker count to match the task
 
 ### 3.5 Migrations
 
-Production does **not** run migrations on container start today, and we could not find how past migrations were run. **Please tell us.** For V2:
+Production does **not** run migrations on container start. Arsema confirmed (2026-10-21) that they are run by hand as a one-off ECS task (`aws ecs run-task` with a `migrate` command override); there is no migration step in the pipeline yet (planned). For V2, keep that pattern and add it to the pipeline:
 - run one **one-off ECS task** (same image, same env, `python manage.py migrate --noinput`),
 - start or update the web service only after it exits 0,
 - never run `migrate` inside every web task.
@@ -200,6 +200,8 @@ All run from the same image and env as the API, as one-off ECS tasks (EventBridg
 | `python manage.py tick_webhooks` | every minute | Webhook retries (Phase 14) |
 | `python manage.py tick_content` | every minute | Content Studio queue and scheduled posts (Phase 9) |
 | `python manage.py tick_pulse` | every 5 minutes | Pulse alert rules (Phase 13) |
+| `python manage.py tick_automations` | every minute | Workflows, daily brief and nudges (growth round) |
+| `python manage.py run_data_reports` | every hour | Data buddy sheet refresh and scheduled reports (growth round) |
 | `python manage.py tick_tasks` | every hour | "Due tomorrow" and "overdue" task reminders. Safe to run twice |
 | `python manage.py purge_exports` | daily | Deletes expired org memory exports (Phase 17e). An S3 lifecycle rule that expires `exports/` after 8 days is an acceptable replacement |
 | `python manage.py apply_retention` | daily | Deletes data older than each org's retention policy, with its search vectors (Phase 16). Nothing is deleted until an owner sets a policy |
@@ -249,6 +251,18 @@ The demo (every role and feature working with sample data, `docs/v2/DEMO.md`) ca
 
 ---
 
+## 4b. Answers from Arsema (2026-10-21)
+
+| Item | Answer | Next step | Status |
+|---|---|---|---|
+| S2, multimodal port 8000 | As far as she knows only the FloBrain backend calls the multimodal service. She agrees with limiting TCP 8000 to `98.89.195.180/32`. | Confirm with the team that nothing else calls it, CAIPO first, then change the rule. | Waiting for the CAIPO check |
+| 3.5, migrations | Run by hand as a one-off ECS task (`aws ecs run-task`, `migrate` override). No pipeline step yet; planned. | Add a "migrate, then deploy" step to the pipeline (3.5). | Planned |
+| S3, `SECRET_KEY` and `DB_PASS` | Moving them to Secrets Manager was planned, not done. | Move both to task-definition `secrets`, then rotate the DB password. Plan the `SECRET_KEY` rotation (it logs everyone out). | To do |
+| S6, stopped `Flobrain-backend` EC2 | It was the interim backend before ECS. The ECS move is complete, so it is no longer needed. | Take a final snapshot, then terminate it. | Agreed, not done |
+| S1, `GitHubActionsECSFargateRole` | Probably Lucas, who worked on automatic deploys from GitHub to AWS for the multimodal service; she created his user. She will confirm with him. | Confirm the owner, then fix the trust to the real repo with `StringEquals` and scope ECS permissions, or delete the role. | Waiting for Lucas |
+
+She suggested going through the changes one at a time once they are confirmed. Nothing has been changed on AWS from our side.
+
 ## 5. Status log
 
 | Date | What changed |
@@ -264,3 +278,4 @@ The demo (every role and feature working with sample data, `docs/v2/DEMO.md`) ca
 | 2026-10-20 | **Final for handoff.** Phase 17 independent review fixed; 424 tests pass on SQLite and PostgreSQL 16. Nothing in this document has been applied to AWS. |
 | 2026-10-21 | Self-hosted meetings (3.12), SAML sign-in, and the completion work (rooms, tasks, time, docs, people, AI admin, external agents, status page, billing checkout, Content Studio). New: the team to-do list (0), settings in 3.2, external services in 3.9, `tick_tasks` (3.11), status page hosting (3.14), demo environment (3.15). 757 tests pass on SQLite and PostgreSQL 16. Nothing has been applied to AWS. |
 | 2026-10-21 | Checked against Notion: two new questions in section 4 (status of the unified-account task marked Done, and FloBrain credentials used by the multimodal pipeline). The new V2 site (`/v2`) and the new design are frontend only and need nothing from AWS. **Send this version.** Nothing has been applied to AWS. |
+| 2026-10-21 | Arsema answered S1, S2, S3, S6 and the migrations question (4b). Growth round built locally: two more scheduled commands, `tick_automations` (every minute) and `run_data_reports` (hourly). Inbound webhooks for WhatsApp and Telegram (`/api/v2/hooks/...`) and a public website-chat endpoint will need the ALB to accept them when those features are turned on. Nothing has been applied to AWS. |

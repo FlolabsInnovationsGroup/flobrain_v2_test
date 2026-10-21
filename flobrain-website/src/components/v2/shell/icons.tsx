@@ -35,6 +35,9 @@ import {
   Users,
   Zap,
   Phone,
+  Brain,
+  FlaskConical,
+  Receipt,
   type LucideIcon,
 } from "lucide-react";
 
@@ -75,4 +78,7 @@ export const ICONS: Record<string, LucideIcon> = {
   zap: Zap,
   chart: BarChart3,
   phone: Phone,
+  brain: Brain,
+  flask: FlaskConical,
+  receipt: Receipt,
 };

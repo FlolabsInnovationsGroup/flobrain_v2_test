@@ -73,6 +73,8 @@ export function navFor(slug: string, access: Access | null): NavGroup[] {
   if (flag(access, "pulse") && (has(access, "pulse.view") || isLead(access))) ai.push({ href: w("/pulse"), label: "nav.pulse", icon: "activity" });
   if (flag(access, "automations") && has(access, "automations.use")) ai.push({ href: w("/automations"), label: "Automations", icon: "zap" });
   if (flag(access, "data_buddy") && has(access, "data.use")) ai.push({ href: w("/data"), label: "Data", icon: "chart" });
+  if (flag(access, "buddy_memory") && has(access, "ai.use")) ai.push({ href: w("/memory"), label: "What buddies remember", icon: "brain" });
+  if (flag(access, "buddy_evals") && has(access, "evals.manage")) ai.push({ href: w("/buddies/evals"), label: "Buddy evals", icon: "flask" });
   if (flag(access, "buddies") && flag(access, "flo_router") && (has(access, "pulse.view") || has(access, "ai.usage.view"))) ai.push({ href: w("/buddies/quality"), label: "Buddy quality", icon: "gauge" });
   if (ai.length) groups.push({ label: "nav.ai", items: ai });
   const create: NavItem[] = [];
@@ -90,6 +92,11 @@ export function navFor(slug: string, access: Access | null): NavGroup[] {
   if (access) org.push({ href: w("/settings/feedback"), label: access.org_role === "owner" || access.org_role === "admin" ? "Feedback and analytics" : "Your reports", icon: "message" });
   if (flag(access, "customer_buddy") && (has(access, "customers.view") || has(access, "customers.reply"))) org.push({ href: w("/customers"), label: "Customers", icon: "message" });
   if (flag(access, "channels") && (has(access, "channels.manage") || has(access, "ai.use"))) org.push({ href: w("/settings/channels"), label: "Channels", icon: "phone" });
+  if (flag(access, "einvoice") && has(access, "einvoice.view")) org.push({ href: w("/einvoices"), label: "E-invoices", icon: "receipt" });
+  if (flag(access, "mcp_hub") && has(access, "mcp.manage")) org.push({ href: w("/settings/mcp"), label: "MCP and tools", icon: "server" });
+  if (flag(access, "bridges") && has(access, "bridges.manage")) org.push({ href: w("/settings/bridges"), label: "Slack and Teams", icon: "message" });
+  if (flag(access, "imports") && has(access, "imports.run")) org.push({ href: w("/settings/imports"), label: "Import", icon: "download" });
+  if (flag(access, "compliance") && has(access, "compliance.view")) org.push({ href: w("/settings/compliance"), label: "Compliance", icon: "shield" });
   if (flag(access, "integrations") || (flag(access, "write_integrations") && (has(access, "integrations.act") || has(access, "integrations.manage")))) org.push({ href: w("/integrations"), label: "nav.integrations", icon: "plug" });
   org.push({ href: w("/settings/notifications"), label: "nav.notifications", icon: "bell" });
   org.push({ href: w("/privacy"), label: "nav.privacy", icon: "eye" });

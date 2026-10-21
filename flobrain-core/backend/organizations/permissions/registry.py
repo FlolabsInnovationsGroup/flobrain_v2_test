@@ -103,6 +103,16 @@ PERMISSION_CATALOG: dict[str, dict] = {
     "data.manage": {"label": "Add, connect and remove datasets", "matrix": "org"},
     "integrations.act": {"label": "Ask buddies to write to connected apps (each write is approved)", "matrix": "org"},
     "packs.install": {"label": "Install industry packs (buddies, automations, rooms)", "matrix": "org"},
+    "mcp.manage": {"label": "Manage which MCP servers and tools buddies and outside apps may use", "matrix": "org"},
+    "bridges.manage": {"label": "Connect Slack and Microsoft Teams", "matrix": "org"},
+    "einvoice.view": {"label": "See e-invoices and their tax authority status", "matrix": "org"},
+    "einvoice.issue": {"label": "Prepare e-invoices (sending to the tax authority is approved)", "matrix": "org"},
+    "einvoice.manage": {"label": "Set up ZATCA and ETA onboarding, certificates and data residency", "matrix": "org"},
+    "memory.manage": {"label": "Manage team memory and the organization's memory rules", "matrix": "org"},
+    "evals.manage": {"label": "Create evaluation sets and quality gates for buddies", "matrix": "org"},
+    "imports.run": {"label": "Import from Slack, Notion and Google Drive", "matrix": "org"},
+    "compliance.view": {"label": "See compliance controls, evidence and access reviews", "matrix": "org"},
+    "compliance.manage": {"label": "Run access reviews, collect evidence and publish the trust center", "matrix": "org"},
 }
 
 _MEMBER_DEFAULTS = {

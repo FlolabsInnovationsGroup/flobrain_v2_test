@@ -38,4 +38,10 @@ urlpatterns = [
     path("", include("channels.urls")),
     path("", include("datasets.urls")),
     path("", include("growth.urls")),
+    path("", include("bridges.urls")),
+    path("", include("einvoice.urls")),
+    path("", include("buddy_memory.urls")),
+    path("", include("evals.urls")),
+    path("", include("imports.urls")),
+    path("", include("compliance.urls")),
 ]
