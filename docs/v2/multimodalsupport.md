@@ -329,6 +329,8 @@ FloBrain will run this checklist against the deployed service:
 4. Is the us-east-2 ECS plan still active? Who set it up?
 5. Do you plan to serve self-hosted models (MiniCPM in `minicpm_test_case/`) on JarvisLabs through this service? If yes, please keep the OpenAI-compatible contract from P1-3.
 6. Which option for P1-5 do you prefer, A (private ECS in the main account) or B (EC2 with TLS)?
+7. Which FloBrain backend credentials did your deploy pipeline use (2 Oct meeting)? They need rotating once your own role exists.
+8. Do you agree that FloBrain keeps customer keys and calls providers itself (section 10)? If CAIPO or another product needs your service to use customer keys, tell us which one, so we can agree a contract for that product only.
 
 Thank you. Reply with your plan and dates per step, and we will align FloBrain's side.
 
@@ -353,7 +355,25 @@ Thank you. Reply with your plan and dates per step, and we will align FloBrain's
 | SAML sign-in, personal insights and the rest of the 2026-10-21 work never call the multimodal service | Built (2026-10-21) |
 | V1 path to `/process` | Unchanged |
 
-## 10. Status log
+## 10. Your provider-integration plan (B1 to B7): FloBrain's answers
+
+Your Notion pages "02 Delivery plan" and "03 Architecture, technical design and integration boundary" (Integrate AI providers, revision 2.1, 19 Sep 2026) leave B1 to B7 open and wait for the FloBrain backend. These are the answers from the V2 code as it is today.
+
+**The short version:** FloBrain V2 keeps customer keys (BYOK) itself and calls the providers itself. It will not hand a customer key to the multimodal service, and it will not build a key-reading interface for you. So **your T5 (live credential reader) is not needed for FloBrain**. Your M1 module (T1 to T4) is still useful: as the clean provider layer behind P1-3, for CAIPO and robotics, and for self-hosted models (MiniCPM). Please run it with **platform keys you own**, not customer keys.
+
+| ID | Your question | FloBrain V2 answer |
+|---|---|---|
+| B1 | Where are keys stored, and how does multimodal read them? | In FloBrain's own database (`integrations.AICredential`), encrypted with AES-256-GCM, the credential id and org id bound in, with a `key_version` for rotation (Decision E20). Keys are never returned by any API, to people or to services. There is no direct database read and no backend-mediated readback for multimodal. |
+| B2 | Scope, binding, customer or platform source, who authorizes | Scope is the organization, plus the person for personal keys (empty owner = org key, used by owners and admins; Q41 decides if members may use org keys). FloBrain authorizes every call (`can()`, the `byok` feature flag). The source is explicit: platform model or the person's active key, never guessed. |
+| B3 | Service authentication, integrity, exposure | For calls FloBrain makes to you: `Authorization: Bearer <MULTIMODAL_API_KEY>` over HTTPS or a private network (P0-1, P0-2, P1-5). No customer key or key reference is ever forwarded; the code refuses until Q13 holds and BYOK forwarding stays off by design. |
+| B4 | Lifecycle states, versions, activation | States: `pending`, `active`, `rejected`, `indeterminate`, `disabled`, `expired` (Decision 20). Only FloBrain activates, disables or deletes. No silent fallback from a customer key to the platform key or to another provider. |
+| B5 | Who validates a key, and how | FloBrain does it: one `GET {base}/v1/models` with a 20 second limit (`BYOK_CHECK_TIMEOUT`). 2xx is `active`; 401/403 and other 4xx are `rejected`; 429, 5xx and network errors are `indeterminate`. Your L6 probes are stricter (they prove the operation, not only the key); we will reuse them if you expose a validation call later, but nothing waits on it. |
+| B6 | Route, transport, error mapping, compatibility | What FloBrain V2 needs from you is P1-3 (`POST /v1/chat/completions`, OpenAI shape) with the error table in P0-3. `/process` stays as it is for V1. Your internal codes (L2) can map onto that table. |
+| B7 | Limits, spooling, telemetry, retention | Your L5 limits are fine for FloBrain (text 64 KB, audio 10 MB, 90 s per call, no retries). Keep no content and no keys in logs (P1-6). FloBrain sends no customer key, memory, documents or other people's messages (section 6). |
+
+**One thing to fix on your side:** your 2 Oct meeting notes say part of the multimodal deploy pipeline was set up with credentials that belong to the FloBrain backend. Please give the multimodal service its own IAM role and secrets (see 4.4), and tell DevOps which FloBrain credentials were used so they can be rotated.
+
+## 11. Status log
 
 | Date | What changed |
 |---|---|
@@ -364,4 +384,5 @@ Thank you. Reply with your plan and dates per step, and we will align FloBrain's
 | 2026-10-20 | Phases 8 and 9 built locally (buddies, approved actions, Content Studio). All AI goes through `direct`; nothing new is sent to the multimodal service. |
 | 2026-10-20 | Phases 14 and 17 built locally. The public API, MCP, webhooks, SSO and billing never call the multimodal service. "Private only" orgs and the sovereign package refuse it by design. Nothing new is sent to you; the asks in section 4 are unchanged. |
 | 2026-10-20 | **Final for handoff.** V2 code complete through Phase 17 (local, not deployed). The asks in section 4 and the rollout in section 5 are unchanged. |
-| 2026-10-21 | Meetings built with FloBrain's own Whisper server, so P1-4 is now optional for FloBrain. Pulse failover never uses the multimodal service. P0, P1-1 to P1-3, P1-5 and P1-6 are unchanged and still needed. **This is the final version to send.** |
+| 2026-10-21 | Meetings built with FloBrain's own Whisper server, so P1-4 is now optional for FloBrain. Pulse failover never uses the multimodal service. P0, P1-1 to P1-3, P1-5 and P1-6 are unchanged and still needed. |
+| 2026-10-21 | Section 10 added: FloBrain's answers to B1 to B7 from your provider-integration plan (Notion, rev 2.1). FloBrain keeps customer keys and calls providers itself, so your T5 is not needed for FloBrain. New ask: separate the multimodal deploy pipeline from FloBrain backend credentials. Sections 4 to 7 unchanged. **Send this version.** |

@@ -244,6 +244,8 @@ The demo (every role and feature working with sample data, `docs/v2/DEMO.md`) ca
 4. Who owns the `flobrain.ai` DNS (needed for staging and any new HTTPS hostname)?
 5. Do you prefer we propose CloudFormation changes as template diffs in the repo, or do you edit the stacks yourselves?
 6. Is there a budget limit for the RDS upgrade and staging?
+7. The Notion task "Switch FloBrain backend to unified AWS account (CloudFormation)" was marked Done on 7 Oct, but its checklist (audit, unified templates, move database, VPC and compute, failover test, CI from the new account, retire the old account) is still unticked. Which of those steps are finished? Our audit of 20 Oct still saw two accounts.
+8. The multimodal team says (2 Oct meeting) part of their deploy pipeline was set up with credentials that belong to the FloBrain backend. Which credentials were they? Please rotate them once the multimodal service has its own role (S1, and `multimodalsupport.md` 4.4).
 
 ---
 
@@ -260,4 +262,5 @@ The demo (every role and feature working with sample data, `docs/v2/DEMO.md`) ca
 | 2026-10-20 | Phase 14 built locally (public API, webhooks, MCP, status page). Later need: separate static hosting for `status.json` that does not depend on ECS, and two more once-a-minute commands (`tick_webhooks`, `tick_content`) next to `tick_agents`. |
 | 2026-10-20 | Phase 17 built locally: org AI policy (private-only), plans and a verified Stripe webhook, SSO (OIDC) and SCIM, owner-only memory export, in-org marketplace, platform console with audited read-only support access, and a sovereign package for customer installs. New later needs: `STRIPE_WEBHOOK_SECRET`, `PUBLIC_API_BASE_URL`, `AI_SELF_HOSTED_HOSTS`, a daily `purge_exports` (3.11). Nothing to change today. |
 | 2026-10-20 | **Final for handoff.** Phase 17 independent review fixed; 424 tests pass on SQLite and PostgreSQL 16. Nothing in this document has been applied to AWS. |
-| 2026-10-21 | Self-hosted meetings (3.12), SAML sign-in, and the completion work (rooms, tasks, time, docs, people, AI admin, external agents, status page, billing checkout, Content Studio). New: the team to-do list (0), settings in 3.2, external services in 3.9, `tick_tasks` (3.11), status page hosting (3.14), demo environment (3.15). 757 tests pass on SQLite and PostgreSQL 16. **This is the final version to send.** Nothing has been applied to AWS. |
+| 2026-10-21 | Self-hosted meetings (3.12), SAML sign-in, and the completion work (rooms, tasks, time, docs, people, AI admin, external agents, status page, billing checkout, Content Studio). New: the team to-do list (0), settings in 3.2, external services in 3.9, `tick_tasks` (3.11), status page hosting (3.14), demo environment (3.15). 757 tests pass on SQLite and PostgreSQL 16. Nothing has been applied to AWS. |
+| 2026-10-21 | Checked against Notion: two new questions in section 4 (status of the unified-account task marked Done, and FloBrain credentials used by the multimodal pipeline). The new V2 site (`/v2`) and the new design are frontend only and need nothing from AWS. **Send this version.** Nothing has been applied to AWS. |
