@@ -73,10 +73,16 @@ class RoomMember(models.Model):
 
 
 class RoomMessage(models.Model):
+    KIND_TEXT = "text"
+    KIND_VOICE = "voice"
+    KIND_CHOICES = [(KIND_TEXT, "Text"), (KIND_VOICE, "Voice note")]
+
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     room = models.ForeignKey(Room, on_delete=models.CASCADE, related_name="messages")
     author = models.ForeignKey("users.User", on_delete=models.SET_NULL, null=True)
     body = models.TextField()
+    # W7 voice notes: a voice message keeps its transcript in ``body`` once it is ready.
+    kind = models.CharField(max_length=16, choices=KIND_CHOICES, default=KIND_TEXT)
     created_at = models.DateTimeField(default=timezone.now)
     updated_at = models.DateTimeField(auto_now=True)
     edited_at = models.DateTimeField(blank=True, null=True)
@@ -112,3 +118,38 @@ class Announcement(models.Model):
 
     class Meta:
         db_table = "announcements"
+
+
+class VoiceNote(models.Model):
+    """Audio behind a ``RoomMessage(kind="voice")`` (W7, flag ``voice_notes``).
+
+    The audio lives in private storage (``content_studio.storage``) under a key the server
+    builds, and is only streamed to people who can read the room. Translations of the
+    transcript are cached per language in ``MessageTranslation`` (the message body holds
+    the transcript once it is ready).
+    """
+
+    STATUS_PENDING = "pending"
+    STATUS_DONE = "done"
+    STATUS_FAILED = "failed"
+    STATUS_CHOICES = [(STATUS_PENDING, "Pending"), (STATUS_DONE, "Done"), (STATUS_FAILED, "Failed")]
+
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    org = models.ForeignKey("organizations.Organization", on_delete=models.CASCADE, related_name="voice_notes")
+    message = models.OneToOneField(RoomMessage, on_delete=models.CASCADE, related_name="voice")
+    storage_key = models.CharField(max_length=300, blank=True, default="")
+    content_type = models.CharField(max_length=40, default="audio/webm")
+    size_bytes = models.PositiveIntegerField(default=0)
+    duration_seconds = models.FloatField(default=0)
+    language_hint = models.CharField(max_length=16, blank=True, default="")
+    language = models.CharField(max_length=16, blank=True, default="")
+    transcript = models.TextField(blank=True, default="")
+    status = models.CharField(max_length=16, choices=STATUS_CHOICES, default=STATUS_PENDING)
+    error = models.CharField(max_length=80, blank=True, default="")
+    is_demo = models.BooleanField(default=False)
+    created_at = models.DateTimeField(default=timezone.now)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        db_table = "room_voice_notes"
+        indexes = [models.Index(fields=["org", "status"], name="voice_org_status")]

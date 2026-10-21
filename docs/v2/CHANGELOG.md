@@ -2,6 +2,21 @@
 
 Newest first. Each entry names the PR, what changed, and any V1 behaviour change.
 
+## Growth round: automations, channels, data, write-back, Flo, academy, packs, voice (local, 2026-10-21)
+
+Every feature is off by default behind its own flag, on in the demo, and simulated in the demo (no network). Details per area in `docs/v2/features/`.
+
+- **Automations** (`automations`, flag `automations`): workflows from plain language (AI drafts, you review), triggers (schedule, room keyword, task created or blocked, meeting ended, customer conversation, signed inbound webhook), steps (AI prompt, post, task, notify, email and webhook through approval, wait for approval), 9 templates, the proactive daily brief and overdue nudges with a per-person opt-out, run history. `tick_automations` runs every minute.
+- **Channels and the customer buddy** (`channels`, flags `channels`, `customer_buddy`): WhatsApp Cloud API and Telegram with signed webhooks and encrypted secrets; link your phone with a one-time code and talk to your buddies; approve or reject by reply; website chat widget (`public/v2/widget.js`, `/p/chat/<site key>`) with origin checks and rate limits; a customer inbox with drafts that wait for approval, hand-off to a person and a room; inbound voice notes are transcribed when `voice_notes` is on. Production needs Meta business verification and Telegram `setWebhook`.
+- **Data buddy** (`datasets`, flag `data_buddy`): CSV/XLSX upload, Google Sheets published CSV, read-only PostgreSQL (encrypted DSN, private hosts blocked); questions in plain language become one checked SELECT (row and time limits), a chart and an answer, with the SQL shown; saved cards and weekly or monthly reports (`run_data_reports`); `data.ask` buddy tool.
+- **Write-back connectors** (`integrations`, flag `write_integrations`): 23 actions across Google Workspace, Microsoft 365, Jira, HubSpot, Odoo and Zoho, each an approval-gated tool with a clear preview; OAuth with PKCE; providers stay "not set up" until their OAuth apps exist.
+- **Flo and the crew** (`buddies`, flag `flo_router`): Flo routes a question to the right buddy (or two) the person may use, with attribution; Sales, Onboarding coach, Meeting and Customer buddy templates; thumbs up or down on replies; a buddy quality page (numbers only).
+- **Academy, packs, ratings, AI per seat** (`growth`, `marketplace`, flags `academy`, `packs`): 8 lessons with checks and an AI coach; Education, Small business and Agency packs with a preview, one-click install and safe uninstall (an existing buddy with the same name is kept, never duplicated); marketplace ratings, version history and a staff-only "Verified" mark; the included-AI-per-seat meter on AI usage (sample numbers until pricing is set).
+- **Voice notes** (`rooms`, flag `voice_notes`): record in rooms and the buddy composer, transcribed on the org's own Whisper server with Egyptian and Gulf Arabic hints, translated for each reader, audio served only to people who can read the room.
+- **Shared:** `actions.plugins.register_tool` lets an app add an approval-gated tool; a tool can name its flag so buddies are not offered it while the feature is off. Room messages now include `kind` (`text` or `voice`). 9 permissions, 9 flags and new nav entries. New migrations: `automations/0001`, `channels/0001`, `datasets/0001`, `growth/0001`, `integrations/0003`, `buddies/0003`, `marketplace/0005`, `rooms/0003`.
+- **Behaviour change (V2 only):** `GET /buddies/{id}` returns the public card (no prompt) to people who can use a buddy but not edit it, instead of 403.
+- V1 behaviour: unchanged.
+
 ## Design: "mission control" system, V2 site and sign-in (local, 2026-10-21)
 
 - **Design system:** new V2 tokens in `src/styles/v2-tokens.css`: night surfaces (#08070F), violet action (#7C6BFF), the aurora signature (flobrain.ai magenta #CC34FF to v2 cyan #00D4FF), signal colours with one job each (amber approval, rose blocked, green done), Space Grotesk, JetBrains Mono for numbers, IBM Plex Sans Arabic. A light theme with the same roles. Every `/w` screen picks it up. See `docs/v2/DESIGN.md`.

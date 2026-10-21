@@ -2,11 +2,12 @@
 
 import { useState } from "react";
 
+import { WriteBackSection } from "@/components/v2/connectors/WriteBackSection";
 import { ScreenBody } from "@/components/v2/screens/ScreenBody";
 import { Button } from "@/components/v2/ui/button";
 import { Badge, Field, Notice, PageHeader, Row, Rows, Section, when } from "@/components/v2/ui/kit";
 import { useTr } from "@/i18n/phrases";
-import { has } from "@/lib/v2/access";
+import { flag, has } from "@/lib/v2/access";
 import { useAccess } from "@/lib/v2/AccessContext";
 import { api, errorText, rowsOf } from "@/lib/v2/api";
 import { useOrgData } from "@/lib/v2/useOrgData";
@@ -213,6 +214,7 @@ export default function IntegrationsPage() {
           </ScreenBody>
         </Section>
       </ScreenBody>
+      {flag(access, "write_integrations") ? <WriteBackSection orgId={orgId} slug={access?.org.slug ?? ""} /> : null}
     </div>
   );
 }

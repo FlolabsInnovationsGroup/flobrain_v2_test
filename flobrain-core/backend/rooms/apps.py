@@ -8,3 +8,4 @@ class RoomsConfig(AppConfig):
 
     def ready(self):
         from rooms import signals  # noqa: F401
+        from rooms import voice  # noqa: F401  (W7: voice note job + audio cleanup)

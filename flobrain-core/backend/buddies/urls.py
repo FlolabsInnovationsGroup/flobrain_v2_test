@@ -11,8 +11,31 @@ from buddies.views import (
     BuddyThreadListCreateView,
     BuddyThreadSendView,
 )
+from buddies.views_quality import (
+    BuddyFeedbackDetailView,
+    BuddyFeedbackView,
+    BuddyQualityView,
+    BuddyRouteView,
+    BuddyTemplateInstallView,
+    BuddyTemplateListView,
+)
 
 urlpatterns = [
+    # Crew (W5): Flo routing hints, specialist templates, feedback and quality. Before <uuid:buddy_id>.
+    path("orgs/<uuid:org_id>/buddies/route", BuddyRouteView.as_view(), name="v2-buddy-route"),
+    path("orgs/<uuid:org_id>/buddies/templates", BuddyTemplateListView.as_view(), name="v2-buddy-templates"),
+    path(
+        "orgs/<uuid:org_id>/buddies/templates/<slug:key>/install",
+        BuddyTemplateInstallView.as_view(),
+        name="v2-buddy-template-install",
+    ),
+    path("orgs/<uuid:org_id>/buddies/feedback", BuddyFeedbackView.as_view(), name="v2-buddy-feedback"),
+    path(
+        "orgs/<uuid:org_id>/buddies/feedback/<int:message_id>",
+        BuddyFeedbackDetailView.as_view(),
+        name="v2-buddy-feedback-detail",
+    ),
+    path("orgs/<uuid:org_id>/buddies/quality", BuddyQualityView.as_view(), name="v2-buddy-quality"),
     path("orgs/<uuid:org_id>/buddies", BuddyListView.as_view(), name="v2-buddies"),
     path("orgs/<uuid:org_id>/buddies/pins", BuddyPinView.as_view(), name="v2-buddy-pins"),
     path(

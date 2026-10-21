@@ -90,6 +90,7 @@ def _message_payload(message, translation=None):
         "created_at": message.created_at.isoformat(),
         "edited_at": message.edited_at.isoformat() if message.edited_at else None,
         "translated": False,
+        "kind": getattr(message, "kind", "text") or "text",
     }
     if translation is not None:
         text, error = translation

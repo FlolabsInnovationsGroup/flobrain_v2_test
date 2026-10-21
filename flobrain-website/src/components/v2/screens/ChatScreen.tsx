@@ -8,6 +8,7 @@ import { AnnouncementsPanel } from "@/components/v2/rooms/AnnouncementsPanel";
 import { mentionParts, roomTime, roomTitle, translateTarget } from "@/components/v2/rooms/format";
 import { RoomMembersPanel, type RoomMemberRow } from "@/components/v2/rooms/RoomMembersPanel";
 import { RoomTabs } from "@/components/v2/screens/RoomTabs";
+import { RoomVoiceNote, RoomVoiceRecorder, useRoomVoiceNotes } from "@/components/v2/voice/RoomVoice";
 import { ScreenBody } from "@/components/v2/screens/ScreenBody";
 import { Button } from "@/components/v2/ui/button";
 import { Avatar, Notice } from "@/components/v2/ui/kit";
@@ -51,6 +52,7 @@ function MessageItem({
   demo,
   onSave,
   onDelete,
+  voice,
 }: {
   message: Message;
   mine: boolean;
@@ -59,6 +61,8 @@ function MessageItem({
   demo: boolean;
   onSave: (body: string) => Promise<boolean>;
   onDelete: () => Promise<boolean>;
+  /** A voice note player (flag voice_notes), shown instead of the text. */
+  voice?: React.ReactNode;
 }) {
   const tr = useTr();
   const [editing, setEditing] = useState(false);
@@ -104,6 +108,8 @@ function MessageItem({
               </Button>
             </div>
           </form>
+        ) : voice ? (
+          voice
         ) : shown ? (
           <>
             <Body text={translation.text ?? ""} />
@@ -175,8 +181,10 @@ export function ChatScreen({ orgSlug, roomId }: { orgSlug: string; roomId: strin
 
   const selfId = access?.user_id;
   const canTranslate = flag(access, "live_translation");
+  const voiceOn = flag(access, "voice_notes");
   const canAnnounce = has(access, "announcement.manage");
   const target = translateTarget(locale);
+  const voice = useRoomVoiceNotes(orgId, roomId, messages.map((m) => m.id), voiceOn, target);
 
   const load = useCallback(() => {
     if (!orgId) return;
@@ -324,6 +332,11 @@ export function ChatScreen({ orgSlug, roomId }: { orgSlug: string; roomId: strin
                   demo={demo}
                   onSave={(body) => saveEdit(message, body)}
                   onDelete={() => remove(message)}
+                  voice={
+                    voiceOn && orgId && voice.notes[message.id] ? (
+                      <RoomVoiceNote orgId={orgId} roomId={roomId} note={voice.notes[message.id]} mine={!!selfId && message.author === selfId} onChanged={voice.reload} />
+                    ) : undefined
+                  }
                 />
               ))}
             </ul>
@@ -335,7 +348,7 @@ export function ChatScreen({ orgSlug, roomId }: { orgSlug: string; roomId: strin
             </p>
           ) : null}
           <form
-            className="mt-4 flex gap-2"
+            className="mt-4 flex flex-wrap gap-2"
             onSubmit={(event) => {
               event.preventDefault();
               if (!orgId || !canSendMessage(draft)) return;
@@ -373,6 +386,16 @@ export function ChatScreen({ orgSlug, roomId }: { orgSlug: string; roomId: strin
               aria-label={tr("Write a message")}
             />
             <Button type="submit">{tr("Send")}</Button>
+            {voiceOn && orgId ? (
+              <RoomVoiceRecorder
+                orgId={orgId}
+                roomId={roomId}
+                onSent={() => {
+                  load();
+                  voice.reload();
+                }}
+              />
+            ) : null}
           </form>
           <p className="mt-2 text-xs text-[color:var(--fb-v2-text-muted)]">{tr("Attachments aren't available in chat yet. Share files in the Docs tab.")}</p>
         </div>

@@ -90,3 +90,7 @@ class AICredential(models.Model):
         return f"<AICredential {self.id} {self.scope} {self.status} ****{self.last4}>"
 
     __str__ = __repr__
+
+
+# Write-back connectors (growth round W4) live in their own module.
+from integrations.write.models import WriteActionToggle, WriteConnection, WriteOAuthState  # noqa: E402,F401

@@ -124,7 +124,12 @@ def run_buddy_turn(user, org, chat, text, data, surface="buddy") -> tuple[int, d
     system = BUDDY_BASE
     if (buddy.system_prompt or "").strip():
         system += "\n\nBuddy instructions:\n" + buddy.system_prompt.strip()
-    messages = [{"role": "system", "content": system}] + history
+    # --- W5 hook (crew): specialist templates add the viewer's own facts as quoted data; "" otherwise.
+    from buddies.templates_extra import context_for
+
+    system += context_for(buddy, user, org)
+    # --- end W5 hook
+    messages =[{"role": "system", "content": system}] + history
     used = 0
     if hits:
         block, used = sources_block(hits)

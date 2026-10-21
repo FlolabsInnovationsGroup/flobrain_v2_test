@@ -72,8 +72,12 @@ def _thread_payload(chat, usage=None, extra=None):
         "id": chat.id,
         "title": chat.title,
         "buddy": str(chat.buddy_id),
-        "messages": [{"role": row.role, "text": row.text} for row in chat.messages.order_by("created_at", "id")],
+        "messages": [{"id": row.id, "role": row.role, "text": row.text} for row in chat.messages.order_by("created_at", "id")],
     }
+    from buddies.router import answered_by, is_flo
+
+    if is_flo(chat.buddy):
+        data["answered_by"] = answered_by(chat)  # W5: which buddy wrote each Flo reply
     if usage is not None:
         data["usage"] = usage
     if extra:
@@ -83,6 +87,13 @@ def _thread_payload(chat, usage=None, extra=None):
 
 def _invalid(exc):
     return Response({"error": "invalid", "details": str(exc)}, status=400)
+
+
+def _flo_hidden(request, org, buddy) -> bool:
+    """W5: Flo exists only while ``flo_router`` is on for this person."""
+    from buddies.router import flo_on, is_flo
+
+    return is_flo(buddy) and not flo_on(org, request.user)
 
 
 def _full_payload(buddy, user):
@@ -124,7 +135,14 @@ class BuddyListView(V2APIView):
         if error:
             return error
         pins = {pin.buddy_id: pin for pin in BuddyPin.objects.filter(user=request.user, buddy__org=org)}
+        from buddies.router import flo_on
+        from buddies.templates_extra import FLO_SLUG, ensure_flo
+
         rows = visible_buddies(request.user, org)
+        if flo_on(org, request.user):
+            ensure_flo(org)  # W5: Flo appears the first time the flag is on
+        else:
+            rows = rows.exclude(slug=FLO_SLUG, is_builtin=True)
         data = [buddy_payload(b, pins.get(b.id), request.user) for b in rows]
         data.sort(key=lambda d: (not d["pinned"], d["pin_position"] or 0))
         return Response(data)
@@ -156,7 +174,8 @@ class BuddyThreadListCreateView(V2APIView):
     permission_classes = [IsActiveOrgMember]
 
     def _buddy(self, request, org, buddy_id):
-        return visible_buddies(request.user, org).filter(pk=buddy_id).first()
+        buddy = visible_buddies(request.user, org).filter(pk=buddy_id).first()
+        return None if buddy is not None and _flo_hidden(request, org, buddy) else buddy
 
     @extend_schema(summary="Your threads with a buddy")
     def get(self, request, org_id, buddy_id):
@@ -188,6 +207,8 @@ def _own_buddy_thread(request, org, thread_id):
         return None
     # The buddy must still be visible to me (unshared, disabled or deleted buddies close their threads).
     if not visible_buddies(request.user, org).filter(pk=chat.buddy_id).exists():
+        return None
+    if _flo_hidden(request, org, chat.buddy):
         return None
     return chat
 
@@ -226,7 +247,19 @@ class BuddyThreadSendView(V2APIView):
         max_chars = int(settings.FLOBRAIN_V2.get("AI_MAX_INPUT_CHARS", 8000))
         if len(text) > max_chars:
             return Response({"error": "invalid", "details": f"text is longer than {max_chars} characters"}, status=400)
-        status, body = run_buddy_turn(request.user, org, chat, text, request.data or {})
+        # --- W5 hook (crew): Flo routes to other buddies; every reply's timing is measured. ---
+        import time
+
+        from buddies.router import flo_turn, is_flo, record_answer
+
+        started = time.monotonic()
+        if is_flo(chat.buddy):
+            status, body = flo_turn(request.user, org, chat, text, request.data or {})
+        else:
+            status, body = run_buddy_turn(request.user, org, chat, text, request.data or {})
+            if status == 200:
+                record_answer(org, chat.buddy, chat, int((time.monotonic() - started) * 1000), body.get("citations"))
+        # --- end W5 hook ---
         if status != 200:
             return Response(body, status=status)
         chat.save(update_fields=["updated_at"])
@@ -249,14 +282,23 @@ def _editable(request, org, buddy_id):
 class BuddyDetailView(V2APIView):
     permission_classes = [IsActiveOrgMember]
 
-    @extend_schema(summary="Read a buddy's builder settings")
+    @extend_schema(summary="Read a buddy's builder settings (people who can only use it get the public card)")
     def get(self, request, org_id, buddy_id):
         org, error = _gate(request, self, org_id)
         if error:
             return error
         buddy, error = _editable(request, org, buddy_id)
+        if error is not None and error.status_code == 403:
+            # W5: a buddy you can use but not edit (built-ins, Flo, shared buddies) still opens its chat page.
+            usable = visible_buddies(request.user, org).filter(pk=buddy_id).first()
+            if usable is not None and _flo_hidden(request, org, usable):
+                return Response({"error": "not_found", "details": "Buddy not found"}, status=404)
+            if usable is not None:
+                return Response(buddy_payload(usable, None, request.user))
         if error:
             return error
+        if _flo_hidden(request, org, buddy):
+            return Response({"error": "not_found", "details": "Buddy not found"}, status=404)
         return Response(_full_payload(buddy, request.user))
 
     @extend_schema(summary="Edit a buddy; changing prompt, sources, tools or model re-opens approval")

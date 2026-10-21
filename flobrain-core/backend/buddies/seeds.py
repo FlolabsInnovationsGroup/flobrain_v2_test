@@ -132,3 +132,15 @@ def seed_org(org, Buddy=None):
         )
         created += int(made)
     return created
+
+
+def seed_crew(org):
+    """Flo and every specialist template for one org (growth round W5; used by the demo).
+    Existing rows are left alone. Returns the buddies by slug."""
+    from buddies.templates_extra import TEMPLATES, ensure_flo, install
+
+    out = {"flo": ensure_flo(org)}
+    for key in TEMPLATES:
+        buddy, _ = install(org, key)
+        out[buddy.slug] = buddy
+    return out
