@@ -34,4 +34,8 @@ urlpatterns = [
     path("", include("pulse.urls")),
     path("", include("connectors.urls")),
     path("", include("privacy.urls")),
+    path("", include("automations.urls")),
+    path("", include("channels.urls")),
+    path("", include("datasets.urls")),
+    path("", include("growth.urls")),
 ]

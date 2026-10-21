@@ -99,6 +99,11 @@ def check(tool_key, user, org, args) -> str:
         raise ActionDenied("not_available", "this tool is turned off")
     if not holds_tool(user, org, tool_key):
         raise ActionDenied("permission", "missing permission")
+    from actions.plugins import handler
+
+    plugin = handler(tool_key)
+    if plugin is not None:
+        return plugin.check(user, org, args)
     if tool_key == "tasks.create":
         from organizations.models import Project, Team
         from tasks.services import can_use_project
@@ -176,6 +181,11 @@ def _publish_targets(user, org, args):
 def execute(tool_key, user, org, args) -> dict:
     """Run the tool through the same services as the REST endpoints. Raises ActionDenied."""
     check(tool_key, user, org, args)
+    from actions.plugins import handler
+
+    plugin = handler(tool_key)
+    if plugin is not None:
+        return plugin.execute(user, org, args)
     if tool_key == "tasks.create":
         from django.utils.dateparse import parse_date
 

@@ -30,6 +30,13 @@ import arSettings from "../../messages/phrases/ar/settings.json";
 import arStudio from "../../messages/phrases/ar/studio.json";
 import arTasks from "../../messages/phrases/ar/tasks.json";
 import arWork from "../../messages/phrases/ar/work.json";
+import arAutomations from "../../messages/phrases/ar/automations.json";
+import arChannels from "../../messages/phrases/ar/channels.json";
+import arData from "../../messages/phrases/ar/data.json";
+import arConnectors from "../../messages/phrases/ar/connectors.json";
+import arCrew from "../../messages/phrases/ar/crew.json";
+import arAcademy from "../../messages/phrases/ar/academy.json";
+import arVoice from "../../messages/phrases/ar/voice.json";
 import frAi from "../../messages/phrases/fr/ai.json";
 import frAiadmin from "../../messages/phrases/fr/aiadmin.json";
 import frCommon from "../../messages/phrases/fr/common.json";
@@ -44,6 +51,13 @@ import frSettings from "../../messages/phrases/fr/settings.json";
 import frStudio from "../../messages/phrases/fr/studio.json";
 import frTasks from "../../messages/phrases/fr/tasks.json";
 import frWork from "../../messages/phrases/fr/work.json";
+import frAutomations from "../../messages/phrases/fr/automations.json";
+import frChannels from "../../messages/phrases/fr/channels.json";
+import frData from "../../messages/phrases/fr/data.json";
+import frConnectors from "../../messages/phrases/fr/connectors.json";
+import frCrew from "../../messages/phrases/fr/crew.json";
+import frAcademy from "../../messages/phrases/fr/academy.json";
+import frVoice from "../../messages/phrases/fr/voice.json";
 import ptAi from "../../messages/phrases/pt/ai.json";
 import ptAiadmin from "../../messages/phrases/pt/aiadmin.json";
 import ptCommon from "../../messages/phrases/pt/common.json";
@@ -58,6 +72,13 @@ import ptSettings from "../../messages/phrases/pt/settings.json";
 import ptStudio from "../../messages/phrases/pt/studio.json";
 import ptTasks from "../../messages/phrases/pt/tasks.json";
 import ptWork from "../../messages/phrases/pt/work.json";
+import ptAutomations from "../../messages/phrases/pt/automations.json";
+import ptChannels from "../../messages/phrases/pt/channels.json";
+import ptData from "../../messages/phrases/pt/data.json";
+import ptConnectors from "../../messages/phrases/pt/connectors.json";
+import ptCrew from "../../messages/phrases/pt/crew.json";
+import ptAcademy from "../../messages/phrases/pt/academy.json";
+import ptVoice from "../../messages/phrases/pt/voice.json";
 import trAi from "../../messages/phrases/tr/ai.json";
 import trAiadmin from "../../messages/phrases/tr/aiadmin.json";
 import trCommon from "../../messages/phrases/tr/common.json";
@@ -72,15 +93,22 @@ import trSettings from "../../messages/phrases/tr/settings.json";
 import trStudio from "../../messages/phrases/tr/studio.json";
 import trTasks from "../../messages/phrases/tr/tasks.json";
 import trWork from "../../messages/phrases/tr/work.json";
+import trAutomations from "../../messages/phrases/tr/automations.json";
+import trChannels from "../../messages/phrases/tr/channels.json";
+import trData from "../../messages/phrases/tr/data.json";
+import trConnectors from "../../messages/phrases/tr/connectors.json";
+import trCrew from "../../messages/phrases/tr/crew.json";
+import trAcademy from "../../messages/phrases/tr/academy.json";
+import trVoice from "../../messages/phrases/tr/voice.json";
 
 type Map = Record<string, string>;
 const merge = (...parts: Map[]): Map => Object.assign({}, ...parts);
 
 export const PHRASES: Record<Exclude<V2Locale, "en">, Map> = {
-  ar: merge(arAi, arCommon, arCreate, arPrivacy, arSettings, arWork, arRooms, arTasks, arPeople, arStudio, arAiadmin, arPlatform, arDocs, arMeetings),
-  tr: merge(trAi, trCommon, trCreate, trPrivacy, trSettings, trWork, trRooms, trTasks, trPeople, trStudio, trAiadmin, trPlatform, trDocs, trMeetings),
-  fr: merge(frAi, frCommon, frCreate, frPrivacy, frSettings, frWork, frRooms, frTasks, frPeople, frStudio, frAiadmin, frPlatform, frDocs, frMeetings),
-  pt: merge(ptAi, ptCommon, ptCreate, ptPrivacy, ptSettings, ptWork, ptRooms, ptTasks, ptPeople, ptStudio, ptAiadmin, ptPlatform, ptDocs, ptMeetings),
+  ar: merge(arAi, arCommon, arCreate, arPrivacy, arSettings, arWork, arRooms, arTasks, arPeople, arStudio, arAiadmin, arPlatform, arDocs, arMeetings, arAutomations, arChannels, arData, arConnectors, arCrew, arAcademy, arVoice),
+  tr: merge(trAi, trCommon, trCreate, trPrivacy, trSettings, trWork, trRooms, trTasks, trPeople, trStudio, trAiadmin, trPlatform, trDocs, trMeetings, trAutomations, trChannels, trData, trConnectors, trCrew, trAcademy, trVoice),
+  fr: merge(frAi, frCommon, frCreate, frPrivacy, frSettings, frWork, frRooms, frTasks, frPeople, frStudio, frAiadmin, frPlatform, frDocs, frMeetings, frAutomations, frChannels, frData, frConnectors, frCrew, frAcademy, frVoice),
+  pt: merge(ptAi, ptCommon, ptCreate, ptPrivacy, ptSettings, ptWork, ptRooms, ptTasks, ptPeople, ptStudio, ptAiadmin, ptPlatform, ptDocs, ptMeetings, ptAutomations, ptChannels, ptData, ptConnectors, ptCrew, ptAcademy, ptVoice),
 };
 /** Kept for older imports and tests. */
 export const AR_PHRASES = PHRASES.ar;

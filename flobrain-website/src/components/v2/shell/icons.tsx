@@ -1,6 +1,7 @@
 import {
   Activity,
   Bell,
+  BarChart3,
   Bot,
   Calendar,
   Check,
@@ -32,6 +33,8 @@ import {
   Timer,
   UserRound,
   Users,
+  Zap,
+  Phone,
   type LucideIcon,
 } from "lucide-react";
 
@@ -69,4 +72,7 @@ export const ICONS: Record<string, LucideIcon> = {
   scroll: ScrollText,
   message: MessageSquareWarning,
   user: UserRound,
+  zap: Zap,
+  chart: BarChart3,
+  phone: Phone,
 };
