@@ -39,7 +39,7 @@ export function QualityTrend({ trend }: { trend: QualityStats["trend"] }) {
       </figcaption>
       {/* Time runs left to right in every language. */}
       <div dir="ltr" className="h-56 w-full">
-        <ResponsiveContainer width="100%" height="100%">
+        <ResponsiveContainer width="100%" height="100%" initialDimension={{ width: 600, height: 240 }}>
           <LineChart data={data} margin={{ top: 8, right: 12, bottom: 0, left: 0 }}>
             <CartesianGrid vertical={false} stroke="var(--fb-v2-border)" />
             <XAxis dataKey="label" tickLine={false} axisLine={false} minTickGap={16} tick={{ fill: "var(--fb-v2-text-muted)", fontSize: 12 }} />

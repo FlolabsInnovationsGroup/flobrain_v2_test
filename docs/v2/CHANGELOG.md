@@ -2,6 +2,14 @@
 
 Newest first. Each entry names the PR, what changed, and any V1 behaviour change.
 
+## Local demo fixes (local, 2026-10-21)
+
+- The demo's "Ask the org" and buddy sources work on SQLite (`KNOWLEDGE_VECTOR_STORE=json` in the demo scripts).
+- Charts no longer warn about a -1 size before layout (`initialDimension` on the V2 chart containers).
+- `<body>` ignores attributes that browser extensions add before React loads, so the Next.js dev badge stops counting them as issues.
+- The demo ticker keeps routine command output out of the API window, so real errors stand out.
+- V1 behaviour: unchanged.
+
 ## Market round: MCP hub, Slack and Teams, ZATCA and ETA, memory, evals, imports, compliance, workspace pricing (local, 2026-10-21)
 
 Off by default behind flags, on and simulated in the demo (no network). Details in `docs/v2/features/`.
