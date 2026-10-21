@@ -146,7 +146,7 @@ export function ResultChart({ spec, result, title }: { spec: ChartSpec; result: 
         <DataTable result={result} caption={title} />
       ) : (
         <div className="h-72" role="img" aria-label={tr("{title}. Use Show table for the numbers.", { title })}>
-          <ResponsiveContainer width="100%" height="100%">
+          <ResponsiveContainer width="100%" height="100%" initialDimension={{ width: 600, height: 240 }}>
             {spec.type === "line" ? (
               <LineChart data={chart.data} margin={{ top: 8, right: 24, bottom: 0, left: 24 }}>
                 {axes}
