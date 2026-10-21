@@ -32,6 +32,7 @@ $env:DEMO_AI="True"            # built-in demo model: no AI key, no network
 $env:AI_PROVIDER_BACKEND="direct"
 $env:EMBEDDINGS_BACKEND="fake" # memory search works without an embeddings server
 $env:EMBEDDINGS_MODEL="fake-embedder"
+$env:KNOWLEDGE_VECTOR_STORE="json" # needed on SQLite (no pgvector); leave unset on PostgreSQL with pgvector
 $env:CONTENT_STORAGE="local"
 $env:CORS_ALLOWED_ORIGINS="http://localhost:3000,http://127.0.0.1:3000"
 $env:PUBLIC_API_BASE_URL="http://127.0.0.1:8000"   # the demo SSO sign-in page and SAML addresses use it

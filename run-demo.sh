@@ -47,6 +47,7 @@ KEYFILE="$BACKEND/.demo-key"
 export DEBUG=True ALLOW_INSECURE_AES_MASTER_KEY=1 SECRET_KEY=local-demo-secret-key-for-this-computer-only-1234567890
 export CREDENTIALS_ENCRYPTION_KEY="$(cat "$KEYFILE")" DB_ENGINE=sqlite SQLITE_PATH="$BACKEND/demo.sqlite3"
 export DEMO_MODE=True DEMO_AI=True AI_PROVIDER_BACKEND=direct EMBEDDINGS_BACKEND=fake EMBEDDINGS_MODEL=fake-embedder EMBEDDINGS_DIMENSION=1024
+export KNOWLEDGE_VECTOR_STORE=json  # SQLite has no pgvector; search vectors are kept as JSON
 export CONTENT_STORAGE=local CONTENT_LOCAL_DIR="$BACKEND/local_media/content" DOCS_FILE_STORAGE=local
 export CORS_ALLOWED_ORIGINS=http://localhost:3000,http://127.0.0.1:3000 PUBLIC_API_BASE_URL=http://127.0.0.1:8000 FRONTEND_BASE_URL=http://localhost:3000
 FRESH=0; [ -f "$SQLITE_PATH" ] || FRESH=1
