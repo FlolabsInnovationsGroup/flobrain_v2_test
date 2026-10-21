@@ -1,0 +1,82 @@
+name: Django Backend CI
+
+on:
+  push:
+    branches: [ "main" ]
+    paths:
+      - 'flobrain-core/backend/**'
+      - '.github/workflows/django-backend-ci.yml'
+  pull_request:
+    branches: [ "main" ]
+    paths:
+      - 'flobrain-core/backend/**'
+      - '.github/workflows/django-backend-ci.yml'
+
+defaults:
+  run:
+    working-directory: ./flobrain-core/backend
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+
+    services:
+      postgres:
+        image: postgres:15
+        env:
+          POSTGRES_DB: flobrain_db
+          POSTGRES_USER: flo_user
+          POSTGRES_PASSWORD: flo_password
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U flo_user -d flobrain_db"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+
+    env:
+      DB_ENGINE: postgresql
+      DB_NAME: flobrain_db
+      DB_USER: flo_user
+      DB_PASS: flo_password
+      DB_HOST: localhost
+      DB_PORT: "5432"
+      # Not a real secret: only signs tokens inside the throwaway CI database.
+      SECRET_KEY: ci-only-signing-key-not-used-anywhere-else-0123456789
+      DEBUG: "False"
+      # Point Mongo at a closed port so nothing can reach a real instance.
+      MONGO_HOST: 127.0.0.1
+      MONGO_PORT: "1"
+      # Q12 is still open; CI has no production archives to decrypt.
+      ALLOW_INSECURE_AES_MASTER_KEY: "1"
+
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Set up Python 3.11
+      uses: actions/setup-python@v5
+      with:
+        python-version: "3.11"
+        cache: 'pip'
+        cache-dependency-path: flobrain-core/backend/requirements.txt
+
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install -r requirements.txt
+
+    - name: Django system check
+      run: python manage.py check
+
+    - name: Migrations are up to date
+      run: python manage.py makemigrations --check --dry-run
+
+    - name: Apply migrations
+      run: python manage.py migrate --noinput
+
+    - name: Test
+      run: python manage.py test --noinput -v 2
+
+    - name: OpenAPI schema generates
+      run: python manage.py spectacular --file "$RUNNER_TEMP/schema.yml"

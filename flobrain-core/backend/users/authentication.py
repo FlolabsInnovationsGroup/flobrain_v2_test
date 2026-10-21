@@ -1,0 +1,46 @@
+from rest_framework.authentication import BaseAuthentication
+from rest_framework.exceptions import AuthenticationFailed
+
+from users.jwt_utils import decode_token, get_user_from_request
+
+
+class BearerJWTAuthentication(BaseAuthentication):
+    def authenticate(self, request):
+        user = get_user_from_request(request)
+        if user is None:
+            header = request.META.get("HTTP_AUTHORIZATION") or ""
+            if header.startswith("Bearer "):
+                raise AuthenticationFailed("Invalid or expired token")
+            return None
+        token = (request.META.get("HTTP_AUTHORIZATION") or "")[7:].strip()
+        payload = decode_token(token) or {}
+        iat = payload.get("iat")
+        if user.password_changed_at and iat is not None:
+            if int(iat) < int(user.password_changed_at.timestamp()):
+                raise AuthenticationFailed("Token issued before last password change")
+        return (user, payload)
+
+    def authenticate_header(self, request):
+        return 'Bearer realm="api"'
+
+
+class BearerJWTAuthenticationScheme:
+    """Registered below so spectacular can import it lazily."""
+
+
+try:
+    from drf_spectacular.extensions import OpenApiAuthenticationExtension
+
+    class BearerJWTAuthenticationExtension(OpenApiAuthenticationExtension):
+        target_class = "users.authentication.BearerJWTAuthentication"
+        name = "BearerJWT"
+
+        def get_security_definition(self, auto_schema):
+            return {
+                "type": "http",
+                "scheme": "bearer",
+                "bearerFormat": "JWT",
+            }
+
+except ImportError:  # spectacular is optional for unit tests that skip schema
+    pass

@@ -1,0 +1,24 @@
+/* V2 semantic tokens. V1 --fb-* page tokens are untouched. */
+.v2-root {
+  --fb-v2-accent: var(--fb-brain-accent, #a855f7);
+  --fb-v2-accent-strong: var(--fb-brain-btn, #9333ea);
+  --fb-v2-surface: var(--fb-card-bg, #120018);
+  --fb-v2-page: var(--fb-page-bg, #070014);
+  --fb-v2-text: var(--fb-text, #e2e8f0);
+  --fb-v2-text-muted: var(--fb-text-muted, #94a3b8);
+  --fb-v2-success: #34d399;
+  --fb-v2-error: #f87171;
+  --fb-v2-border: color-mix(in srgb, var(--fb-v2-text) 12%, transparent);
+  --fb-v2-radius: 0.75rem;
+  color: var(--fb-v2-text);
+  background: var(--fb-v2-page);
+  min-height: 100dvh;
+}
+
+.light .v2-root {
+  --fb-v2-accent: var(--fb-brain-accent, #7c3aed);
+  --fb-v2-surface: var(--fb-card-bg, #ffffff);
+  --fb-v2-page: var(--fb-page-bg, #f8fafc);
+  --fb-v2-text: var(--fb-text, #0f172a);
+  --fb-v2-text-muted: var(--fb-text-muted, #64748b);
+}

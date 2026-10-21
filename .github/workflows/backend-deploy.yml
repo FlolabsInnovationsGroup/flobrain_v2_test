@@ -1,0 +1,29 @@
+# Disabled (Phase 0f). Enable only after INFRA_CHANGES.md is approved.
+# Never auto-promotes to production.
+name: Backend deploy (disabled)
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [ "main" ]
+    paths:
+      - "flobrain-core/backend/**"
+      - ".github/workflows/backend-deploy.yml"
+
+jobs:
+  staging:
+    if: false
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Placeholder
+        run: echo "Build image, migrate one-off, deploy staging, smoke /healthz. See docs/v2/INFRA_CHANGES.md"
+
+  promote-production:
+    if: false
+    needs: staging
+    environment: production
+    runs-on: ubuntu-latest
+    steps:
+      - name: Placeholder
+        run: echo "Manual promotion only after a human approval."

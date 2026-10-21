@@ -1,0 +1,23 @@
+{
+  "workspace": {
+    "cockpit": "Cockpit",
+    "rooms": "Rooms",
+    "noRooms": "No rooms yet",
+    "rightRail": "Activity",
+    "noAccess": "You do not have access",
+    "empty": "No data yet",
+    "loading": "Loading",
+    "retry": "Retry",
+    "personalBlocked": "This workspace is for company members."
+  },
+  "auth": {
+    "signin": "Sign in",
+    "email": "Email",
+    "password": "Password",
+    "submit": "Continue",
+    "firstLogin": "Choose a new password",
+    "reset": "Reset password",
+    "forgot": "Forgot password",
+    "newPassword": "New password"
+  }
+}
