@@ -4,6 +4,17 @@ The demo is a ready-made company, **Nile Labs**, with one person per role. On th
 
 Demo mode is **off by default** and must never be switched on in production: anyone who can reach the API can sign in as the demo users.
 
+## Quickest way: one click
+
+From a copy of this repository, with Python 3.11+ and Node.js 20+ installed:
+
+- **Windows:** double-click `run-demo.bat` at the repository root.
+- **macOS / Linux:** run `./run-demo.sh`.
+
+The script installs the Python and website packages only when they are missing or changed, builds a local SQLite demo database (`flobrain-core/backend/demo.sqlite3`), starts the API on port 8000 and the website on port 3000, and opens the sign-in page. Close the two windows (Windows) or press Ctrl+C (macOS/Linux) to stop. Delete `demo.sqlite3` to start from a clean demo.
+
+The manual steps below do the same thing by hand (and let you use PostgreSQL).
+
 ## What you need
 
 - Python 3.11+ with the backend requirements, Node 20+.
