@@ -22,6 +22,8 @@ import {
   type LucideIcon,
 } from "lucide-react";
 
+import { PRICE_BOOK, formatMoney, perMonth, unitPrices } from "@/components/v2/billing/pricing";
+
 /** Copy and data for the V2 marketing site. Kept in one place so it's easy to edit and translate later. */
 
 export type Buddy = { name: string; icon: LucideIcon; gradient: string; role: string; ask: string; answer: string };
@@ -157,53 +159,104 @@ export type Plan = {
   cta: string;
   href: string;
   featured?: boolean;
+  /** Code in the price book (src/components/v2/billing/pricing.ts), when the plan has a list price. */
+  code?: string;
 };
 
-/** Sample prices for the design. Final pricing is still to be confirmed (docs/v2/DECISIONS_NEEDED.md). */
+export type PriceView = "per_seat" | "per_workspace";
+
+const usd = (cents: number) => formatMoney(cents, "en-US");
+const fleet = unitPrices(PRICE_BOOK.fleet);
+const studio = unitPrices(PRICE_BOOK.studio);
+
+const CREW: Plan = {
+  code: "crew",
+  name: "Crew",
+  blurb: "For small teams getting started.",
+  monthly: usd(PRICE_BOOK.crew.monthCents ?? 0),
+  yearly: usd(PRICE_BOOK.crew.monthCents ?? 0),
+  unit: `free forever, up to ${PRICE_BOOK.crew.seatCap} people`,
+  features: ["Rooms, DMs and threads", "Meetings up to 40 minutes", "3 buddies", "Tasks and time tracking", "7 days of history"],
+  cta: "Start free",
+  href: "/w/signin",
+};
+
+const MISSION: Plan = {
+  name: "Mission",
+  blurb: "For companies with their own cloud and rules.",
+  monthly: "Custom",
+  yearly: "Custom",
+  unit: "yearly agreement",
+  features: ["Everything in Fleet", "Deploy in your AWS account", "SSO, SCIM and audit log", "Bring your own models", "Data residency and DPA", "Dedicated support"],
+  cta: "Talk to us",
+  href: "/contact",
+};
+
+/**
+ * Sample prices for the design. Final pricing is still to be confirmed (docs/v2/DECISIONS_NEEDED.md).
+ * Numbers come from the price book (src/components/v2/billing/pricing.ts), never written here.
+ */
 export const PLANS: Plan[] = [
+  CREW,
   {
-    name: "Crew",
-    blurb: "For small teams getting started.",
-    monthly: "$0",
-    yearly: "$0",
-    unit: "free forever, up to 10 people",
-    features: ["Rooms, DMs and threads", "Meetings up to 40 minutes", "3 buddies", "Tasks and time tracking", "7 days of history"],
-    cta: "Start free",
-    href: "/w/signin",
-  },
-  {
+    code: "fleet",
     name: "Fleet",
     blurb: "For teams that run on FloBrain every day.",
-    monthly: "$12",
-    yearly: "$10",
+    monthly: usd(fleet.month ?? 0),
+    yearly: usd(perMonth(fleet.year ?? 0)),
     unit: "per person, per month",
     features: ["Everything in Crew", "Unlimited meetings with transcripts", "Unlimited buddies and Buddy studio", "Approvals and room policies", "Reports and impact score", "Unlimited history"],
     cta: "Start a 14 day trial",
     href: "/w/signin",
     featured: true,
   },
-  {
-    name: "Mission",
-    blurb: "For companies with their own cloud and rules.",
-    monthly: "Custom",
-    yearly: "Custom",
-    unit: "yearly agreement",
-    features: ["Everything in Fleet", "Deploy in your AWS account", "SSO, SCIM and audit log", "Bring your own models", "Data residency and DPA", "Dedicated support"],
-    cta: "Talk to us",
-    href: "/contact",
-  },
+  MISSION,
 ];
 
-export const COMPARE: [string, string, string, string][] = [
-  ["Rooms and DMs", "yes", "yes", "yes"],
-  ["Meeting length", "40 min", "Unlimited", "Unlimited"],
-  ["Transcripts and summaries", "", "yes", "yes"],
-  ["Buddies", "3", "Unlimited", "Unlimited"],
-  ["Buddy studio", "", "yes", "yes"],
-  ["Approvals and policies", "", "yes", "yes"],
-  ["Reports and impact", "Personal", "Team", "Team + export"],
-  ["SSO and SCIM", "", "", "yes"],
-  ["Deploy in your cloud", "", "", "yes"],
-  ["Bring your own models", "", "", "yes"],
-  ["Support", "Community", "Email", "Dedicated"],
+/** The same plans with one flat price for the whole workspace (Studio instead of Fleet). */
+export const WORKSPACE_PLANS: Plan[] = [
+  CREW,
+  {
+    code: "studio",
+    name: "Studio",
+    blurb: `Everything in Fleet for one price, up to ${PRICE_BOOK.studio.seatCap} people.`,
+    monthly: usd(studio.month ?? 0),
+    yearly: usd(perMonth(studio.year ?? 0)),
+    unit: `per workspace, per month, up to ${PRICE_BOOK.studio.seatCap} people`,
+    features: [
+      "Everything in Fleet",
+      `Up to ${PRICE_BOOK.studio.seatCap} people, one price`,
+      `${(PRICE_BOOK.studio.aiPerWorkspace ?? 0).toLocaleString("en-US")} buddy answers a month, shared`,
+      "No surprise charges: invites stop at the cap",
+      "Switch to per person any time",
+    ],
+    cta: "Start a 14 day trial",
+    href: "/w/signin",
+    featured: true,
+  },
+  MISSION,
+];
+
+export const PLAN_VIEWS: Record<PriceView, Plan[]> = { per_seat: PLANS, per_workspace: WORKSPACE_PLANS };
+
+const ai = (n: number | null) => (n ?? 0).toLocaleString("en-US");
+
+/** Columns: Crew, Fleet (per person), Studio (per workspace), Mission. */
+export const COMPARE_PLANS = ["Crew", "Fleet", "Studio", "Mission"] as const;
+
+export const COMPARE: [string, string, string, string, string][] = [
+  ["How you pay", "Free", "Per person", "Per workspace", "Yearly agreement"],
+  ["People", `Up to ${PRICE_BOOK.crew.seatCap}`, "Any number", `Up to ${PRICE_BOOK.studio.seatCap}`, "Any number"],
+  ["AI answers included each month", `${ai(PRICE_BOOK.crew.aiPerSeat)} per person`, `${ai(PRICE_BOOK.fleet.aiPerSeat)} per person`, `${ai(PRICE_BOOK.studio.aiPerWorkspace)} per workspace`, "Custom"],
+  ["Rooms and DMs", "yes", "yes", "yes", "yes"],
+  ["Meeting length", "40 min", "Unlimited", "Unlimited", "Unlimited"],
+  ["Transcripts and summaries", "", "yes", "yes", "yes"],
+  ["Buddies", "3", "Unlimited", "Unlimited", "Unlimited"],
+  ["Buddy studio", "", "yes", "yes", "yes"],
+  ["Approvals and policies", "", "yes", "yes", "yes"],
+  ["Reports and impact", "Personal", "Team", "Team", "Team + export"],
+  ["SSO and SCIM", "", "", "", "yes"],
+  ["Deploy in your cloud", "", "", "", "yes"],
+  ["Bring your own models", "", "", "", "yes"],
+  ["Support", "Community", "Email", "Email", "Dedicated"],
 ];

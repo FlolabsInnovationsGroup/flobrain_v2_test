@@ -1,0 +1,31 @@
+[
+ {
+  "type": "message",
+  "ts": "1788766260.000000",
+  "user": "U07MONA",
+  "text": "We signed two new customers in Alexandria this week.",
+  "user_profile": {
+   "real_name": "Mona Saleh",
+   "display_name": "mona"
+  },
+  "reactions": [
+   {
+    "name": "heart",
+    "users": [
+     "U01NADIA"
+    ],
+    "count": 1
+   }
+  ]
+ },
+ {
+  "type": "message",
+  "ts": "1788784080.000000",
+  "user": "U02OMAR",
+  "text": "Water delivery comes on Sunday morning.",
+  "user_profile": {
+   "real_name": "Omar Khaled",
+   "display_name": "omar"
+  }
+ }
+]

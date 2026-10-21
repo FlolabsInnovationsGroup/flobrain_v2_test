@@ -1,0 +1,55 @@
+[
+ {
+  "type": "message",
+  "ts": "1788507660.000000",
+  "user": "U06KARIM",
+  "text": "The quarterly survey is open until Friday.",
+  "user_profile": {
+   "real_name": "Karim Fawzy",
+   "display_name": "karim"
+  },
+  "reactions": [
+   {
+    "name": "eyes",
+    "users": [
+     "U02OMAR"
+    ],
+    "count": 1
+   }
+  ]
+ },
+ {
+  "type": "message",
+  "ts": "1788521460.000000",
+  "user": "U05SARA",
+  "text": "Can we talk about it at standup?",
+  "thread_ts": "1788421560.000000",
+  "parent_user_id": "U07MONA"
+ },
+ {
+  "type": "message",
+  "ts": "1788529440.000000",
+  "user": "U04YOUSSEF",
+  "text": "Water delivery comes on Sunday morning.",
+  "user_profile": {
+   "real_name": "Youssef Adel",
+   "display_name": "youssef"
+  },
+  "reactions": [
+   {
+    "name": "tada",
+    "users": [
+     "U06KARIM"
+    ],
+    "count": 1
+   }
+  ],
+  "replies": [
+   {
+    "user": "U07MONA",
+    "ts": "1788680460.000000"
+   }
+  ],
+  "reply_count": 1
+ }
+]

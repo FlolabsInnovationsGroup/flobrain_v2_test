@@ -1,0 +1,60 @@
+[
+ {
+  "type": "message",
+  "ts": "1789198620.000000",
+  "user": "U06KARIM",
+  "text": "<@U02OMAR> can you review the push notification PR?",
+  "user_profile": {
+   "real_name": "Karim Fawzy",
+   "display_name": "karim"
+  }
+ },
+ {
+  "type": "message",
+  "ts": "1789205760.000000",
+  "user": "U04YOUSSEF",
+  "text": "Let's freeze the release branch on Sunday.",
+  "user_profile": {
+   "real_name": "Youssef Adel",
+   "display_name": "youssef"
+  },
+  "reactions": [
+   {
+    "name": "thumbsup",
+    "users": [
+     "U06KARIM",
+     "U02OMAR"
+    ],
+    "count": 2
+   }
+  ]
+ },
+ {
+  "type": "message",
+  "ts": "1789211880.000000",
+  "user": "U02OMAR",
+  "text": "I'll check this afternoon.",
+  "thread_ts": "1788850860.000000",
+  "parent_user_id": "U06KARIM"
+ },
+ {
+  "type": "message",
+  "ts": "1789216980.000000",
+  "user": "U06KARIM",
+  "text": "The iOS review came back approved.",
+  "user_profile": {
+   "real_name": "Karim Fawzy",
+   "display_name": "karim"
+  }
+ },
+ {
+  "type": "message",
+  "ts": "1789232280.000000",
+  "user": "U04YOUSSEF",
+  "text": "Let's freeze the release branch on Sunday.",
+  "user_profile": {
+   "real_name": "Youssef Adel",
+   "display_name": "youssef"
+  }
+ }
+]

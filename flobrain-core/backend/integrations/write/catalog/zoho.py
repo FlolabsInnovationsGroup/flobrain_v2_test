@@ -154,7 +154,7 @@ register(
         description="Create Zoho CRM leads and deals, and draft Zoho Books invoices.",
         authorize_url=lambda: f"https://accounts.{DCS[dc()]}/oauth/v2/auth",
         token_url=lambda: f"https://accounts.{DCS[dc()]}/oauth/v2/token",
-        base_scopes=("ZohoBooks.settings.READ",),
+        base_scopes=("ZohoBooks.settings.READ", "ZohoBooks.invoices.READ"),
         auth_params={"access_type": "offline", "prompt": "consent"},
         scope_separator=",",
         hosts=HOSTS,

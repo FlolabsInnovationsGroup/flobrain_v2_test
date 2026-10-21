@@ -1,0 +1,46 @@
+[
+ {
+  "type": "message",
+  "subtype": "channel_join",
+  "ts": "1788246000.000000",
+  "user": "U07MONA",
+  "text": "<@U07MONA> has joined the channel"
+ },
+ {
+  "type": "message",
+  "ts": "1788251100.000000",
+  "user": "U07MONA",
+  "text": "Can we try the Arabic layout with the larger font?",
+  "user_profile": {
+   "real_name": "Mona Saleh",
+   "display_name": "mona"
+  },
+  "replies": [
+   {
+    "user": "U05SARA",
+    "ts": "1788335460.000000"
+   }
+  ],
+  "reply_count": 1
+ },
+ {
+  "type": "message",
+  "ts": "1788265320.000000",
+  "user": "U05SARA",
+  "text": "Icons are exported at 2x and 3x now.",
+  "user_profile": {
+   "real_name": "Sara Nabil",
+   "display_name": "sara"
+  }
+ },
+ {
+  "type": "message",
+  "ts": "1788282420.000000",
+  "user": "U04YOUSSEF",
+  "text": "The empty state illustration feels too busy.",
+  "user_profile": {
+   "real_name": "Youssef Adel",
+   "display_name": "youssef"
+  }
+ }
+]

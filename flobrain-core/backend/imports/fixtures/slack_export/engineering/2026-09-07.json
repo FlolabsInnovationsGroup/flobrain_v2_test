@@ -1,0 +1,34 @@
+[
+ {
+  "type": "message",
+  "ts": "1788767580.000000",
+  "user": "U03LAYLA",
+  "text": "I'll check this afternoon.",
+  "thread_ts": "1788257100.000000",
+  "parent_user_id": "U06KARIM"
+ },
+ {
+  "type": "message",
+  "ts": "1788772920.000000",
+  "user": "U02OMAR",
+  "text": "The iOS review came back approved.",
+  "user_profile": {
+   "real_name": "Omar Khaled",
+   "display_name": "omar"
+  }
+ },
+ {
+  "type": "message",
+  "ts": "1788793020.000000",
+  "user": "U02OMAR",
+  "text": "Load test results: p95 at 180 ms with 200 users. (updated time: 11:30)",
+  "user_profile": {
+   "real_name": "Omar Khaled",
+   "display_name": "omar"
+  },
+  "edited": {
+   "user": "U02OMAR",
+   "ts": "1788793080.000000"
+  }
+ }
+]

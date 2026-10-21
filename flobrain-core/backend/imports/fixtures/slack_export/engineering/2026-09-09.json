@@ -1,0 +1,41 @@
+[
+ {
+  "type": "message",
+  "ts": "1788939300.000000",
+  "user": "U06KARIM",
+  "text": "Database migration ran in 4 minutes on staging.",
+  "user_profile": {
+   "real_name": "Karim Fawzy",
+   "display_name": "karim"
+  }
+ },
+ {
+  "type": "message",
+  "ts": "1788948300.000000",
+  "user": "U02OMAR",
+  "text": "I'm moving the API timeouts to 15 seconds.",
+  "user_profile": {
+   "real_name": "Omar Khaled",
+   "display_name": "omar"
+  },
+  "reactions": [
+   {
+    "name": "white_check_mark",
+    "users": [
+     "U06KARIM",
+     "U03LAYLA",
+     "U02OMAR"
+    ],
+    "count": 3
+   }
+  ]
+ },
+ {
+  "type": "message",
+  "ts": "1788964740.000000",
+  "user": "U04YOUSSEF",
+  "text": "Done, please take a look.",
+  "thread_ts": "1788451560.000000",
+  "parent_user_id": "U06KARIM"
+ }
+]

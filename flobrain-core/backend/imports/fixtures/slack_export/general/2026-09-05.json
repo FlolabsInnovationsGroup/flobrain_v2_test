@@ -1,0 +1,67 @@
+[
+ {
+  "type": "message",
+  "ts": "1788592080.000000",
+  "user": "U05SARA",
+  "text": "Who has the HDMI adapter from meeting room B?",
+  "user_profile": {
+   "real_name": "Sara Nabil",
+   "display_name": "sara"
+  },
+  "reactions": [
+   {
+    "name": "tada",
+    "users": [
+     "U04YOUSSEF",
+     "U01NADIA",
+     "U06KARIM"
+    ],
+    "count": 3
+   }
+  ],
+  "replies": [
+   {
+    "user": "U05SARA",
+    "ts": "1789311480.000000"
+   }
+  ],
+  "reply_count": 1
+ },
+ {
+  "type": "message",
+  "ts": "1788598440.000000",
+  "user": "U04YOUSSEF",
+  "text": "Thanks all for a great sprint.",
+  "user_profile": {
+   "real_name": "Youssef Adel",
+   "display_name": "youssef"
+  }
+ },
+ {
+  "type": "message",
+  "ts": "1788607620.000000",
+  "user": "U07MONA",
+  "text": "Good morning everyone. Reminder: all-hands on Thursday at 11:00.",
+  "user_profile": {
+   "real_name": "Mona Saleh",
+   "display_name": "mona"
+  }
+ },
+ {
+  "type": "message",
+  "ts": "1788617280.000000",
+  "user": "U03LAYLA",
+  "text": "The new office Wi-Fi password is on the board by reception.",
+  "user_profile": {
+   "real_name": "Layla Mansour",
+   "display_name": "layla"
+  },
+  "replies": [
+   {
+    "user": "U04YOUSSEF",
+    "ts": "1789458900.000000"
+   }
+  ],
+  "reply_count": 1
+ }
+]

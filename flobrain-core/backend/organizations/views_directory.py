@@ -260,12 +260,12 @@ class MemberListCreateView(V2APIView):
         if OrgMembership.objects.filter(org=org, user__email__iexact=email).exists():
             return _bad("This person is already in the organization", "conflict", 409)
 
-        from billing_v2.entitlements import seat_blocked
+        from billing_v2.entitlements import seat_blocked, seat_error
 
         with transaction.atomic():
             seats = seat_blocked(org, email=email)
             if seats is not None:
-                return Response({"error": "seat_limit", "details": f"All {seats} seats are taken. Add seats in billing first."}, status=409)
+                return Response(seat_error(org, seats), status=409)
             membership, user, _temp = register_member(org, request.user, email, org_role=org_role, username=username)
             if team is not None:
                 TeamMembership.objects.get_or_create(team=team, user=user, defaults={"team_role": team_role})
@@ -344,14 +344,14 @@ class MemberDetailView(V2APIView):
         reason = str(body.get("reason") or "")[:500]
 
         if wants_status and status_value != membership.employment_status:
-            from billing_v2.entitlements import NOT_COUNTED, seat_blocked
+            from billing_v2.entitlements import NOT_COUNTED, seat_blocked, seat_error
 
             with transaction.atomic():
                 current = OrgMembership.objects.get(pk=membership.pk)
                 if current.employment_status in NOT_COUNTED and status_value not in NOT_COUNTED:
                     seats = seat_blocked(org, adding_user_id=membership.user_id)
                     if seats is not None:
-                        return Response({"error": "seat_limit", "details": f"All {seats} seats are taken. Add seats in billing first."}, status=409)
+                        return Response(seat_error(org, seats), status=409)
                 membership = change_member_status(org, request.user, membership.user, status_value, reason=reason)
         if wants_role and role_value != membership.org_role:
             before = membership.org_role

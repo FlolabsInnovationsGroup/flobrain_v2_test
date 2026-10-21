@@ -97,6 +97,7 @@ export function navFor(slug: string, access: Access | null): NavGroup[] {
   if (flag(access, "bridges") && has(access, "bridges.manage")) org.push({ href: w("/settings/bridges"), label: "Slack and Teams", icon: "message" });
   if (flag(access, "imports") && has(access, "imports.run")) org.push({ href: w("/settings/imports"), label: "Import", icon: "download" });
   if (flag(access, "compliance") && has(access, "compliance.view")) org.push({ href: w("/settings/compliance"), label: "Compliance", icon: "shield" });
+  else if (flag(access, "compliance") && access) org.push({ href: w("/settings/compliance?tab=mine"), label: "Compliance", icon: "shield" });
   if (flag(access, "integrations") || (flag(access, "write_integrations") && (has(access, "integrations.act") || has(access, "integrations.manage")))) org.push({ href: w("/integrations"), label: "nav.integrations", icon: "plug" });
   org.push({ href: w("/settings/notifications"), label: "nav.notifications", icon: "bell" });
   org.push({ href: w("/privacy"), label: "nav.privacy", icon: "eye" });

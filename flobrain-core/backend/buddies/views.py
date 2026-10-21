@@ -320,6 +320,13 @@ class BuddyDetailView(V2APIView):
             fields["is_enabled"] = bool(data.get("is_enabled"))
         for key, value in fields.items():
             setattr(buddy, key, value)
+        # --- M5 hook (evals): sets with "block saves" must still pass with the new settings.
+        from evals.gate import buddy_save_block
+
+        blocked = buddy_save_block(request, org, buddy, fields)
+        if blocked is not None:
+            return blocked
+        # --- end M5 hook
         reopened = False
         if (
             not buddy.is_builtin

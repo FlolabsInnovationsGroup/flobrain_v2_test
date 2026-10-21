@@ -1,0 +1,62 @@
+[
+ {
+  "type": "message",
+  "ts": "1788850860.000000",
+  "user": "U06KARIM",
+  "text": "We need a decision on the analytics SDK by Wednesday.",
+  "user_profile": {
+   "real_name": "Karim Fawzy",
+   "display_name": "karim"
+  },
+  "reactions": [
+   {
+    "name": "heart",
+    "users": [
+     "U03LAYLA",
+     "U02OMAR",
+     "U06KARIM"
+    ],
+    "count": 3
+   }
+  ],
+  "replies": [
+   {
+    "user": "U02OMAR",
+    "ts": "1789211880.000000"
+   },
+   {
+    "user": "U06KARIM",
+    "ts": "1789392420.000000"
+   }
+  ],
+  "reply_count": 2
+ },
+ {
+  "type": "message",
+  "ts": "1788856020.000000",
+  "user": "U02OMAR",
+  "text": "Standup notes: payments retry, offline mode, release checklist.",
+  "user_profile": {
+   "real_name": "Omar Khaled",
+   "display_name": "omar"
+  }
+ },
+ {
+  "type": "message",
+  "ts": "1788867960.000000",
+  "user": "U06KARIM",
+  "text": "On it.",
+  "thread_ts": "1788587280.000000",
+  "parent_user_id": "U06KARIM"
+ },
+ {
+  "type": "message",
+  "ts": "1788882720.000000",
+  "user": "U06KARIM",
+  "text": "See <#C01GENERAL|general> for the release announcement.",
+  "user_profile": {
+   "real_name": "Karim Fawzy",
+   "display_name": "karim"
+  }
+ }
+]

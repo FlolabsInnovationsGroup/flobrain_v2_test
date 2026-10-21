@@ -18,9 +18,28 @@ class Plan(models.Model):
     stripe_price_id = models.CharField(max_length=80, blank=True, default="")
     is_public = models.BooleanField(default=False)
     created_at = models.DateTimeField(default=timezone.now)
+    # Workspace pricing (M8, flag ``workspace_pricing``). Prices stay config: these rows (or
+    # billing_v2/sample_plans.py for seeding) are the only place a price lives on the server.
+    UNIT_PER_SEAT = "per_seat"
+    UNIT_PER_WORKSPACE = "per_workspace"
+    UNITS = ((UNIT_PER_SEAT, "Per person"), (UNIT_PER_WORKSPACE, "Per workspace"))
+    OVERAGE_BLOCK = "block"
+    OVERAGE_PROMPT = "prompt_upgrade"
+    OVERAGE = ((OVERAGE_BLOCK, "Block new people"), (OVERAGE_PROMPT, "Block and suggest an upgrade"))
+
+    billing_unit = models.CharField(max_length=16, choices=UNITS, default=UNIT_PER_SEAT)
+    included_seats = models.PositiveIntegerField(null=True, blank=True)  # workspace plans: people included for one price
+    overage_policy = models.CharField(max_length=16, choices=OVERAGE, default=OVERAGE_BLOCK)  # never a silent charge
+    ai_allowance_per_workspace = models.PositiveIntegerField(null=True, blank=True)  # buddy answers per month, whole workspace
+    price_yearly_cents = models.PositiveIntegerField(default=0)  # per seat (or per workspace) per year; 0 = 12 x monthly
+    tier = models.SlugField(max_length=40, blank=True, default="")  # pairs a per-seat and a workspace plan with the same features
 
     class Meta:
         db_table = "billing_plans"
+
+    @property
+    def per_workspace(self) -> bool:
+        return self.billing_unit == self.UNIT_PER_WORKSPACE
 
     def flags(self) -> set[str]:
         return set((self.entitlements or {}).get("flags") or [])
@@ -41,6 +60,7 @@ class Subscription(models.Model):
     stripe_customer_id = models.CharField(max_length=80, blank=True, default="")
     stripe_subscription_id = models.CharField(max_length=80, blank=True, default="", db_index=True)
     current_period_end = models.DateTimeField(null=True, blank=True)
+    interval = models.CharField(max_length=8, default="month")  # month | year (M8)
     last_event_at = models.DateTimeField(null=True, blank=True)  # Stripe event.created of the last applied change
     updated_at = models.DateTimeField(auto_now=True)
 
@@ -72,3 +92,26 @@ class StripeEvent(models.Model):
 
     class Meta:
         db_table = "billing_stripe_events"
+
+
+class Invoice(models.Model):
+    """A copy of a Stripe invoice (written only by the verified webhook, or the demo seed), so the
+    billing page can list invoices without calling Stripe on every view. The PDF lives at Stripe."""
+
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    org = models.ForeignKey("organizations.Organization", on_delete=models.CASCADE, related_name="billing_invoices")
+    stripe_invoice_id = models.CharField(max_length=80, blank=True, default="", db_index=True)
+    number = models.CharField(max_length=40, blank=True, default="")
+    status = models.CharField(max_length=16, default="paid")  # draft | open | paid | void | uncollectible
+    amount_cents = models.IntegerField(default=0)
+    currency = models.CharField(max_length=3, default="USD")
+    plan_code = models.CharField(max_length=40, blank=True, default="")
+    period_start = models.DateTimeField(null=True, blank=True)
+    period_end = models.DateTimeField(null=True, blank=True)
+    hosted_url = models.URLField(max_length=500, blank=True, default="")  # https://invoice.stripe.com/... only
+    demo = models.BooleanField(default=False)
+    created_at = models.DateTimeField(default=timezone.now)
+
+    class Meta:
+        db_table = "billing_invoices"
+        ordering = ["-created_at"]

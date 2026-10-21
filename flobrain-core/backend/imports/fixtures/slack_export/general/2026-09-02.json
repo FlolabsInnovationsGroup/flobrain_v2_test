@@ -1,0 +1,57 @@
+[
+ {
+  "type": "message",
+  "ts": "1788332880.000000",
+  "user": "U05SARA",
+  "text": "I'll check this afternoon.",
+  "thread_ts": "1788267120.000000",
+  "parent_user_id": "U01NADIA"
+ },
+ {
+  "type": "message",
+  "ts": "1788356340.000000",
+  "user": "U05SARA",
+  "text": "Who has the HDMI adapter from meeting room B?",
+  "user_profile": {
+   "real_name": "Sara Nabil",
+   "display_name": "sara"
+  },
+  "replies": [
+   {
+    "user": "U07MONA",
+    "ts": "1788429060.000000"
+   },
+   {
+    "user": "U07MONA",
+    "ts": "1788947940.000000"
+   }
+  ],
+  "reply_count": 2
+ },
+ {
+  "type": "message",
+  "ts": "1788362700.000000",
+  "user": "U03LAYLA",
+  "text": "We signed two new customers in Alexandria this week.",
+  "user_profile": {
+   "real_name": "Layla Mansour",
+   "display_name": "layla"
+  },
+  "reactions": [
+   {
+    "name": "eyes",
+    "users": [
+     "U01NADIA"
+    ],
+    "count": 1
+   }
+  ],
+  "replies": [
+   {
+    "user": "U06KARIM",
+    "ts": "1788939420.000000"
+   }
+  ],
+  "reply_count": 1
+ }
+]

@@ -1,0 +1,37 @@
+[
+ {
+  "type": "message",
+  "ts": "1789196940.000000",
+  "user": "U07MONA",
+  "text": "The new office Wi-Fi password is on the board by reception.",
+  "user_profile": {
+   "real_name": "Mona Saleh",
+   "display_name": "mona"
+  }
+ },
+ {
+  "type": "message",
+  "ts": "1789200660.000000",
+  "user": "U05SARA",
+  "text": "We signed two new customers in Alexandria this week.",
+  "user_profile": {
+   "real_name": "Sara Nabil",
+   "display_name": "sara"
+  },
+  "replies": [
+   {
+    "user": "U03LAYLA",
+    "ts": "1789407240.000000"
+   }
+  ],
+  "reply_count": 1
+ },
+ {
+  "type": "message",
+  "ts": "1789213500.000000",
+  "user": "U07MONA",
+  "text": "Sharing the notes after the call.",
+  "thread_ts": "1788710460.000000",
+  "parent_user_id": "U05SARA"
+ }
+]

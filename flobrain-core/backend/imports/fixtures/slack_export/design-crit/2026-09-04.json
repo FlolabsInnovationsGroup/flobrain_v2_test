@@ -1,0 +1,74 @@
+[
+ {
+  "type": "message",
+  "ts": "1788505260.000000",
+  "user": "U07MONA",
+  "text": "Let's test the flow with three customers next week.",
+  "user_profile": {
+   "real_name": "Mona Saleh",
+   "display_name": "mona"
+  }
+ },
+ {
+  "type": "message",
+  "ts": "1788515580.000000",
+  "user": "U07MONA",
+  "text": "The empty state illustration feels too busy.",
+  "user_profile": {
+   "real_name": "Mona Saleh",
+   "display_name": "mona"
+  }
+ },
+ {
+  "type": "message",
+  "ts": "1788520140.000000",
+  "user": "U07MONA",
+  "text": "<@U04YOUSSEF> the button contrast fails on the dark theme.",
+  "user_profile": {
+   "real_name": "Mona Saleh",
+   "display_name": "mona"
+  },
+  "reactions": [
+   {
+    "name": "thumbsup",
+    "users": [
+     "U05SARA",
+     "U07MONA"
+    ],
+    "count": 2
+   }
+  ],
+  "replies": [
+   {
+    "user": "U05SARA",
+    "ts": "1788714720.000000"
+   },
+   {
+    "user": "U04YOUSSEF",
+    "ts": "1789026300.000000"
+   }
+  ],
+  "reply_count": 2
+ },
+ {
+  "type": "message",
+  "ts": "1788534240.000000",
+  "user": "U04YOUSSEF",
+  "text": "Can we try the Arabic layout with the larger font?",
+  "user_profile": {
+   "real_name": "Youssef Adel",
+   "display_name": "youssef"
+  },
+  "reactions": [
+   {
+    "name": "white_check_mark",
+    "users": [
+     "U07MONA",
+     "U04YOUSSEF",
+     "U05SARA"
+    ],
+    "count": 3
+   }
+  ]
+ }
+]

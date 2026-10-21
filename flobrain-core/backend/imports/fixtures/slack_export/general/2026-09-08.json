@@ -1,0 +1,40 @@
+[
+ {
+  "type": "message",
+  "ts": "1788850980.000000",
+  "user": "U02OMAR",
+  "text": "Customer feedback from the pilot is in the shared folder: <https://example.com/demo/feedback|pilot feedback>",
+  "user_profile": {
+   "real_name": "Omar Khaled",
+   "display_name": "omar"
+  }
+ },
+ {
+  "type": "message",
+  "ts": "1788873060.000000",
+  "user": "U04YOUSSEF",
+  "text": "Customer feedback from the pilot is in the shared folder: <https://example.com/demo/feedback|pilot feedback>",
+  "user_profile": {
+   "real_name": "Youssef Adel",
+   "display_name": "youssef"
+  },
+  "reactions": [
+   {
+    "name": "tada",
+    "users": [
+     "U03LAYLA"
+    ],
+    "count": 1
+   }
+  ],
+  "files": [
+   {
+    "id": "F0DEMO23",
+    "name": "notes.pdf",
+    "title": "Meeting notes (demo).pdf",
+    "permalink": "https://demo-workspace.slack.com/files/U04YOUSSEF/F0DEMO23/notes.pdf",
+    "url_private": "https://files.slack.com/files-pri/T0DEMO-F0DEMO23/notes.pdf"
+   }
+  ]
+ }
+]

@@ -19,7 +19,7 @@ class PlatformDemoSeedTests(TestCase):
         org = seed.reset()
         self.assertTrue(Incident.objects.filter(org=org, status="resolved").exists())
         self.assertTrue(Incident.objects.filter(org__isnull=True, is_public=True, title__startswith="Demo: ").exists())
-        self.assertEqual(Subscription.objects.get(org=org).plan.code, "team")
+        self.assertEqual(Subscription.objects.get(org=org).plan.code, "studio")  # a8_pricing puts the demo on the workspace plan
         self.assertTrue(UsageInvoiceLine.objects.filter(org=org).exists())
         inbox = DemoInboxDelivery.objects.filter(org=org)
         self.assertTrue(inbox.filter(signature_valid=True).exists() and inbox.filter(signature_valid=False).exists())

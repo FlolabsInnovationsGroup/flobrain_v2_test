@@ -16,7 +16,7 @@ from django.conf import settings
 
 logger = logging.getLogger(__name__)
 
-COMMANDS = ("tick_tasks", "tick_agents", "tick_webhooks", "tick_content", "tick_pulse", "tick_automations", "run_data_reports")
+COMMANDS = ("tick_tasks", "tick_agents", "tick_webhooks", "tick_content", "tick_pulse", "tick_automations", "run_data_reports", "tick_bridges")
 LOCK_KEY = 7_204_311  # any constant; only demo processes take it
 _started = False
 

@@ -1,0 +1,88 @@
+[
+ {
+  "type": "message",
+  "subtype": "channel_join",
+  "ts": "1788246000.000000",
+  "user": "U06KARIM",
+  "text": "<@U06KARIM> has joined the channel"
+ },
+ {
+  "type": "message",
+  "ts": "1788257100.000000",
+  "user": "U06KARIM",
+  "text": "The iOS review came back approved.",
+  "user_profile": {
+   "real_name": "Karim Fawzy",
+   "display_name": "karim"
+  },
+  "reactions": [
+   {
+    "name": "heart",
+    "users": [
+     "U04YOUSSEF"
+    ],
+    "count": 1
+   }
+  ],
+  "files": [
+   {
+    "id": "F0DEMO0",
+    "name": "notes.pdf",
+    "title": "Meeting notes (demo).pdf",
+    "permalink": "https://demo-workspace.slack.com/files/U06KARIM/F0DEMO0/notes.pdf",
+    "url_private": "https://files.slack.com/files-pri/T0DEMO-F0DEMO0/notes.pdf"
+   }
+  ],
+  "replies": [
+   {
+    "user": "U03LAYLA",
+    "ts": "1788767580.000000"
+   }
+  ],
+  "reply_count": 1
+ },
+ {
+  "type": "message",
+  "ts": "1788274560.000000",
+  "user": "U03LAYLA",
+  "text": "Standup notes: payments retry, offline mode, release checklist.",
+  "user_profile": {
+   "real_name": "Layla Mansour",
+   "display_name": "layla"
+  },
+  "reactions": [
+   {
+    "name": "rocket",
+    "users": [
+     "U04YOUSSEF",
+     "U06KARIM"
+    ],
+    "count": 2
+   }
+  ],
+  "replies": [
+   {
+    "user": "U06KARIM",
+    "ts": "1788444660.000000"
+   }
+  ],
+  "reply_count": 1
+ },
+ {
+  "type": "message",
+  "ts": "1788285240.000000",
+  "user": "U06KARIM",
+  "text": "Standup notes: payments retry, offline mode, release checklist.",
+  "user_profile": {
+   "real_name": "Karim Fawzy",
+   "display_name": "karim"
+  },
+  "replies": [
+   {
+    "user": "U02OMAR",
+    "ts": "1788715320.000000"
+   }
+  ],
+  "reply_count": 1
+ }
+]

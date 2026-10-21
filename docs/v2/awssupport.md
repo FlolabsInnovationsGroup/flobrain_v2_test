@@ -17,7 +17,7 @@ Each step is safe to do on its own. Until a step is done, the matching FloBrain 
 1. Security items S1 to S6 (section 2), S1 and S3 first.
 2. Staging environment (3.1), then the settings in 3.2 as secrets. The two red items block boot.
 3. `/healthz` health check, then strict `ALLOWED_HOSTS` (3.3); gunicorn (3.4); migrations as a one-off task (3.5).
-4. The worker service `run_jobs` (3.6) and the scheduled commands (3.11, nine of them now).
+4. The worker service `run_jobs` (3.6) and the scheduled commands (3.11, fourteen of them now).
 5. RDS upgrade and pgvector (3.7); private S3 bucket with the prefixes in 3.11.
 6. Meetings stack (3.12): Redis, LiveKit with TLS, Egress, Whisper, the meeting bot.
 7. Static hosting for the public status page (3.14).
@@ -202,6 +202,11 @@ All run from the same image and env as the API, as one-off ECS tasks (EventBridg
 | `python manage.py tick_pulse` | every 5 minutes | Pulse alert rules (Phase 13) |
 | `python manage.py tick_automations` | every minute | Workflows, daily brief and nudges (growth round) |
 | `python manage.py run_data_reports` | every hour | Data buddy sheet refresh and scheduled reports (growth round) |
+| `python manage.py tick_bridges` | every minute | Mirrors notices to Slack and Teams DMs (market round) |
+| `python manage.py run_scheduled_evals` | daily | Scheduled buddy evaluation runs (market round) |
+| `python manage.py tick_buddy_memory` | daily | Expires buddy memories past the org's retention (market round) |
+| `python manage.py purge_mcp_logs` | daily | Deletes MCP call logs older than 90 days (market round) |
+| `python manage.py compliance_tick` | daily | Access review reminders and expired evidence packages (market round) |
 | `python manage.py tick_tasks` | every hour | "Due tomorrow" and "overdue" task reminders. Safe to run twice |
 | `python manage.py purge_exports` | daily | Deletes expired org memory exports (Phase 17e). An S3 lifecycle rule that expires `exports/` after 8 days is an acceptable replacement |
 | `python manage.py apply_retention` | daily | Deletes data older than each org's retention policy, with its search vectors (Phase 16). Nothing is deleted until an owner sets a policy |
@@ -279,3 +284,4 @@ She suggested going through the changes one at a time once they are confirmed. N
 | 2026-10-21 | Self-hosted meetings (3.12), SAML sign-in, and the completion work (rooms, tasks, time, docs, people, AI admin, external agents, status page, billing checkout, Content Studio). New: the team to-do list (0), settings in 3.2, external services in 3.9, `tick_tasks` (3.11), status page hosting (3.14), demo environment (3.15). 757 tests pass on SQLite and PostgreSQL 16. Nothing has been applied to AWS. |
 | 2026-10-21 | Checked against Notion: two new questions in section 4 (status of the unified-account task marked Done, and FloBrain credentials used by the multimodal pipeline). The new V2 site (`/v2`) and the new design are frontend only and need nothing from AWS. **Send this version.** Nothing has been applied to AWS. |
 | 2026-10-21 | Arsema answered S1, S2, S3, S6 and the migrations question (4b). Growth round built locally: two more scheduled commands, `tick_automations` (every minute) and `run_data_reports` (hourly). Inbound webhooks for WhatsApp and Telegram (`/api/v2/hooks/...`) and a public website-chat endpoint will need the ALB to accept them when those features are turned on. Nothing has been applied to AWS. |
+| 2026-10-21 | Market round built locally (MCP OAuth, Slack and Teams, ZATCA and ETA, buddy memory, evals, imports, compliance, workspace pricing). Later needs: five more scheduled commands (3.11); env for Slack (`FLOBRAIN_SLACK_CLIENT_ID`, `_CLIENT_SECRET`, `_SIGNING_SECRET`) and Teams (`FLOBRAIN_TEAMS_APP_ID`, `_APP_SECRET`); e-invoicing (`EINVOICE_SIGNER_ALLOWED_HOSTS`, `DATA_REGION_*`); Stripe prices (`STRIPE_PRICE_<PLAN>_<MONTH|YEAR>`); the ALB must accept the new public paths (`/.well-known/oauth-*`, `/oauth/*`, `/api/v2/hooks/slack/*`, `/api/v2/hooks/teams/messages`, `/api/v2/public/trust/*`); larger upload body size for imports (up to 500 MB) with S3 storage. New Python packages: `pypdf`, `defusedxml`. Nothing has been applied to AWS. |
