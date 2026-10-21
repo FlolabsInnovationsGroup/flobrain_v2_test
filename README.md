@@ -2,6 +2,15 @@
 
 Welcome to the central repository for the FloBrain ecosystem. This monorepo hosts the active development pillars of the FloBrain architecture.
 
+## ▶️ Try FloBrain V2 locally (demo)
+
+Needs Python 3.11+ and Node.js 20+. Nothing else: no database server, no AI key.
+
+- **Windows:** double-click `run-demo.bat`
+- **macOS / Linux:** `./run-demo.sh`
+
+It installs the Python and website packages the first time (a few minutes), builds a local demo company (Nile Labs), starts the API and the website, and opens <http://localhost:3000/w/signin>. Pick a seat (owner, admin, team lead, member) or take the guided tour. Details: [`docs/v2/DEMO.md`](./docs/v2/DEMO.md).
+
 ## 🚨 Active vs Legacy
 
 **Active code lives in `/flobrain-*` directories.**

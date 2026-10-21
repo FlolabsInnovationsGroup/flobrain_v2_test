@@ -15,3 +15,6 @@ logs/
 *.log
 .DS_Store
 
+
+# Local demo launcher logs
+.demo-logs/
