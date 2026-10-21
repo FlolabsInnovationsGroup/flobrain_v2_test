@@ -73,6 +73,7 @@ $env:AI_PROVIDER_BACKEND = "direct"
 $env:EMBEDDINGS_BACKEND = "fake"
 $env:EMBEDDINGS_MODEL = "fake-embedder"
 $env:EMBEDDINGS_DIMENSION = "1024"
+$env:KNOWLEDGE_VECTOR_STORE = "json"  # SQLite has no pgvector; search vectors are kept as JSON
 $env:CONTENT_STORAGE = "local"
 $env:CONTENT_LOCAL_DIR = Join-Path $backend "local_media\content"
 $env:DOCS_FILE_STORAGE = "local"
