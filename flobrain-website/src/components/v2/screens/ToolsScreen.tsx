@@ -4,6 +4,7 @@ import { useCallback, useEffect, useState } from "react";
 
 import { ScreenBody } from "@/components/v2/screens/ScreenBody";
 import { Button } from "@/components/v2/ui/button";
+import { useTr } from "@/i18n/phrases";
 import { v2Client } from "@/lib/v2/client";
 import { canCreateTool, toolsEmpty, type ToolRow } from "@/lib/v2/screens/tools";
 import { screenStateFromHttp, type ScreenState } from "@/lib/v2/screens/status";
@@ -11,15 +12,15 @@ import { useWorkspaceOrg } from "@/lib/v2/useWorkspaceOrg";
 
 export function ToolsScreen({ orgSlug }: { orgSlug: string }) {
   const { orgId, state: orgState, error: orgError } = useWorkspaceOrg(orgSlug);
+  const tr = useTr();
   const [tools, setTools] = useState<ToolRow[]>([]);
   const [name, setName] = useState("");
   const [url, setUrl] = useState("");
-  const [state, setState] = useState<ScreenState>("loading");
+  const [loadState, setState] = useState<ScreenState>("loading");
   const [error, setError] = useState<string | null>(null);
 
-  const load = useCallback(() => {
+  const fetchNow = useCallback(() => {
     if (!orgId) return;
-    setState("loading");
     v2Client()
       .tools(orgId)
       .then((rows) => {
@@ -28,20 +29,27 @@ export function ToolsScreen({ orgSlug }: { orgSlug: string }) {
         setState(toolsEmpty(next) ? "empty" : "ready");
       })
       .catch((err: { response?: { status?: number } }) => {
-        setError("Could not load tools");
+        setError(tr("Could not load tools"));
         setState(screenStateFromHttp(err.response?.status ?? 500));
       });
-  }, [orgId]);
+  }, [orgId, tr]);
+
+  // Until the workspace resolves, show its state. The first fetch starts in "loading"; setState runs only in callbacks.
+  const state = orgState === "ready" ? loadState : orgState;
+
+  const load = useCallback(() => {
+    setState("loading");
+    fetchNow();
+  }, [fetchNow]);
 
   useEffect(() => {
-    if (orgState === "ready") load();
-    else setState(orgState);
-  }, [orgState, load]);
+    if (orgState === "ready") fetchNow();
+  }, [orgState, fetchNow]);
 
   return (
     <section>
-      <h1 className="mb-4 text-2xl font-semibold">External tools</h1>
-      <ScreenBody state={state} error={error || orgError} emptyLabel="No tools yet" onRetry={load}>
+      <h1 className="mb-4 text-2xl font-semibold">{tr("External tools")}</h1>
+      <ScreenBody state={state} error={error || orgError} emptyLabel={tr("No tools yet")} onRetry={load}>
         <ul className="mb-6 space-y-2">
           {tools.map((tool) => (
             <li key={tool.id} className="flex items-center justify-between gap-2">
@@ -49,7 +57,7 @@ export function ToolsScreen({ orgSlug }: { orgSlug: string }) {
                 {tool.name}
               </a>
               <Button type="button" variant="ghost" onClick={() => orgId && v2Client().deleteTool(orgId, tool.id).then(load)}>
-                Remove
+                {tr("Remove")}
               </Button>
             </li>
           ))}
@@ -68,14 +76,14 @@ export function ToolsScreen({ orgSlug }: { orgSlug: string }) {
               load();
             })
             .catch((err: { response?: { status?: number } }) => {
-              setError("Could not add tool");
+              setError(tr("Could not add tool"));
               setState(screenStateFromHttp(err.response?.status ?? 500));
             });
         }}
       >
         <input
           className="rounded-[length:var(--fb-v2-radius)] border border-[color:var(--fb-v2-border)] bg-transparent px-3 py-2"
-          placeholder="Name"
+          placeholder={tr("Name")}
           value={name}
           onChange={(event) => setName(event.target.value)}
         />
@@ -85,7 +93,7 @@ export function ToolsScreen({ orgSlug }: { orgSlug: string }) {
           value={url}
           onChange={(event) => setUrl(event.target.value)}
         />
-        <Button type="submit">Add</Button>
+        <Button type="submit">{tr("Add")}</Button>
       </form>
     </section>
   );

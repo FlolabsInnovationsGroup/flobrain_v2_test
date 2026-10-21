@@ -4,13 +4,15 @@ import { useSearchParams } from "next/navigation";
 import { Suspense, useState } from "react";
 
 import { Button } from "@/components/v2/ui/button";
-import { dirFor, getLocale, t } from "@/i18n";
+import { dirFor, t, useLocale } from "@/i18n";
+import { useTr } from "@/i18n/phrases";
 import { v2Client } from "@/lib/v2/client";
 import "@/styles/v2-tokens.css";
 
 function ResetForm() {
   const params = useSearchParams();
-  const locale = getLocale();
+  const locale = useLocale();
+  const tr = useTr();
   const [password, setPassword] = useState("");
   const [done, setDone] = useState(false);
   const [error, setError] = useState("");
@@ -22,7 +24,7 @@ function ResetForm() {
       await v2Client().resetPassword(params.get("token") || "", password);
       setDone(true);
     } catch {
-      setError("Reset token is invalid or expired");
+      setError(tr("Reset token is invalid or expired"));
     }
   }
 
@@ -34,7 +36,7 @@ function ResetForm() {
       >
         <h1 className="mb-4 text-xl font-semibold">{t(locale, "auth.reset")}</h1>
         {done ? (
-          <p>Password updated. You can sign in.</p>
+          <p>{tr("Password updated. You can sign in.")}</p>
         ) : (
           <>
             <label className="mb-4 block text-sm">

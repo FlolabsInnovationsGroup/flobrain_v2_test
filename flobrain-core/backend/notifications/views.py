@@ -18,6 +18,12 @@ class NotificationListView(V2APIView):
         request.org = org
         HasPerm("notification.view").has_permission(request, self)
         qs = Notification.objects.filter(org=org, user=request.user)
+        from notifications.models import NotificationPreference
+
+        off = list(NotificationPreference.objects.filter(user=request.user, enabled=False).values_list("type", flat=True))
+        if off:
+            # Stored kinds use dots or underscores ("impersonation.started"); preferences use underscores.
+            qs = qs.exclude(kind__in=off + [k.replace("_", ".", 1) for k in off])
         if request.query_params.get("unread") == "1":
             qs = qs.filter(read_at__isnull=True)
         paginator = V2PageNumberPagination()

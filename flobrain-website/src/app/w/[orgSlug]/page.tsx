@@ -1,6 +1,6 @@
-import { CockpitScreen } from "@/components/v2/screens/CockpitScreen";
+import { HomeScreen } from "@/components/v2/screens/HomeScreen";
 
-export default async function CockpitPage({ params }: { params: Promise<{ orgSlug: string }> }) {
+export default async function HomePage({ params }: { params: Promise<{ orgSlug: string }> }) {
   const { orgSlug } = await params;
-  return <CockpitScreen orgSlug={orgSlug} />;
+  return <HomeScreen orgSlug={orgSlug} />;
 }

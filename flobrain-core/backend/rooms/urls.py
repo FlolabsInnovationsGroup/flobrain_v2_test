@@ -2,6 +2,7 @@ from django.urls import path
 
 from rooms.views import (
     AnnouncementListCreateView,
+    AnnouncementPinView,
     AnnouncementUnpinView,
     RoomDetailView,
     RoomListCreateView,
@@ -27,5 +28,10 @@ urlpatterns = [
         "orgs/<uuid:org_id>/announcements/<uuid:announcement_id>/unpin",
         AnnouncementUnpinView.as_view(),
         name="v2-announcement-unpin",
+    ),
+    path(
+        "orgs/<uuid:org_id>/announcements/<uuid:announcement_id>/pin",
+        AnnouncementPinView.as_view(),
+        name="v2-announcement-pin",
     ),
 ]

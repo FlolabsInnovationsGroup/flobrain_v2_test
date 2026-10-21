@@ -73,6 +73,25 @@ INSTALLED_APPS = [
     "docs_app.apps.DocsAppConfig",
     "integrations.apps.IntegrationsConfig",
     "jobs.apps.JobsConfig",
+    "knowledge.apps.KnowledgeConfig",
+    "buddies.apps.BuddiesConfig",
+    "actions.apps.ActionsConfig",
+    "agents.apps.AgentsConfig",
+    "content_studio.apps.ContentStudioConfig",
+    "workers.apps.WorkersConfig",
+    "platform_api.apps.PlatformApiConfig",
+    "billing_v2.apps.BillingV2Config",
+    "sso.apps.SSOConfig",
+    "console.apps.ConsoleConfig",
+    "exports.apps.ExportsConfig",
+    "marketplace.apps.MarketplaceConfig",
+    "demo.apps.DemoConfig",
+    "workspace.apps.WorkspaceConfig",
+    "learning.apps.LearningConfig",
+    "commissions.apps.CommissionsConfig",
+    "pulse.apps.PulseConfig",
+    "connectors.apps.ConnectorsConfig",
+    "privacy.apps.PrivacyConfig",
 ]
 
 MIDDLEWARE = [
@@ -115,7 +134,7 @@ if os.environ.get("DB_ENGINE", "postgresql").lower() == "sqlite":
     DATABASES = {
         "default": {
             "ENGINE": "django.db.backends.sqlite3",
-            "NAME": BASE_DIR / "db.sqlite3",
+            "NAME": os.environ.get("SQLITE_PATH") or BASE_DIR / "db.sqlite3",
         }
     }
 else:
@@ -238,13 +257,107 @@ AI_DIRECT_API_KEY = os.environ.get("AI_DIRECT_API_KEY", "")
 AI_DIRECT_MODEL_ALLOWLIST = os.environ.get("AI_DIRECT_MODEL_ALLOWLIST", "")
 AI_DIRECT_DEFAULT_MODEL = os.environ.get("AI_DIRECT_DEFAULT_MODEL", "")
 AI_DIRECT_TIMEOUT = int(os.environ.get("AI_DIRECT_TIMEOUT", "60"))
+# Name used to look up PriceTable rows for `direct` calls (for example "openai").
+AI_DIRECT_PROVIDER = os.environ.get("AI_DIRECT_PROVIDER", "openai_compatible")
+
+# Embeddings (E31): "http" = OpenAI-compatible /v1/embeddings (BGE-M3 on JarvisLabs), "fake" = tests only.
+EMBEDDINGS_BACKEND = os.environ.get("EMBEDDINGS_BACKEND", "fake" if TESTING else "")
+EMBEDDINGS_BASE_URL = os.environ.get("EMBEDDINGS_BASE_URL", "").rstrip("/")
+EMBEDDINGS_API_KEY = os.environ.get("EMBEDDINGS_API_KEY", "")
+EMBEDDINGS_MODEL = os.environ.get("EMBEDDINGS_MODEL", "fake-embedder" if TESTING else "")
+EMBEDDINGS_DIMENSION = int(os.environ.get("EMBEDDINGS_DIMENSION", "1024"))
+EMBEDDINGS_TIMEOUT = int(os.environ.get("EMBEDDINGS_TIMEOUT", "30"))
+# Vector store (E16a): "pgvector" in any shared environment; "json" for local dev and tests.
+KNOWLEDGE_VECTOR_STORE = os.environ.get("KNOWLEDGE_VECTOR_STORE", "json" if TESTING else "pgvector")
+KNOWLEDGE_CHUNK_CHARS = int(os.environ.get("KNOWLEDGE_CHUNK_CHARS", "1500"))
+KNOWLEDGE_CHUNK_OVERLAP = int(os.environ.get("KNOWLEDGE_CHUNK_OVERLAP", "200"))
+KNOWLEDGE_ASK_TOP_K = int(os.environ.get("KNOWLEDGE_ASK_TOP_K", "8"))
+KNOWLEDGE_CONTEXT_CHARS = int(os.environ.get("KNOWLEDGE_CONTEXT_CHARS", "12000"))
+TRANSLATION_MAX_PER_REQUEST = int(os.environ.get("TRANSLATION_MAX_PER_REQUEST", "20"))
+BUDDY_SEED_ORG_SLUGS = os.environ.get("BUDDY_SEED_ORG_SLUGS", "flolabs")
+AGENT_MAX_RUNS_PER_HOUR = int(os.environ.get("AGENT_MAX_RUNS_PER_HOUR", "12"))
+# Content Studio (Phase 9). Storage: "s3" (with CONTENT_S3_BUCKET), "local" (dev/tests) or empty (Not configured).
+CONTENT_STORAGE = os.environ.get("CONTENT_STORAGE", "local" if TESTING else "")
+CONTENT_S3_BUCKET = os.environ.get("CONTENT_S3_BUCKET", "")
+CONTENT_LOCAL_DIR = os.environ.get("CONTENT_LOCAL_DIR", "")  # local storage folder (dev/demo); empty: placeholder URLs
+CONTENT_S3_REGION = os.environ.get("CONTENT_S3_REGION", "")
+CONTENT_MAX_UPLOAD_MB = int(os.environ.get("CONTENT_MAX_UPLOAD_MB", "4096"))
+CONTENT_MAX_SOURCE_SECONDS = int(os.environ.get("CONTENT_MAX_SOURCE_SECONDS", "10800"))
+CONTENT_RENDERS_PER_MONTH = int(os.environ.get("CONTENT_RENDERS_PER_MONTH", "200"))
+RENDER_STALE_SECONDS = int(os.environ.get("RENDER_STALE_SECONDS", "600"))
+CONTENT_BATCH_MAX_ROWS = int(os.environ.get("CONTENT_BATCH_MAX_ROWS", "100"))
+TTS_PROVIDER = os.environ.get("TTS_PROVIDER", "")  # a name in content_studio.tts.REGISTRY (Q18 open); demo mode uses "demo"
+# Phase 14: public API, webhooks, MCP
+PUBLIC_API_RATE = os.environ.get("PUBLIC_API_RATE", "120/min")
+PUBLIC_API_USER_RATE = os.environ.get("PUBLIC_API_USER_RATE", "300/min")
+# Phase 17a: hosts that count as self-hosted for private_only orgs (vLLM, BGE-M3, ...)
+AI_SELF_HOSTED_HOSTS = os.environ.get("AI_SELF_HOSTED_HOSTS", "")
+# Sovereign installs (17f): in-cluster model hosts reachable over plain http, and a lock on private_only.
+AI_ALLOW_PLAINTEXT_HOSTS = os.environ.get("AI_ALLOW_PLAINTEXT_HOSTS", "")
+AI_FORCE_PRIVATE_ONLY = os.environ.get("AI_FORCE_PRIVATE_ONLY", "False") == "True"
+# Certificates (Phase 11): Ed25519 private key, 32 raw bytes in base64. Empty: issuing returns 501.
+CERTIFICATE_SIGNING_KEY = os.environ.get("CERTIFICATE_SIGNING_KEY", "")
+CERTIFICATE_PREVIOUS_PUBLIC_KEYS = os.environ.get("CERTIFICATE_PREVIOUS_PUBLIC_KEYS", "")
+
+# Calls inside FloBrain (self-hosted LiveKit) and Whisper transcription (2026-10-21). Empty: off.
+LIVEKIT_URL = os.environ.get("LIVEKIT_URL", "")
+LIVEKIT_API_URL = os.environ.get("LIVEKIT_API_URL", "")
+LIVEKIT_API_KEY = os.environ.get("LIVEKIT_API_KEY", "")
+LIVEKIT_API_SECRET = os.environ.get("LIVEKIT_API_SECRET", "")
+ASR_BACKEND = os.environ.get("ASR_BACKEND", "")  # http | local
+ASR_BASE_URL = os.environ.get("ASR_BASE_URL", "")
+ASR_MODEL = os.environ.get("ASR_MODEL", "")
+ASR_API_KEY = os.environ.get("ASR_API_KEY", "")
+ASR_TIMEOUT = int(os.environ.get("ASR_TIMEOUT", "1800"))
+MEETING_UPLOAD_MAX_MB = int(os.environ.get("MEETING_UPLOAD_MAX_MB", "500"))
+MEETING_BOT_MAX_MINUTES = int(os.environ.get("MEETING_BOT_MAX_MINUTES", "120"))
+# Meeting bot vendor (Phase 15, Q23). Inviting stays "not configured" until an adapter exists.
+MEETING_BOT_VENDOR = os.environ.get("MEETING_BOT_VENDOR", "")
+MEETING_BOT_API_KEY = os.environ.get("MEETING_BOT_API_KEY", "")
+# Web Push (Phase 10). Empty keys: push is not configured and nothing is sent.
+VAPID_PUBLIC_KEY = os.environ.get("VAPID_PUBLIC_KEY", "")
+VAPID_PRIVATE_KEY = os.environ.get("VAPID_PRIVATE_KEY", "")
+VAPID_SUBJECT = os.environ.get("VAPID_SUBJECT", "")
+# Demo mode: a seeded demo org and one-click sign-in per role. Never on in production.
+DEMO_MODE = os.environ.get("DEMO_MODE", "False") == "True"
+# In demo mode, answer AI calls with built-in demo replies (no network, no key).
+DEMO_AI = DEMO_MODE and os.environ.get("DEMO_AI", "True") == "True"
+# Memory export (17e)
+EXPORT_MAX_PER_DAY = int(os.environ.get("EXPORT_MAX_PER_DAY", "3"))
+EXPORT_RETENTION_DAYS = int(os.environ.get("EXPORT_RETENTION_DAYS", "7"))
+EXPORT_MAX_MESSAGES = int(os.environ.get("EXPORT_MAX_MESSAGES", "500000"))
+# Phase 17b billing
+BILLING_ENFORCE_ENTITLEMENTS = os.environ.get("BILLING_ENFORCE_ENTITLEMENTS", "False") == "True"
+STRIPE_WEBHOOK_SECRET = os.environ.get("STRIPE_WEBHOOK_SECRET", "")
+STRIPE_WEBHOOK_TOLERANCE = int(os.environ.get("STRIPE_WEBHOOK_TOLERANCE", "300"))
+STRIPE_SECRET_KEY = os.environ.get("STRIPE_SECRET_KEY", "")  # server-side Checkout and portal sessions; empty = off
+# PII redaction detector: "" (none; "regex" in demo mode), "regex" (basic, platform_api/pii.py) or a dotted class path
+PII_DETECTOR = os.environ.get("PII_DETECTOR", "")
+EXTERNAL_AGENT_ALLOWED_HOSTS = os.environ.get("EXTERNAL_AGENT_ALLOWED_HOSTS", "")  # Q24: empty until a host is scanned
+# Fixed OAuth redirect base (Phase 9d): {PUBLIC_API_BASE_URL}/api/v2/oauth/callback/<platform>
+PUBLIC_API_BASE_URL = os.environ.get("PUBLIC_API_BASE_URL", "")
+SOCIAL_SANDBOX_ENABLED = os.environ.get("SOCIAL_SANDBOX_ENABLED", "False") == "True"
+for _platform in ("YOUTUBE", "LINKEDIN", "TIKTOK", "INSTAGRAM", "FACEBOOK", "X"):
+    globals()[f"SOCIAL_{_platform}_CLIENT_ID"] = os.environ.get(f"SOCIAL_{_platform}_CLIENT_ID", "")
+    globals()[f"SOCIAL_{_platform}_CLIENT_SECRET"] = os.environ.get(f"SOCIAL_{_platform}_CLIENT_SECRET", "")
 
 JOBS_EAGER = os.environ.get("JOBS_EAGER", "True" if DEBUG or TESTING else "False") == "True"
+# Set to True only where a `manage.py run_jobs` process runs (INFRA_CHANGES.md, E17).
+JOBS_WORKER_ENABLED = os.environ.get("JOBS_WORKER_ENABLED", "False") == "True"
+JOBS_POLL_SECONDS = float(os.environ.get("JOBS_POLL_SECONDS", "2"))
+JOBS_STALE_SECONDS = int(os.environ.get("JOBS_STALE_SECONDS", str(15 * 60)))
 
 FRONTEND_BASE_URL = os.environ.get("FRONTEND_BASE_URL", "http://localhost:3000")
 DEFAULT_FROM_EMAIL = os.environ.get("DEFAULT_FROM_EMAIL", "noreply@localhost")
-# Read now; used in Phase 7. Empty is valid until credentials encryption ships.
+# BYOK (7k) needs a 64-hex key. Empty means BYOK reports not_configured.
 CREDENTIALS_ENCRYPTION_KEY = os.environ.get("CREDENTIALS_ENCRYPTION_KEY", "")
+CREDENTIALS_KEY_VERSION = int(os.environ.get("CREDENTIALS_KEY_VERSION", "1"))
+# BYOK (7k): customer keys may only call these hosts over HTTPS (no SSRF to internal hosts).
+BYOK_ALLOWED_HOSTS = os.environ.get(
+    "BYOK_ALLOWED_HOSTS",
+    "api.openai.com,openrouter.ai,api.groq.com,api.together.xyz,api.mistral.ai,api.deepseek.com,api.fireworks.ai",
+)
+BYOK_CHECK_TIMEOUT = int(os.environ.get("BYOK_CHECK_TIMEOUT", "20"))
 HR_WEBHOOK_SECRET = os.environ.get("HR_WEBHOOK_SECRET", "")
 
 FLOBRAIN_V2 = {
@@ -258,6 +371,8 @@ FLOBRAIN_V2 = {
     "PAGE_SIZE_MAX": int(os.environ.get("FLOBRAIN_V2_PAGE_SIZE_MAX", "100")),
     "AUTH_RATE": os.environ.get("FLOBRAIN_V2_AUTH_RATE", "10/min"),
     "AI_SEND_RATE": os.environ.get("FLOBRAIN_V2_AI_SEND_RATE", "30/min"),
+    "AI_MAX_INPUT_CHARS": int(os.environ.get("FLOBRAIN_V2_AI_MAX_INPUT_CHARS", "8000")),
+    "AI_THREAD_HISTORY_MESSAGES": int(os.environ.get("FLOBRAIN_V2_AI_THREAD_HISTORY_MESSAGES", "40")),
     "UPLOAD_RATE": os.environ.get("FLOBRAIN_V2_UPLOAD_RATE", "20/min"),
     "TEMP_PASSWORD_LIFETIME_HOURS": int(os.environ.get("FLOBRAIN_V2_TEMP_PASSWORD_HOURS", "72")),
     "PASSWORD_RESET_LIFETIME_HOURS": int(os.environ.get("FLOBRAIN_V2_PASSWORD_RESET_HOURS", "1")),

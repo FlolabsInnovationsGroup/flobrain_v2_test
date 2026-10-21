@@ -1,0 +1,32 @@
+{{- range $component := list "api" "worker" }}
+{{- $as := (index $.Values $component).autoscaling }}
+{{- if $as.enabled }}
+---
+apiVersion: autoscaling/v2
+kind: HorizontalPodAutoscaler
+metadata:
+  name: {{ $.Release.Name }}-{{ $component }}
+  labels: {{- include "flobrain.labels" $ | nindent 4 }}
+    app.kubernetes.io/component: {{ $component }}
+spec:
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: {{ $.Release.Name }}-{{ $component }}
+  minReplicas: {{ $as.minReplicas }}
+  maxReplicas: {{ $as.maxReplicas }}
+  metrics:
+    {{- if $as.targetCPUUtilizationPercentage }}
+    - type: Resource
+      resource:
+        name: cpu
+        target: { type: Utilization, averageUtilization: {{ $as.targetCPUUtilizationPercentage }} }
+    {{- end }}
+    {{- if $as.targetMemoryUtilizationPercentage }}
+    - type: Resource
+      resource:
+        name: memory
+        target: { type: Utilization, averageUtilization: {{ $as.targetMemoryUtilizationPercentage }} }
+    {{- end }}
+{{- end }}
+{{- end }}

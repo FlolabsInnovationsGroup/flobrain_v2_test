@@ -1,0 +1,7 @@
+apiVersion: v2
+name: flobrain
+description: FloBrain V2, sovereign "open models only" profile (API, worker, cron jobs; optional Whisper and meeting bot)
+type: application
+version: 0.2.0
+appVersion: "v2-phase-17"
+kubeVersion: ">=1.25.0-0"

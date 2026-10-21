@@ -35,7 +35,7 @@ Do not deploy `v2/phase-0-foundation` until the items below are set on the task 
 - RDS: consider Multi-AZ and a larger class before V2 production load. Enable log exports. The current class is `db.t3.micro` (1 GB, single-AZ).
 - Migrations do **not** run on container start (Dockerfile `CMD` is `runserver` only; the task definition sets no command). When V2 migrations need to reach production, run one one-off task (`python manage.py migrate --noinput`) and start the web service only after it exits 0. Do not put `migrate` on every web task.
 - Stand up staging before any V2 flag is turned on in production. Nothing in this branch is deployed.
-- `direct` AI calls (Phase 7) need a platform provider key in Secrets Manager before production can select that backend. The key is not a code change. Do not put it in the task definition as plain text, and do not send it to the current multimodal host.
+- `direct` AI calls (Phase 7) need a platform provider key in Secrets Manager before production can select that backend. Also set `AI_DIRECT_BASE_URL` (HTTPS only), `AI_DIRECT_MODEL_ALLOWLIST`, `AI_DIRECT_PROVIDER` (the name used in `PriceTable`, for example `openai`) and the matching `PriceTable` rows (prices come from the provider's price list, entered by a human). The key is not a code change. Do not put it in the task definition as plain text, and do not send it to the current multimodal host.
 
 ## Staging stack
 
@@ -78,7 +78,12 @@ Indexing and other job-backed features need a process that is not the web servic
 python manage.py run_jobs
 ```
 
-Same image and the same database. No public port and no ALB. Until that process exists, job-backed features report "unavailable". Do not run the queue inside the gunicorn workers. Not applied from this branch.
+Same image and the same database. No public port and no ALB. Do not run the queue inside the gunicorn workers. Not applied from this branch.
+
+- Set `JOBS_WORKER_ENABLED=True` on the web service **and** the worker only after the worker service exists. While it is `False` (the default), `enqueue` creates no row and job-backed features report "unavailable", so nothing piles up in the queue.
+- The worker keeps polling (`JOBS_POLL_SECONDS`, default 2) and stops cleanly on SIGTERM after the current job, so ECS can stop or replace it.
+- A row left in `running` by a crashed worker is put back in the queue after `JOBS_STALE_SECONDS` (default 900).
+- One worker task is enough to start. More can run at once: PostgreSQL `SKIP LOCKED` keeps them from taking the same row.
 
 ## One-off migration task (Q28)
 
@@ -98,22 +103,53 @@ Create these in staging first. Do not commit values.
 |---|---|
 | `SECRET_KEY` | already required |
 | `AES_MASTER_KEY` | New random 64-hex key at the first V2 deploy (Q12). `ALLOW_INSECURE_AES_MASTER_KEY` is an emergency switch only |
-| `CREDENTIALS_ENCRYPTION_KEY` | Phase 7 credentials (empty is valid until then) |
+| `CREDENTIALS_ENCRYPTION_KEY` | BYOK (7k). 64 random hex characters (`openssl rand -hex 32`), never all zeros. Empty keeps BYOK at 501. Losing it makes stored keys unreadable (users re-enter them). Keep `CREDENTIALS_KEY_VERSION=1` until rotation ships |
+| `BYOK_ALLOWED_HOSTS` | Optional. Comma list of provider hosts customer keys may call. Default: OpenAI, OpenRouter, Groq, Together, Mistral, DeepSeek, Fireworks |
 | `MULTIMODAL_API_KEY` | Not set on the ECS task. The multimodal service does not check it. Do not treat it as configured. |
 | `SMTP_*` | password-reset mail |
 | `HR_WEBHOOK_SECRET` | Phase 1 |
 | Redis URL | Proposal only, for Channels. Not the job queue (E17). |
+| `STRIPE_WEBHOOK_SECRET` | Phase 17b. Stripe endpoint signing secret (`whsec_…`). Empty → the webhook returns 501. `BILLING_ENFORCE_ENTITLEMENTS` stays off until plans are seeded |
+| `AI_SELF_HOSTED_HOSTS` | Phase 17a. Comma list of model hosts that count as private for `private_only` orgs. Empty → `private_only` orgs get no AI |
+| `PUBLIC_API_BASE_URL` | Already used by Phase 14. SSO (17c) registers `PUBLIC_API_BASE_URL/api/v2/sso/callback` as the IdP redirect URI; it must be the public https API origin |
+| SSO / SCIM | Phase 17c/17d. No new env. Client secrets are stored encrypted with `CREDENTIALS_ENCRYPTION_KEY` (empty → SSO setup returns 501). Domain verification makes DNS TXT lookups from the API task (outbound UDP/TCP 53 to the VPC resolver). IdP discovery, JWKS and token calls use the SSRF-safe pinned client (https, public IPs only) |
+| `EXPORT_MAX_PER_DAY`, `EXPORT_RETENTION_DAYS`, `EXPORT_MAX_MESSAGES` | Phase 17e. Optional (3, 7, 500000). Exports use the Content Studio bucket (`CONTENT_STORAGE=s3`, `CONTENT_S3_BUCKET`) under `exports/<org>/`; empty storage → 501. Needs `s3:PutObject`, `s3:GetObject`, `s3:DeleteObject` on that prefix, and a daily `python manage.py purge_exports` (or an S3 lifecycle rule on `exports/` at 8 days) |
+| `CERTIFICATE_SIGNING_KEY` | Phase 11. Ed25519 private key, 32 random bytes in base64 (`python -c "import os,base64;print(base64.b64encode(os.urandom(32)).decode())"`), in Secrets Manager. To rotate, put the old public key (from `/api/public/certificates/public-key`) in `CERTIFICATE_PREVIOUS_PUBLIC_KEYS` (comma list) before switching the private key, or older certificates stop verifying |
+| `VAPID_PUBLIC_KEY`, `VAPID_PRIVATE_KEY`, `VAPID_SUBJECT` | Phase 10 Web Push. Generate once (`vapid --gen` from `py-vapid`), private key in Secrets Manager. Empty: push is off. Outbound HTTPS from the worker to the browser push services (FCM, Mozilla, Apple, Microsoft) |
+| Privacy center (Phase 16) | No new env. Personal data downloads use the same bucket under `privacy/<user>/` (`s3:PutObject`, `s3:GetObject`, `s3:DeleteObject` on that prefix) and `EXPORT_RETENTION_DAYS`. Retention needs a daily `python manage.py apply_retention`; it deletes nothing until an owner sets days |
+| `AI_FORCE_PRIVATE_ONLY`, `AI_ALLOW_PLAINTEXT_HOSTS` | Phase 17f. Sovereign installs only. Leave both unset on FloBrain's hosted deploy |
+| SAML (2026-10-21) | No new env. Needs `PUBLIC_API_BASE_URL` (the ACS is `/api/v2/sso/saml/acs`, the SP entity id and metadata `/api/v2/sso/saml/{org}/metadata`). New packages `signxml==5.1.0`, `lxml==6.1.3` |
+| `STRIPE_SECRET_KEY` | 2026-10-21. Server-side Checkout and billing portal sessions (owners only). Empty: checkout answers 501 |
+| `EXTERNAL_AGENT_ALLOWED_HOSTS` | Outside MCP agents. Upper bound of hosts an owner may allow; empty means none. Calls use the SSRF-safe pinned client |
+| `PII_DETECTOR` | 2026-10-21. `regex` (basic, `platform_api/pii.py`) or a dotted class path. Empty: orgs can't turn on redaction (501). Demo mode defaults to `regex` |
+| `TTS_PROVIDER` | Content Studio voiceover. Empty: 501. Waits for Q18 (`demo` exists for demo mode only) |
+| `CONTENT_LOCAL_DIR` | Dev and demo only: local storage folder for `CONTENT_STORAGE=local` (signed, expiring URLs). Not for ECS (task disks are not shared) |
+| `DOCS_FILE_STORAGE`, `DOCS_LOCAL_STORAGE_DIR`, `DOCS_MAX_UPLOAD_MB` | Doc attachments. Local storage only for now (S3 not built), so on ECS attachments answer 501 |
+| `DEMO_TICKS`, `DEMO_TICK_SECONDS` | Demo only: the scheduled commands run inside the web process (default on, every 60 s). Never relevant with `DEMO_MODE` off |
+| `tick_tasks` | Hourly scheduled command (task reminders). Added to the compose ticker and the Helm cronjobs |
+| `NEXT_PUBLIC_STATUS_JSON_URL` | Website (Vercel). The hosted `status.json` from `export_status`; empty: the status page reads the API |
 
-## LiveKit hosting (Q2)
+## Meetings stack (Q2 and Q23, decided 2026-10-21: self-hosted)
 
-Phase 5 will use LiveKit behind a provider interface. `voice_video` stays default off until a human picks one of these and applies it. Do not apply either from a phase PR.
+Calls, recording, transcription and the meeting assistant all run on our own servers (`deploy/meetings/`, `whisper-server/`, `meeting-bot/`). Nothing is applied from a PR; a human deploys it.
 
-- **LiveKit Cloud**, or
-- **self-hosted LiveKit** (its own host; the main account has no GPU, and this choice is separate from the embedding host below).
+| Setting (API) | Value |
+|---|---|
+| `LIVEKIT_URL` | Browser address, `wss://calls.<domain>` (TLS in front of LiveKit 7880) |
+| `LIVEKIT_API_URL` | Server-side address, e.g. `http://livekit:7880` |
+| `LIVEKIT_API_KEY`, `LIVEKIT_API_SECRET` | One key pair, the same in `livekit.yaml` and `egress.yaml` (Secrets Manager) |
+| `ASR_BACKEND=http`, `ASR_BASE_URL`, `ASR_API_KEY` | The Whisper service; key optional |
+| `MEETING_BOT_VENDOR=self_hosted`, `MEETING_BOT_MAX_MINUTES` | Turns on the assistant (120 minutes by default) |
+| `MEETING_UPLOAD_MAX_MB` | Upload limit for recordings (500) |
 
-Recordings come from that deployment. No join URL until the flag is on and the chosen host answers.
+Also: a `meeting_bot` worker token (`manage.py worker_token --issue meeting-bot-1 --kind meeting_bot`), Egress writing to the content bucket under `meetings/`, and the LiveKit webhook pointing at `https://<api>/api/v2/livekit/webhook`. Network: TCP 7881 and UDP 50000–50100 to users, TURN for strict firewalls, outbound internet for Egress and the bot.
 
 ## Embedding model hosting (Q26)
+
+BGE-M3 runs on JarvisLabs (team decision 2026-10-20). FloBrain needs: `EMBEDDINGS_BACKEND=http`, `EMBEDDINGS_BASE_URL` (HTTPS, OpenAI-compatible `/v1/embeddings`), `EMBEDDINGS_MODEL`, `EMBEDDINGS_DIMENSION=1024`, and `EMBEDDINGS_API_KEY` if the endpoint requires one (Secrets Manager). The JarvisLabs endpoint should accept only the NAT IP `98.89.195.180` or require the key.
+
+Phase 7i adds, all optional with defaults: `KNOWLEDGE_CHUNK_CHARS` (1500), `KNOWLEDGE_CHUNK_OVERLAP` (200), `KNOWLEDGE_ASK_TOP_K` (8), `KNOWLEDGE_CONTEXT_CHARS` (12000). To turn knowledge ask on for one org, in order: pgvector extension present (`knowledge/0001` creates it when RDS allows), embeddings env set, `direct` provider env set, job worker running (`JOBS_WORKER_ENABLED=True`), org flag `memory_search` on, then `manage.py index_knowledge --org <id>` once. Answers go only to the `direct` provider, never the multimodal host.
+
 
 The model is BGE-M3, with multilingual-e5 as fallback, behind an `Embedder` interface (E31). The main account has **no GPU** today. Choose a host (a GPU box outside this account, or another approved machine) before memory search is enabled. Until that host is approved, the memory-search flag stays off and the feature shows "Not configured". Do not run the model inside the current `db.t3.micro` API task.
 

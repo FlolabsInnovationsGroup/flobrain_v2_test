@@ -1,0 +1,98 @@
+# Sovereign "open models only" profile (Phase 17f). Skeleton: review and pin images before use.
+# No traffic leaves this network for inference: chat goes to vLLM, embeddings to TEI (BGE-M3).
+name: flobrain-sovereign
+
+x-api-env: &api-env
+  env_file: .env
+
+services:
+  db:
+    image: pgvector/pgvector:pg16
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: ${DB_NAME}
+      POSTGRES_USER: ${DB_USER}
+      POSTGRES_PASSWORD: ${DB_PASS}
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${DB_USER} -d ${DB_NAME}"]
+      interval: 5s
+      retries: 20
+    networks: [internal]
+
+  migrate:
+    <<: *api-env
+    build: { context: ../../flobrain-core/backend, dockerfile: ../../deploy/sovereign/Dockerfile.api }
+    # The password goes through PGPASSWORD, never the command line.
+    command: ["sh", "-c", "PGPASSWORD=\"$${DB_PASS}\" psql -h db -U \"$${DB_USER}\" -d \"$${DB_NAME}\" -c 'CREATE EXTENSION IF NOT EXISTS vector' && python manage.py migrate --noinput"]
+    depends_on: { db: { condition: service_healthy } }
+    restart: "no"
+    networks: [internal]
+
+  api:
+    <<: *api-env
+    build: { context: ../../flobrain-core/backend, dockerfile: ../../deploy/sovereign/Dockerfile.api }
+    restart: unless-stopped
+    depends_on: { migrate: { condition: service_completed_successfully } }
+    ports: ["127.0.0.1:8000:8000"]  # put your TLS reverse proxy in front; do not expose 8000 directly
+    # "edge" gives the API outbound access for SSO (the customer's IdP) and customer webhooks.
+    # Model calls cannot leave: AI_FORCE_PRIVATE_ONLY refuses every non-self-hosted host before
+    # any network call. For a stricter setup, route "edge" through an egress proxy that allows only the IdP.
+    networks: [internal, edge]
+
+  worker:
+    <<: *api-env
+    build: { context: ../../flobrain-core/backend, dockerfile: ../../deploy/sovereign/Dockerfile.api }
+    command: ["python", "manage.py", "run_jobs"]
+    restart: unless-stopped
+    depends_on: { migrate: { condition: service_completed_successfully } }
+    networks: [internal]
+
+  ticker:
+    <<: *api-env
+    build: { context: ../../flobrain-core/backend, dockerfile: ../../deploy/sovereign/Dockerfile.api }
+    # Periodic work: agents and webhooks every minute, content queue, daily export purge and retention.
+    command:
+      - sh
+      - -c
+      - |
+        n=0
+        while true; do
+          python manage.py tick_agents; python manage.py tick_webhooks; python manage.py tick_content; python manage.py tick_pulse
+          [ $$((n % 60)) -eq 0 ] && python manage.py tick_tasks
+          [ $$((n % 1440)) -eq 0 ] && python manage.py purge_exports && python manage.py apply_retention
+          n=$$((n + 1)); sleep 60
+        done
+    restart: unless-stopped
+    depends_on: { migrate: { condition: service_completed_successfully } }
+    networks: [internal]
+
+  vllm:
+    image: ${VLLM_IMAGE}
+    command: ["--model", "${VLLM_MODEL}", "--served-model-name", "${VLLM_SERVED_NAME}", "--api-key", "${VLLM_API_KEY}"]
+    environment: { HF_HUB_OFFLINE: "1" }  # weights are loaded into hf-cache beforehand (RUNBOOK step 2)
+    restart: unless-stopped
+    volumes: ["hf-cache:/root/.cache/huggingface"]
+    deploy:
+      resources:
+        reservations:
+          devices: [{ driver: nvidia, count: all, capabilities: [gpu] }]
+    networks: [internal]
+
+  embeddings:
+    image: ${TEI_IMAGE}
+    command: ["--model-id", "BAAI/bge-m3"]
+    environment: { HF_HUB_OFFLINE: "1" }
+    restart: unless-stopped
+    volumes: ["hf-cache:/data"]
+    networks: [internal]
+
+networks:
+  internal:
+    internal: true   # no route out: model servers and the database cannot reach the internet
+  edge: {}
+
+volumes:
+  pgdata: {}
+  hf-cache: {}

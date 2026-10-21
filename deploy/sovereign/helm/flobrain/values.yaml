@@ -1,0 +1,219 @@
+# FloBrain sovereign chart. Secrets come from an existing Secret you create (never from values files).
+# Every key is described in deploy/sovereign/README.md ("Helm values reference").
+image:
+  repository: registry.internal.example/flobrain-api   # built from deploy/sovereign/Dockerfile.api
+  tag: ""                                              # required: pin a tag (or "tag@sha256:...")
+  pullPolicy: IfNotPresent
+imagePullSecrets: []   # e.g. [{ name: registry-creds }]
+
+# Keys: SECRET_KEY, AES_MASTER_KEY, CREDENTIALS_ENCRYPTION_KEY, DB_PASS, AI_DIRECT_API_KEY
+# (+ ASR_API_KEY / WHISPER_API_KEY and MEETING_BOT_WORKER_TOKEN when the meetings stack is on;
+# + LIVEKIT_API_KEY / LIVEKIT_API_SECRET when calls are on). Loaded with envFrom into every API-image pod.
+existingSecret: flobrain-secrets
+
+serviceAccount:
+  create: true
+  name: ""               # default: the release name
+  annotations: {}        # e.g. IRSA / workload identity for the exports bucket
+  automountToken: false  # FloBrain never talks to the Kubernetes API
+
+# Applied to every pod. The image user is uid 10001 (Dockerfile.api).
+podSecurityContext:
+  runAsNonRoot: true
+  runAsUser: 10001
+  runAsGroup: 10001
+  fsGroup: 10001
+  seccompProfile: { type: RuntimeDefault }
+containerSecurityContext:
+  allowPrivilegeEscalation: false
+  readOnlyRootFilesystem: true   # writable paths are emptyDir mounts (/tmp)
+  capabilities: { drop: ["ALL"] }
+
+# Scheduling for the API, worker, cron and migrate pods.
+nodeSelector: {}
+tolerations: []
+affinity: {}
+
+api:
+  replicas: 2            # ignored when autoscaling.enabled
+  resources:
+    requests: { cpu: 500m, memory: 1Gi }
+    limits: { cpu: "2", memory: 2Gi }
+  # /healthz is answered by flobrain.middleware.HealthCheckMiddleware before host checks and without
+  # touching the database, so it is safe for liveness. Readiness uses the same path.
+  probes:
+    path: /healthz
+    startup: { periodSeconds: 5, failureThreshold: 30, timeoutSeconds: 3 }   # up to 150 s to boot gunicorn
+    liveness: { periodSeconds: 20, failureThreshold: 3, timeoutSeconds: 5 }
+    readiness: { periodSeconds: 10, failureThreshold: 3, timeoutSeconds: 3 }
+  service:
+    type: ClusterIP
+    port: 80
+  autoscaling:
+    enabled: false
+    minReplicas: 2
+    maxReplicas: 6
+    targetCPUUtilizationPercentage: 70
+    targetMemoryUtilizationPercentage: null   # e.g. 80
+  podDisruptionBudget:
+    enabled: true
+    minAvailable: 1      # keep at least one API pod during node drains; needs replicas/minReplicas >= 2
+  podAnnotations: {}
+
+worker:
+  replicas: 1            # ignored when autoscaling.enabled
+  resources:
+    requests: { cpu: 250m, memory: 1Gi }
+    limits: { cpu: "2", memory: 2Gi }
+  # run_jobs stops after the current job on SIGTERM; give long jobs time to finish.
+  terminationGracePeriodSeconds: 300
+  autoscaling:
+    enabled: false
+    minReplicas: 1
+    maxReplicas: 4
+    targetCPUUtilizationPercentage: 70
+    targetMemoryUtilizationPercentage: null
+  podDisruptionBudget:
+    enabled: false       # with one replica a PDB would block node drains
+    minAvailable: 1
+  podAnnotations: {}
+
+migrate:
+  resources:
+    requests: { cpu: 250m, memory: 512Mi }
+    limits: { memory: 1Gi }
+
+# Replaces the compose "ticker". Names, schedules and commands are the same as 0.1.
+cronjobs:
+  enabled: true
+  successfulJobsHistoryLimit: 1
+  failedJobsHistoryLimit: 3
+  startingDeadlineSeconds: 120
+  activeDeadlineSeconds: 1800
+  resources:
+    requests: { cpu: 100m, memory: 512Mi }
+    limits: { memory: 1Gi }
+  jobs:
+    tick-agents: { schedule: "*/1 * * * *", command: tick_agents }
+    tick-webhooks: { schedule: "*/1 * * * *", command: tick_webhooks }
+    tick-content: { schedule: "*/1 * * * *", command: tick_content }
+    tick-pulse: { schedule: "*/5 * * * *", command: tick_pulse }
+    purge-exports: { schedule: "17 3 * * *", command: purge_exports }
+    apply-retention: { schedule: "41 2 * * *", command: apply_retention }
+    tick-tasks: { schedule: "7 * * * *", command: tick_tasks }
+
+ingress:
+  enabled: false
+  className: ""          # e.g. nginx
+  annotations: {}        # e.g. { cert-manager.io/cluster-issuer: internal-ca, nginx.ingress.kubernetes.io/proxy-body-size: 200m }
+  hosts:
+    - host: api.flobrain.internal.example
+      paths: [{ path: /, pathType: Prefix }]
+  tls:
+    - secretName: flobrain-api-tls   # an existing kubernetes.io/tls Secret (or one cert-manager creates)
+      hosts: [api.flobrain.internal.example]
+
+# Non-secret settings, same names as env.example.
+config:
+  DEBUG: "False"
+  ALLOWED_HOSTS: api.flobrain.internal.example,flobrain.internal.example
+  CORS_ALLOWED_ORIGINS: https://flobrain.internal.example
+  FRONTEND_BASE_URL: https://flobrain.internal.example
+  PUBLIC_API_BASE_URL: https://api.flobrain.internal.example
+  DB_ENGINE: postgresql
+  DB_HOST: flobrain-db
+  DB_PORT: "5432"
+  DB_NAME: flobrain_db
+  DB_USER: flo_user
+  AI_PROVIDER_BACKEND: direct
+  AI_DIRECT_BASE_URL: http://vllm:8000/v1
+  AI_DIRECT_MODEL_ALLOWLIST: ""
+  AI_DIRECT_DEFAULT_MODEL: ""
+  AI_DIRECT_PROVIDER: self_hosted
+  EMBEDDINGS_BACKEND: http
+  EMBEDDINGS_BASE_URL: http://embeddings:80/v1
+  EMBEDDINGS_MODEL: BAAI/bge-m3
+  EMBEDDINGS_DIMENSION: "1024"
+  KNOWLEDGE_VECTOR_STORE: pgvector
+  AI_SELF_HOSTED_HOSTS: vllm,embeddings
+  AI_ALLOW_PLAINTEXT_HOSTS: vllm,embeddings
+  AI_FORCE_PRIVATE_ONLY: "True"
+  MULTIMODAL_SERVICE_URL: ""
+  BYOK_ALLOWED_HOSTS: vllm
+  JOBS_EAGER: "False"
+  JOBS_WORKER_ENABLED: "True"
+  # Calls (LiveKit runs outside this chart, see README):
+  # LIVEKIT_URL: wss://calls.internal.example
+  # LIVEKIT_API_URL: http://livekit.meetings.svc:7880
+
+# The database, vLLM and the embeddings server are expected as separate releases
+# (or managed services inside the perimeter) reachable by the names in config.
+networkPolicy:
+  enabled: true
+  dns:
+    podLabels: { k8s-app: kube-dns }
+  # API, worker and cron pods may reach only DNS, these services, Whisper (when on) and extraEgress.
+  services:
+    - { name: database, podLabels: { app: flobrain-db }, port: 5432 }
+    - { name: vllm, podLabels: { app: vllm }, port: 8000 }
+    - { name: embeddings, podLabels: { app: embeddings }, port: 80 }
+  # Add what the install needs, for example the customer's IdP (SSO), object storage (exports) and LiveKit:
+  # - to: [{ ipBlock: { cidr: 10.20.0.0/16 } }]
+  #   ports: [{ protocol: TCP, port: 443 }]
+  extraEgress: []
+  # Who may call the API (for example the ingress controller's namespace).
+  ingressFrom:
+    - namespaceSelector: { matchLabels: { kubernetes.io/metadata.name: ingress-nginx } }
+
+# Optional meetings stack (deploy/meetings). LiveKit and Egress are NOT in this chart (see README).
+meetings:
+  whisper:
+    enabled: false
+    image:
+      repository: registry.internal.example/flobrain-whisper   # built from whisper-server/
+      tag: ""
+      pullPolicy: IfNotPresent
+    replicas: 1
+    model: small            # WHISPER_MODEL (large-v3 needs a GPU)
+    device: cpu             # cpu | cuda (use a CUDA base image, see whisper-server/Dockerfile)
+    computeType: int8
+    asrModel: ""            # ASR_MODEL the API sends; empty = backend default
+    offline: true           # HF_HUB_OFFLINE=1: load the weights into the volume beforehand
+    # Same value on both sides: Whisper reads WHISPER_API_KEY, the API sends ASR_API_KEY (put both in the secret).
+    apiKeySecret: { name: "", key: WHISPER_API_KEY }   # name "" = existingSecret
+    persistence:
+      enabled: true
+      existingClaim: ""
+      storageClass: ""
+      size: 10Gi
+    resources:
+      requests: { cpu: "1", memory: 2Gi }
+      limits: { cpu: "4", memory: 6Gi }
+    nodeSelector: {}        # e.g. GPU nodes
+    tolerations: []
+    affinity: {}
+    extraEgress: []         # Whisper gets DNS only by default
+  meetingBot:
+    enabled: false
+    image:
+      repository: registry.internal.example/flobrain-meeting-bot   # built from meeting-bot/
+      tag: ""
+      pullPolicy: IfNotPresent
+    replicas: 1             # one meeting at a time per pod; run more for parallel meetings
+    apiUrl: ""              # FLOBRAIN_API_URL; empty = the in-cluster API service
+    pollSeconds: 10
+    tokenSecret: { name: "", key: MEETING_BOT_WORKER_TOKEN }   # manage.py worker_token --issue ... --kind meeting_bot
+    shmSize: 1Gi            # Chromium shared memory (compose shm_size)
+    # Xvfb, PulseAudio and Chromium write only to /tmp and $HOME, both emptyDir. Set false if your
+    # build writes elsewhere (not verified on a cluster).
+    readOnlyRootFilesystem: true
+    resources:
+      requests: { cpu: "1", memory: 1536Mi }
+      limits: { cpu: "2", memory: 3Gi }
+    nodeSelector: {}
+    tolerations: []
+    affinity: {}
+    # The bot joins Zoom/Meet/Teams on the internet. Default: anything outside private ranges.
+    egress:
+      - to:
+          - ipBlock: { cidr: 0.0.0.0/0, except: [10.0.0.0/8, 172.16.0.0/12, 192.168.0.0/16, 169.254.0.0/16] }

@@ -44,7 +44,7 @@ class ChatListView(APIView):
         user, err = _get_user_or_401(request)
         if err:
             return err
-        chats = Chat.objects.filter(user=user, room__isnull=True).order_by("-updated_at")
+        chats = Chat.objects.filter(user=user, room__isnull=True, buddy__isnull=True).order_by("-updated_at")
         serializer = ChatListSerializer(chats, many=True)
         return Response(serializer.data)
 
@@ -75,7 +75,7 @@ class ChatDetailView(APIView):
         if err:
             return None, err
         try:
-            chat = Chat.objects.get(pk=chat_id, user=user, room__isnull=True)
+            chat = Chat.objects.get(pk=chat_id, user=user, room__isnull=True, buddy__isnull=True)
             return chat, None
         except Chat.DoesNotExist:
             return None, Response(
@@ -120,7 +120,7 @@ class SendMessageView(APIView):
         if err:
             return err
         try:
-            chat = Chat.objects.get(pk=chat_id, user=user, room__isnull=True)
+            chat = Chat.objects.get(pk=chat_id, user=user, room__isnull=True, buddy__isnull=True)
         except Chat.DoesNotExist:
             return Response(
                 {"error": "Not found", "details": "Chat not found"},
@@ -141,6 +141,15 @@ class SendMessageView(APIView):
             return Response(
                 {"error": "Validation failed", "details": "text or image required"},
                 status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        from brain.llm.policy import check_ai
+
+        if check_ai(None, "legacy"):
+            # Sovereign installs (AI_FORCE_PRIVATE_ONLY): V1 chat would reach the multimodal host.
+            return Response(
+                {"error": "private_only", "details": "This installation only uses self-hosted models"},
+                status=status.HTTP_409_CONFLICT,
             )
 
         Message.objects.create(

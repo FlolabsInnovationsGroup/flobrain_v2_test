@@ -161,3 +161,39 @@ class RoomThreadTests(TestCase):
             second = self.client.post(f"{self.base}/ai/threads/{thread_id}/send", {"text": "two"}, format="json")
         self.assertEqual(first.status_code, 200, first.content)
         self.assertEqual(second.status_code, 429)
+
+
+class RoomThreadLimitTests(RoomThreadTests):
+    def _thread(self):
+        self._enable()
+        self._auth(self.member_a)
+        res = self.client.post(f"{self.base}/rooms/{self.room.id}/ai/threads", {}, format="json")
+        return res.json()["id"]
+
+    @override_settings(FLOBRAIN_V2={"AI_SEND_RATE": "1000/min", "AI_MAX_INPUT_CHARS": 10, "AI_THREAD_HISTORY_MESSAGES": 40})
+    def test_overlong_text_is_rejected_before_the_provider(self):
+        thread_id = self._thread()
+        with patch("brain.v2_views.get_provider") as get_provider:
+            res = self.client.post(f"{self.base}/ai/threads/{thread_id}/send", {"text": "x" * 11}, format="json")
+        self.assertEqual(res.status_code, 400)
+        get_provider.assert_not_called()
+
+    @override_settings(FLOBRAIN_V2={"AI_SEND_RATE": "1000/min", "AI_MAX_INPUT_CHARS": 8000, "AI_THREAD_HISTORY_MESSAGES": 4})
+    def test_history_sent_to_the_provider_is_bounded(self):
+        from brain.llm.providers import ProviderResult
+
+        thread_id = self._thread()
+        chat = Chat.objects.get(pk=thread_id)
+        for i in range(10):
+            Message.objects.create(chat=chat, role=Message.ROLE_USER, text=f"old {i}")
+        with patch("brain.v2_views.get_provider") as get_provider:
+            get_provider.return_value.complete.return_value = ProviderResult(
+                text="ok", model="m", total_tokens=3, provider="openai"
+            )
+            res = self.client.post(f"{self.base}/ai/threads/{thread_id}/send", {"text": "newest"}, format="json")
+        self.assertEqual(res.status_code, 200, res.content)
+        sent = get_provider.return_value.complete.call_args.args[0]
+        self.assertEqual(sent[0]["role"], "system")
+        self.assertEqual(len(sent), 1 + 4)
+        self.assertEqual(sent[-1]["content"], "newest")
+        self.assertEqual(UsageEvent.objects.filter(chat=chat).latest("created_at").provider, "openai")

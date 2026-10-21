@@ -1,0 +1,20 @@
+{
+  "Demo call: no call server is connected, so the other people here are simulated. Recording produces a sample transcript by speaker.": "Appel de démonstration : aucun serveur d'appel n'est connecté, les autres participants sont donc simulés. L'enregistrement produit un exemple de transcription par intervenant.",
+  "{name} (you)": "{name} (vous)",
+  "Microphone on": "Micro activé",
+  "Muted": "Muet",
+  "Speaking": "Parle",
+  "Listening": "Écoute",
+  "camera on": "caméra activée",
+  "Mute": "Couper le micro",
+  "Unmute": "Réactiver le micro",
+  "Turn camera off": "Désactiver la caméra",
+  "Turn camera on": "Activer la caméra",
+  "Leave": "Quitter",
+  "Task created": "Tâche créée",
+  "Task created and assigned.": "Tâche créée et assignée.",
+  "Who does it": "Qui s'en charge",
+  "Me": "Moi",
+  "Due date (optional)": "Échéance (facultatif)",
+  "Create the task": "Créer la tâche"
+}

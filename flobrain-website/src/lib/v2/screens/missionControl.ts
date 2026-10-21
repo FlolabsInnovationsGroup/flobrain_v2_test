@@ -5,13 +5,38 @@ export type MissionMetrics = {
   overdue: number;
 };
 
+export type WorkloadTask = {
+  id: string;
+  title: string;
+  status: string;
+  priority?: string;
+  due_on: string | null;
+  is_blocked?: boolean;
+};
+
 export type WorkloadRow = {
   user_id: string;
+  name?: string;
   open_tasks: number;
   done_tasks: number;
+  blocked_tasks?: number;
   seconds_7d: number;
+  weekly_target_hours?: string | null;
+  capacity_seconds?: number | null;
   task_ids: string[];
+  tasks?: WorkloadTask[];
 };
+
+/** Task titles for a drill-down; falls back to a short id only if the server sent no titles. */
+export function drilldownTasks(row: WorkloadRow): WorkloadTask[] {
+  if (row.tasks?.length) return row.tasks;
+  return row.task_ids.map((id) => ({ id, title: id.slice(0, 8), status: "", due_on: null }));
+}
+
+/** Names for a task's people, joined for one line. */
+export function peopleLine(people: Array<{ name: string }> | undefined): string {
+  return (people ?? []).map((p) => p.name).filter(Boolean).join(", ");
+}
 
 export function isMissionControlEmpty(data: {
   accomplishments?: unknown[];

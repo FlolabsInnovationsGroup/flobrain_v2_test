@@ -9,8 +9,11 @@ const buttonVariants = cva(
   {
     variants: {
       variant: {
-        default: "bg-[color:var(--fb-v2-accent)] text-white",
-        ghost: "bg-transparent text-[color:var(--fb-v2-text)]",
+        default: "bg-[color:var(--fb-v2-accent)] text-white hover:bg-[color:var(--fb-v2-accent-strong)] disabled:opacity-50",
+        ghost: "bg-transparent text-[color:var(--fb-v2-text)] hover:bg-[color:var(--fb-v2-border)] disabled:opacity-50",
+        outline: "bg-transparent text-[color:var(--fb-v2-text)] ring-1 ring-inset ring-[color:var(--fb-v2-border)] hover:bg-[color:var(--fb-v2-border)] disabled:opacity-50",
+        waiting: "bg-[color:var(--fb-v2-waiting)] text-black hover:brightness-110 disabled:opacity-50",
+        danger: "bg-transparent text-[color:var(--fb-v2-error)] ring-1 ring-inset ring-[color:var(--fb-v2-error)] hover:bg-[color:var(--fb-v2-error)] hover:text-black disabled:opacity-50",
       },
     },
     defaultVariants: { variant: "default" },

@@ -1,7 +1,7 @@
 from rest_framework.authentication import BaseAuthentication
 from rest_framework.exceptions import AuthenticationFailed
 
-from users.jwt_utils import decode_token, get_user_from_request
+from users.jwt_utils import decode_token, get_user_from_request, issued_before_password_change
 
 
 class BearerJWTAuthentication(BaseAuthentication):
@@ -10,14 +10,18 @@ class BearerJWTAuthentication(BaseAuthentication):
         if user is None:
             header = request.META.get("HTTP_AUTHORIZATION") or ""
             if header.startswith("Bearer "):
+                # Read-only, org-bound support sessions (Phase 17e); never accepted outside V2.
+                from console.impersonation import authenticate as impersonate
+
+                found = impersonate(request, header[7:].strip())
+                if found is not None:
+                    return found
                 raise AuthenticationFailed("Invalid or expired token")
             return None
         token = (request.META.get("HTTP_AUTHORIZATION") or "")[7:].strip()
         payload = decode_token(token) or {}
-        iat = payload.get("iat")
-        if user.password_changed_at and iat is not None:
-            if int(iat) < int(user.password_changed_at.timestamp()):
-                raise AuthenticationFailed("Token issued before last password change")
+        if issued_before_password_change(payload, user):
+            raise AuthenticationFailed("Token issued before last password change")
         return (user, payload)
 
     def authenticate_header(self, request):

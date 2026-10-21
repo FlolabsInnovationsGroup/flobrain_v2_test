@@ -70,3 +70,12 @@ memory/faiss_metadata.json
 # FAISS generated files
 memory/faiss_memory.index
 memory/faiss_metadata.json
+
+# Local file storage for dev, demo and tests (docs attachments, content)
+local_media/
+
+# Local run scripts (run-demo / run-flobrain): databases, the per-computer key and markers
+*.sqlite3
+.local-key
+.demo-key
+.org-created

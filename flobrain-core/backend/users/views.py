@@ -13,7 +13,7 @@ from rest_framework.views import APIView
 from rest_framework.permissions import IsAuthenticated
 from rest_framework_simplejwt.authentication import JWTAuthentication
 
-from .jwt_utils import decode_token, get_user_from_request, make_access_token, make_refresh_token
+from .jwt_utils import decode_token, get_user_from_request, issued_before_password_change, make_access_token, make_refresh_token
 from .models import User, UserPreferences, PresetPreferences, BlacklistedRefreshToken
 from .serializers import (
     ChangePasswordSerializer,
@@ -79,6 +79,14 @@ class LoginView(APIView):
                 validated = serializer.validated_data
                 assert validated is not None
                 user = cast(User, validated["user"])  # type: ignore[reportIndexIssue]
+                from sso.views import password_signin_blocked
+
+                if password_signin_blocked(user):
+                    # Enforced SSO applies here too (Phase 17 review); same answer as V2.
+                    return Response(
+                        {"error": "sso_required", "details": "Sign in with your organization's SSO"},
+                        status=status.HTTP_403_FORBIDDEN,
+                    )
                 return Response(
                     {
                         "access_token": make_access_token(str(user.id)),
@@ -180,9 +188,16 @@ class RefreshView(APIView):
                     {"error": "Invalid token"},
                     status=status.HTTP_401_UNAUTHORIZED,
                 )
-            if not getattr(User, "objects").filter(id=user_id).exists():
+            user = getattr(User, "objects").filter(id=user_id).first()
+            if user is None:
                 return Response(
                     {"error": "User not found"},
+                    status=status.HTTP_401_UNAUTHORIZED,
+                )
+            if issued_before_password_change(payload, user):
+                # Same cut-off V2 refresh already applies (password change, SSO enforcement).
+                return Response(
+                    {"error": "Token has been revoked", "details": "Please sign in again"},
                     status=status.HTTP_401_UNAUTHORIZED,
                 )
             return Response({"access": make_access_token(user_id)})
@@ -215,6 +230,8 @@ class ProfileView(APIView):
                 {"error": "Authentication required", "details": "Valid Bearer token required"},
                 status=status.HTTP_401_UNAUTHORIZED,
             )
+        if getattr(user, "provider", "") == "demo":
+            return Response({"error": "Demo account", "details": "Demo accounts can't be changed"}, status=status.HTTP_403_FORBIDDEN)
         # Normalize fullName -> username for serializer
         payload = dict(request.data) if request.data else {}
         if "fullName" in payload and "username" not in payload:
@@ -248,6 +265,8 @@ class ChangePasswordView(APIView):
                 {"error": "Authentication required", "details": "Valid Bearer token required"},
                 status=status.HTTP_401_UNAUTHORIZED,
             )
+        if getattr(user, "provider", "") == "demo":
+            return Response({"error": "Demo account", "details": "Demo accounts can't be changed"}, status=status.HTTP_403_FORBIDDEN)
         serializer = ChangePasswordSerializer(
             data=request.data or {},
             context={"user": user},
@@ -271,6 +290,8 @@ class DeleteAccountView(APIView):
                 {"error": "Authentication required", "details": "Valid Bearer token required"},
                 status=status.HTTP_401_UNAUTHORIZED,
             )
+        if getattr(user, "provider", "") == "demo":
+            return Response({"error": "Demo account", "details": "Demo accounts can't be changed"}, status=status.HTTP_403_FORBIDDEN)
         serializer = DeleteAccountSerializer(
             data=request.data or {},
             context={"user": user},

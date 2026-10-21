@@ -10,3 +10,5 @@ class MeetingCreateSerializer(serializers.Serializer):
 
 class ActionItemConfirmSerializer(serializers.Serializer):
     confirm = serializers.BooleanField(required=False)
+    assignee_id = serializers.UUIDField(required=False, allow_null=True)
+    due_on = serializers.DateField(required=False, allow_null=True)

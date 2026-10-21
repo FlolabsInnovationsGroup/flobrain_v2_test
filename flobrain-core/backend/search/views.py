@@ -36,11 +36,11 @@ class GlobalSearchView(V2APIView):
         results = []
         if not q:
             return Response({"results": []})
-        scoped = not is_org_owner_or_admin(request.user, org)
+        from rooms.services import accessible_rooms
+
+        allowed_rooms = accessible_rooms(request.user, org)
         if "rooms" in types:
-            rooms = Room.objects.filter(org=org)
-            if scoped:
-                rooms = rooms.filter(memberships__user=request.user)
+            rooms = Room.objects.filter(pk__in=allowed_rooms.values("pk"))
             if connection.vendor == "postgresql":
                 from django.contrib.postgres.search import SearchVector
 
@@ -55,14 +55,10 @@ class GlobalSearchView(V2APIView):
             tasks = visible_tasks(_search_fields(Task.objects.filter(org=org), q, "title"), request.user, org)[:10]
             results.extend({"type": "task", "id": str(row.id), "title": row.title} for row in tasks)
         if "docs" in types:
-            docs = Document.objects.filter(org=org)
-            if scoped:
-                docs = docs.filter(room__memberships__user=request.user)
+            docs = Document.objects.filter(org=org, room__in=allowed_rooms)
             docs = _search_fields(docs, q, "title", "content_text").distinct()[:10]
             results.extend({"type": "doc", "id": str(row.id), "title": row.title} for row in docs)
         if "meetings" in types:
-            meetings = _search_fields(Meeting.objects.filter(org=org), q, "title")
-            if scoped:
-                meetings = meetings.filter(room__memberships__user=request.user)
+            meetings = _search_fields(Meeting.objects.filter(org=org, room__in=allowed_rooms), q, "title")
             results.extend({"type": "meeting", "id": str(row.id), "title": row.title} for row in meetings[:10])
         return Response({"results": results})

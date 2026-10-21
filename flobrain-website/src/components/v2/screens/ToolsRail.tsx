@@ -1,59 +1,63 @@
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
+import { Gauge, Plus } from "lucide-react";
+import Link from "next/link";
 
-import { ScreenBody } from "@/components/v2/screens/ScreenBody";
-import { v2Client } from "@/lib/v2/client";
-import { impactScoreLabel } from "@/lib/v2/screens/metrics";
-import { toolsEmpty, type ToolRow } from "@/lib/v2/screens/tools";
-import { screenStateFromHttp, type ScreenState } from "@/lib/v2/screens/status";
-import { useWorkspaceOrg } from "@/lib/v2/useWorkspaceOrg";
+import { useTr } from "@/i18n/phrases";
+import { has } from "@/lib/v2/access";
+import { useAccess } from "@/lib/v2/AccessContext";
+import { rowsOf } from "@/lib/v2/api";
+import type { ToolRow } from "@/lib/v2/screens/tools";
+import { useOrgData } from "@/lib/v2/useOrgData";
 
+function initials(name: string): string {
+  return (
+    name
+      .split(/\s+/)
+      .filter(Boolean)
+      .slice(0, 2)
+      .map((p) => p[0]?.toUpperCase())
+      .join("") || "?"
+  );
+}
+
+/**
+ * The far-left icon rail (spec 10.1): your external tools (org defaults and your own) open in a new
+ * tab, "Add tool" goes to the tools page, and Mission Control is there for leads and admins.
+ * Opening a tool here gives FloBrain AI no access to it (Decision 19).
+ */
 export function ToolsRail({ orgSlug }: { orgSlug: string }) {
-  const { orgId, state: orgState, error: orgError } = useWorkspaceOrg(orgSlug);
-  const [tools, setTools] = useState<ToolRow[]>([]);
-  const [state, setState] = useState<ScreenState>("loading");
-  const [error, setError] = useState<string | null>(null);
-
-  const load = useCallback(() => {
-    if (!orgId) return;
-    setState("loading");
-    v2Client()
-      .tools(orgId)
-      .then((rows) => {
-        const next = rows as ToolRow[];
-        setTools(next);
-        setState(toolsEmpty(next) ? "empty" : "ready");
-      })
-      .catch((err: { response?: { status?: number } }) => {
-        setError("Could not load tools");
-        setState(screenStateFromHttp(err.response?.status ?? 500));
-      });
-  }, [orgId]);
-
-  useEffect(() => {
-    if (orgState === "ready") load();
-    else setState(orgState);
-  }, [orgState, load]);
+  const tr = useTr();
+  const { orgId, access } = useAccess();
+  const tools = useOrgData<ToolRow[]>(orgId, "/tools");
+  const item = "flex h-10 w-10 items-center justify-center rounded-xl text-xs font-semibold hover:bg-[color:var(--fb-v2-border)]";
 
   return (
-    <aside className="hidden w-72 border-s border-[color:var(--fb-v2-border)] p-4 lg:block">
-      <div className="mb-4 rounded-[length:var(--fb-v2-radius)] bg-[color:var(--fb-v2-surface)] p-3">
-        <p className="text-sm text-[color:var(--fb-v2-text-muted)]">Impact score</p>
-        <p className="text-lg font-semibold">{impactScoreLabel(null)}</p>
-      </div>
-      <h2 className="mb-2 text-sm uppercase tracking-wide text-[color:var(--fb-v2-text-muted)]">Tools</h2>
-      <ScreenBody state={state} error={error || orgError} emptyLabel="No tools yet" onRetry={load}>
-        <ul className="space-y-2">
-          {tools.map((tool) => (
-            <li key={tool.id}>
-              <a href={tool.url} target="_blank" rel="noopener noreferrer" className="text-[color:var(--fb-v2-accent)]">
-                {tool.name}
-              </a>
-            </li>
-          ))}
-        </ul>
-      </ScreenBody>
-    </aside>
+    <nav aria-label={tr("Tools")} className="hidden w-14 shrink-0 flex-col items-center gap-2 border-e border-[color:var(--fb-v2-border)] py-4 md:flex">
+      {has(access, "mission.view") ? (
+        <Link href={`/w/${orgSlug}/mission-control`} className={item} title={tr("Mission Control")} aria-label={tr("Mission Control")}>
+          <Gauge size={20} aria-hidden />
+        </Link>
+      ) : null}
+      <ul className="flex flex-col items-center gap-2">
+        {rowsOf<ToolRow>(tools.data).map((tool) => (
+          <li key={tool.id}>
+            <a
+              href={tool.url}
+              target="_blank"
+              rel="noopener noreferrer"
+              className={`${item} ring-1 ring-inset ring-[color:var(--fb-v2-border)]`}
+              title={tool.name}
+              aria-label={tr("Open {tool} in a new tab", { tool: tool.name })}
+            >
+              {initials(tool.name)}
+            </a>
+          </li>
+        ))}
+      </ul>
+      <Link href={`/w/${orgSlug}/tools`} className={item} title={tr("Add tool")} aria-label={tr("Add tool")}>
+        <Plus size={18} aria-hidden />
+      </Link>
+    </nav>
   );
 }

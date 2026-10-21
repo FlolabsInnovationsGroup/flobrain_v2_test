@@ -1,7 +1,7 @@
 from rest_framework import serializers
 
 from organizations.models import AuditEvent, PermissionGrant, PermissionRequest
-from organizations.permissions.registry import PERMISSION_CATALOG
+from organizations.permissions.registry import OWNER_ONLY_KEYS, PERMISSION_CATALOG
 
 
 class PermissionGrantSerializer(serializers.ModelSerializer):
@@ -22,6 +22,8 @@ class PermissionGrantSerializer(serializers.ModelSerializer):
     def validate_perm_key(self, value):
         if value not in PERMISSION_CATALOG:
             raise serializers.ValidationError("Unknown permission key")
+        if value in OWNER_ONLY_KEYS:
+            raise serializers.ValidationError("This permission belongs to the owner and cannot be granted")
         return value
 
 
@@ -45,6 +47,8 @@ class PermissionRequestSerializer(serializers.ModelSerializer):
     def validate_perm_key(self, value):
         if value not in PERMISSION_CATALOG:
             raise serializers.ValidationError("Unknown permission key")
+        if value in OWNER_ONLY_KEYS:
+            raise serializers.ValidationError("This permission belongs to the owner and cannot be granted")
         return value
 
 

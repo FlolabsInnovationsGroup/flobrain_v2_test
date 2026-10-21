@@ -1,0 +1,29 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: {{ .Release.Name }}-migrate
+  labels: {{- include "flobrain.labels" . | nindent 4 }}
+    app.kubernetes.io/component: migrate
+  annotations:
+    "helm.sh/hook": post-install,pre-upgrade  # post-install: the ConfigMap and ServiceAccount exist first; the API retries until migrated
+    "helm.sh/hook-delete-policy": before-hook-creation
+spec:
+  backoffLimit: 0
+  template:
+    metadata:
+      labels: {{- include "flobrain.labels" . | nindent 8 }}
+        app.kubernetes.io/component: migrate
+    spec:
+      restartPolicy: Never
+      {{- include "flobrain.podSpec" . | nindent 6 }}
+      {{- include "flobrain.scheduling" .Values | nindent 6 }}
+      volumes: [{ name: tmp, emptyDir: {} }]
+      containers:
+        - name: migrate
+          image: {{ include "flobrain.image" . }}
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          command: ["python", "manage.py", "migrate", "--noinput"]
+          {{- include "flobrain.env" . | nindent 10 }}
+          {{- include "flobrain.containerSecurity" . | nindent 10 }}
+          {{- include "flobrain.tmp" . | nindent 10 }}
+          resources: {{- toYaml .Values.migrate.resources | nindent 12 }}

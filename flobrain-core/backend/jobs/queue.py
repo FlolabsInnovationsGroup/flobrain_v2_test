@@ -24,16 +24,27 @@ def jobs_eager() -> bool:
     return bool(flag)
 
 
+def worker_enabled() -> bool:
+    """True once a `manage.py run_jobs` process is deployed (INFRA_CHANGES.md)."""
+    return bool(getattr(settings, "JOBS_WORKER_ENABLED", False))
+
+
 def enqueue(name: str, payload: dict | None = None):
-    """E17: run inline when JOBS_EAGER; otherwise report unavailable until Redis/Celery is approved."""
+    """E17: run inline when JOBS_EAGER; queue on PostgreSQL when a worker exists; else unavailable.
+
+    Without a worker process nothing would ever run the row, so no row is
+    created and the caller is told the feature is unavailable.
+    """
     payload = payload or {}
     handler = _REGISTRY.get(name)
     if handler is None:
         raise KeyError(f"Unknown job: {name}")
     if jobs_eager():
         return handler(payload)
+    if not worker_enabled():
+        logger.warning("Job %s not queued: no worker process (JOBS_WORKER_ENABLED is off)", name)
+        return {"ok": False, "reason": "unavailable"}
     from jobs.models import Job
 
-    Job.objects.create(kind=name, payload=payload)
-    logger.warning("Job %s queued; worker process is not this request (JOBS_EAGER is off)", name)
-    return {"ok": False, "reason": "unavailable"}
+    job = Job.objects.create(kind=name, payload=payload)
+    return {"ok": True, "status": "queued", "job_id": str(job.id)}

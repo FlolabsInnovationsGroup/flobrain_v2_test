@@ -1,0 +1,23 @@
+{
+  "Workspace": "مساحة العمل",
+  "Search": "البحث",
+  "Inbox": "الوارد",
+  "Something went wrong": "حدث خطأ ما",
+  "This feature is switched off for your organization. An admin can turn it on.": "هذه الميزة متوقفة في مؤسستك. يمكن للمسؤول تفعيلها.",
+  "No data yet": "لا توجد بيانات بعد",
+  "You do not have access": "ليست لديك صلاحية الوصول",
+  "Loading": "جارٍ التحميل",
+  "Retry": "إعادة المحاولة",
+  "Set the AI policy and billing": "اضبط سياسة الذكاء الاصطناعي والفوترة",
+  "Turn on SSO and provisioning": "فعّل تسجيل الدخول الموحّد (SSO) والتزويد (SCIM)",
+  "Export the org's memory": "صدّر ذاكرة المؤسسة",
+  "Approve marketplace listings": "وافق على عروض المتجر الداخلي",
+  "Manage members and access": "أدر الأعضاء والصلاحيات",
+  "See audit and support sessions": "اطّلع على سجل التدقيق وجلسات الدعم",
+  "Generate the weekly team report": "أنشئ تقرير الفريق الأسبوعي",
+  "Run the Monday release-notes agent": "شغّل وكيل ملاحظات الإصدار ليوم الاثنين",
+  "Unblock Youssef's Android task": "أزل العائق عن مهمة يوسف على أندرويد",
+  "Ask a question across rooms and docs": "اطرح سؤالاً عبر الغرف والمستندات",
+  "Approve the task your buddy proposed": "وافق على المهمة التي اقترحها مساعدك",
+  "Make a short video in Content Studio": "اصنع فيديو قصيراً في استوديو المحتوى"
+}

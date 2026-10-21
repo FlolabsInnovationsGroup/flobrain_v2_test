@@ -90,4 +90,7 @@ class Command(BaseCommand):
         )
         for user in User.objects.filter(email__endswith="@flolabs.local"):
             sync_user_type(user)
+        from buddies.seeds import seed_org
+
+        seed_org(org)
         self.stdout.write(self.style.SUCCESS(f"Seeded FloLabs org {org.id}"))

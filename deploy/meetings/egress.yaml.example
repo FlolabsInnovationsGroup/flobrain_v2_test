@@ -1,0 +1,11 @@
+# LiveKit Egress: records FloBrain calls (audio only) straight into the same private bucket the API
+# reads (CONTENT_S3_BUCKET). The API asks for files under meetings/<org>/<meeting>/.
+api_key: REPLACE_WITH_KEY
+api_secret: REPLACE_WITH_SECRET
+ws_url: ws://livekit:7880
+redis:
+  address: redis:6379
+s3:
+  region: REPLACE_WITH_REGION
+  bucket: REPLACE_WITH_CONTENT_S3_BUCKET
+  # access_key / secret, or AWS_* environment variables / an instance role with s3:PutObject on meetings/*

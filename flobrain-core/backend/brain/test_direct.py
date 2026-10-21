@@ -110,11 +110,18 @@ class DirectClientTests(TestCase):
         self.assertEqual(result.error_code, "not_configured")
 
     @override_settings(AI_DIRECT_BASE_URL="http://jarvis.example:8000")
+    def test_plain_http_to_a_remote_host_is_not_configured(self):
+        with patch("urllib.request.urlopen") as opened:
+            result = chat_complete([{"role": "user", "content": "hi"}], model="llama")
+        self.assertEqual(result.error_code, "not_configured")
+        opened.assert_not_called()
+
+    @override_settings(AI_DIRECT_BASE_URL="https://jarvis.example:8000")
     def test_self_hosted_base_url_is_only_a_setting(self):
         body = _Body({"choices": [{"message": {"content": "ok"}}], "usage": {"total_tokens": 1}})
         with patch("urllib.request.urlopen", return_value=body) as opened:
             result = chat_complete([{"role": "user", "content": "hi"}], model="llama")
         self.assertEqual(result.text, "ok")
         request = opened.call_args.args[0]
-        self.assertTrue(request.full_url.startswith("http://jarvis.example:8000/v1/chat/completions"))
+        self.assertTrue(request.full_url.startswith("https://jarvis.example:8000/v1/chat/completions"))
         self.assertEqual(json.loads(request.data.decode())["model"], "llama")

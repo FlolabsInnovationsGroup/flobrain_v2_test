@@ -12,6 +12,7 @@ class Document(models.Model):
     content_text = models.TextField(blank=True, default="")
     version = models.PositiveIntegerField(default=1)
     created_by = models.ForeignKey("users.User", on_delete=models.SET_NULL, null=True)
+    updated_by = models.ForeignKey("users.User", on_delete=models.SET_NULL, null=True, blank=True, related_name="+")
     created_at = models.DateTimeField(default=timezone.now)
     updated_at = models.DateTimeField(auto_now=True)
 
@@ -47,10 +48,19 @@ class StoredFile(models.Model):
         blank=True,
         related_name="files",
     )
+    document = models.ForeignKey(
+        Document,
+        on_delete=models.CASCADE,
+        null=True,
+        blank=True,
+        related_name="attachments",
+    )
     name = models.CharField(max_length=200)
     content_type = models.CharField(max_length=120, blank=True, default="application/octet-stream")
     status = models.CharField(max_length=16, default=STATUS_PENDING)
     local_path = models.CharField(max_length=500, blank=True, default="")
+    size_bytes = models.PositiveBigIntegerField(default=0)
+    sha256 = models.CharField(max_length=64, blank=True, default="")
     created_by = models.ForeignKey("users.User", on_delete=models.SET_NULL, null=True)
     created_at = models.DateTimeField(default=timezone.now)
 

@@ -4,7 +4,7 @@ import { usePathname, useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 
 import { ErrorState, Loading, NoAccess } from "@/components/v2/states";
-import { dirFor, getLocale, t } from "@/i18n";
+import { dirFor, t, useLocale } from "@/i18n";
 import { clearV2Tokens, v2Client, type V2Me } from "@/lib/v2/client";
 
 const COMPANY_TYPES = new Set(["company_member", "company_lead", "company_adm"]);
@@ -12,7 +12,7 @@ const COMPANY_TYPES = new Set(["company_member", "company_lead", "company_adm"])
 export function WorkspaceGuard({ children }: { children: React.ReactNode }) {
   const router = useRouter();
   const pathname = usePathname();
-  const locale = getLocale();
+  const locale = useLocale();
   const [me, setMe] = useState<V2Me | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);

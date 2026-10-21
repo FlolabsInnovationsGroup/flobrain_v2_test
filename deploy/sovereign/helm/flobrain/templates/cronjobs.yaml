@@ -1,0 +1,41 @@
+{{- if .Values.cronjobs.enabled }}
+{{- $root := . }}
+{{- $cj := .Values.cronjobs }}
+{{- range $name, $spec := $cj.jobs }}
+---
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: {{ $root.Release.Name }}-{{ $name }}
+  labels: {{- include "flobrain.labels" $root | nindent 4 }}
+    app.kubernetes.io/component: cronjob
+spec:
+  schedule: {{ $spec.schedule | quote }}
+  concurrencyPolicy: Forbid
+  startingDeadlineSeconds: {{ $cj.startingDeadlineSeconds }}
+  successfulJobsHistoryLimit: {{ $cj.successfulJobsHistoryLimit }}
+  failedJobsHistoryLimit: {{ $cj.failedJobsHistoryLimit }}
+  jobTemplate:
+    spec:
+      backoffLimit: 0
+      activeDeadlineSeconds: {{ $cj.activeDeadlineSeconds }}
+      template:
+        metadata:
+          labels: {{- include "flobrain.labels" $root | nindent 12 }}
+            app.kubernetes.io/component: cronjob
+        spec:
+          restartPolicy: Never
+          {{- include "flobrain.podSpec" $root | nindent 10 }}
+          {{- include "flobrain.scheduling" $root.Values | nindent 10 }}
+          volumes: [{ name: tmp, emptyDir: {} }]
+          containers:
+            - name: {{ $name }}
+              image: {{ include "flobrain.image" $root }}
+              imagePullPolicy: {{ $root.Values.image.pullPolicy }}
+              command: ["python", "manage.py", {{ $spec.command | quote }}]
+              {{- include "flobrain.env" $root | nindent 14 }}
+              {{- include "flobrain.containerSecurity" $root | nindent 14 }}
+              {{- include "flobrain.tmp" $root | nindent 14 }}
+              resources: {{- toYaml $cj.resources | nindent 16 }}
+{{- end }}
+{{- end }}

@@ -2,13 +2,19 @@ from django.conf import settings
 
 
 def effective_flag(org, membership, key: str, default=False) -> bool:
-    """Effective flag = org flag AND membership flag (E, entitlements in Phase 17)."""
+    """Effective flag = plan entitlement AND org flag AND membership flag (Phase 17b)."""
     org_flags = (org.settings or {}).get("flags", {}) if org is not None else {}
     member_flags = (membership.feature_flags or {}) if membership is not None else {}
     if key in member_flags:
         org_value = bool(org_flags.get(key, True))
-        return org_value and bool(member_flags[key])
-    return bool(org_flags.get(key, default))
+        value = org_value and bool(member_flags[key])
+    else:
+        value = bool(org_flags.get(key, default))
+    if value and org is not None:
+        from billing_v2.entitlements import allows
+
+        value = allows(org, key)
+    return value
 
 
 def client_ip(request):
