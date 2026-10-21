@@ -57,7 +57,20 @@ def offered_tools(user, org, buddy) -> list[str]:
 
     wanted = list((buddy.allowed_tools if buddy else []) or [])
     enabled = set(_enabled_keys())
-    return [key for key in wanted if key in enabled and holds_tool(user, org, key)]
+    return [key for key in wanted if key in enabled and _flag_allows(user, org, key) and holds_tool(user, org, key)]
+
+
+def _flag_allows(user, org, key) -> bool:
+    """A plugin tool can name the feature flag it belongs to (``spec["flag"]``); while that flag is
+    off, buddies are not offered the tool. ``check()`` still refuses it on its own."""
+    flag = TOOLS.get(key, {}).get("flag")
+    if not flag:
+        return True
+    from organizations.flags import effective_flag
+    from organizations.models import OrgMembership
+
+    membership = OrgMembership.objects.filter(org=org, user=user).first()
+    return bool(effective_flag(org, membership, flag, default=False))
 
 
 # --- target checks and executors -------------------------------------------------

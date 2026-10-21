@@ -1,4 +1,4 @@
-from django.urls import path
+from django.urls import include, path
 
 from integrations.v2_views import CredentialDetailView, CredentialListCreateView, CredentialMetaView
 from integrations.views import ToolDetailView, ToolListCreateView
@@ -13,4 +13,5 @@ urlpatterns = [
         CredentialDetailView.as_view(),
         name="v2-credential-detail",
     ),
+    path("", include("integrations.write_urls")),
 ]

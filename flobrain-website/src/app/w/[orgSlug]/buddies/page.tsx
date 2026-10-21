@@ -4,17 +4,19 @@ import Link from "next/link";
 import { useParams, useRouter } from "next/navigation";
 import { useState } from "react";
 
+import { AskFloHint, CrewTemplates } from "@/components/v2/crew/Templates";
 import { ScreenBody } from "@/components/v2/screens/ScreenBody";
 import { Button } from "@/components/v2/ui/button";
 import { Badge, Field, Notice, PageHeader, Section } from "@/components/v2/ui/kit";
 import { useTr } from "@/i18n/phrases";
-import { has, isLead } from "@/lib/v2/access";
+import { flag, has, isLead } from "@/lib/v2/access";
 import { useAccess } from "@/lib/v2/AccessContext";
 import { api, errorText, rowsOf } from "@/lib/v2/api";
 import { useOrgData } from "@/lib/v2/useOrgData";
 
 export type BuddyRow = {
   id: string;
+  slug?: string;
   name: string;
   description: string;
   icon: string;
@@ -55,6 +57,10 @@ export default function BuddiesPage() {
   const rows = rowsOf<BuddyRow>(data);
   const mine = rows.filter((row) => row.mine && !row.builtin);
   const shared = rows.filter((row) => !row.mine || row.builtin);
+  // Crew (W5): Flo and specialist templates, behind the flo_router flag.
+  const crew = flag(access, "flo_router");
+  const flo = crew ? rows.find((row) => row.slug === "flo" && row.builtin) : undefined;
+  const quality = flag(access, "buddies") && (has(access, "pulse.view") || has(access, "ai.usage.view"));
 
   async function create(event: React.FormEvent) {
     event.preventDefault();
@@ -104,6 +110,11 @@ export default function BuddiesPage() {
         intro={tr("Assistants with a job. Each one answers from what you can already open, and proposes actions for you to approve.")}
         action={
           <div className="flex flex-wrap gap-2">
+            {crew && quality ? (
+              <Button asChild variant="outline">
+                <Link href={`/w/${orgSlug}/buddies/quality`}>{tr("Buddy quality")}</Link>
+              </Button>
+            ) : null}
             {reviewer ? (
               <Button asChild variant={waiting ? "waiting" : "outline"}>
                 <Link href={`/w/${orgSlug}/buddies/requests`}>{waiting ? tr("Share requests ({n})", { n: waiting }) : tr("Share requests")}</Link>
@@ -152,9 +163,11 @@ export default function BuddiesPage() {
         </form>
       ) : null}
       <ScreenBody state={state} error={error} emptyLabel={tr("No buddies yet. Build the first one.")} onRetry={reload}>
+        {flo ? <AskFloHint orgSlug={orgSlug} floId={flo.id} /> : null}
         {mine.length ? <Section title={tr("Your buddies")}>{list(mine)}</Section> : null}
         <Section title={tr("Shared with you")}>{list(shared)}</Section>
       </ScreenBody>
+      {crew ? <CrewTemplates orgId={orgId} orgSlug={orgSlug} onInstalled={reload} /> : null}
     </div>
   );
 }

@@ -55,6 +55,13 @@ export function describe(row: NotificationRow): Described {
       vars: { name: str(p.name) || "a buddy" },
       link: str(p.buddy) ? `buddies/${str(p.buddy)}` : "buddies",
     }),
+    "automation.notice": () => ({ text: "{text}", vars: { text: str(p.text) || str(p.title) }, link: "automations" }),
+    "automation.daily_brief": () => ({ text: "{text}", vars: { text: str(p.text) || str(p.title) }, link: "tasks" }),
+    "automation.nudge": () => ({ text: "{text}", vars: { text: str(p.text) || str(p.title) }, link: "tasks" }),
+    "customer.message": () => ({ text: "{text}", vars: { text: str(p.text) }, link: "customers" }),
+    "customer.escalated": () => ({ text: "{text}", vars: { text: str(p.text) }, link: "customers" }),
+    "data.report": () => ({ text: "{text}", vars: { text: str(p.title) || str(p.text) }, link: "data" }),
+    "academy.badge": () => ({ text: "{text}", vars: { text: str(p.title) }, link: "academy" }),
     "impersonation.started": () => ({ text: "Support access started by {admin}", vars: { admin: str(p.admin) }, link: "settings/support-access" }),
     deletion_request: () =>
       str(p.by) ? { text: "{by} asked to delete their data", vars: { by: str(p.by) }, link: "settings/retention" } : { text: "Someone asked to delete their data", link: "settings/retention" },

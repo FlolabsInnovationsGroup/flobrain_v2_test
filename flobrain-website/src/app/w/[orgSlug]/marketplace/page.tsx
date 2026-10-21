@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 
+import { ListingRating, VerifiedMark, type MyRating, type RatingSummary } from "@/components/v2/growth/ListingRating";
 import { ScreenBody } from "@/components/v2/screens/ScreenBody";
 import { Button } from "@/components/v2/ui/button";
 import { Badge, Notice, PageHeader, Section } from "@/components/v2/ui/kit";
@@ -28,6 +29,9 @@ type Listing = {
   snapshot: { system_prompt?: string; allowed_tools?: string[] };
   my_copies?: Copy[];
   update_available?: boolean;
+  rating?: RatingSummary;
+  my_rating?: MyRating;
+  verified?: boolean;
 };
 
 type ActResult = { dropped_tools?: string[]; version?: number; share_reopened?: boolean } | undefined;
@@ -65,7 +69,10 @@ export default function MarketplacePage() {
       <li key={l.id} className="flex flex-col gap-2 rounded-xl bg-[color:var(--fb-v2-surface)] p-4">
         <div className="flex items-start justify-between gap-2">
           <div>
-            <p className="font-semibold">{l.title}</p>
+            <p className="flex flex-wrap items-center gap-2 font-semibold">
+              {l.title}
+              {l.verified ? <VerifiedMark /> : null}
+            </p>
             <p className="text-xs text-[color:var(--fb-v2-text-muted)]">
               {tr(l.kind === "buddy" ? "Buddy" : "Video template")}. {tr("Version {n}.", { n: l.version })} {tr("Installed {n} times.", { n: l.installs })}
             </p>
@@ -83,6 +90,18 @@ export default function MarketplacePage() {
           </details>
         ) : null}
         {l.decision_note ? <p className="text-sm text-[color:var(--fb-v2-text-muted)]">{tr("Note: {note}", { note: l.decision_note })}</p> : null}
+        {orgId && l.status === "approved" ? (
+          <ListingRating
+            key={`${l.id}-${l.my_rating?.stars ?? 0}`}
+            orgId={orgId}
+            listingId={l.id}
+            rating={l.rating}
+            mine={l.my_rating}
+            installed={copies.length > 0 || !!l.my_rating}
+            isAuthor={owner}
+            onChanged={reload}
+          />
+        ) : null}
         {l.update_available
           ? older.map((c) => (
               <div key={c.install} className="flex flex-col gap-2 rounded-lg border border-[color:var(--fb-v2-border)] p-3">
@@ -157,6 +176,19 @@ export default function MarketplacePage() {
                 {tr("Reject")}
               </Button>
             </>
+          ) : null}
+          {access?.is_platform_admin && l.status === "approved" ? (
+            <Button
+              variant="outline"
+              onClick={() =>
+                act(
+                  () => api.post(`/orgs/${orgId}/marketplace/${l.id}/verified`, { verified: !l.verified }),
+                  l.verified ? tr("Verified mark removed.") : tr("Marked as verified by FloBrain."),
+                )
+              }
+            >
+              {l.verified ? tr("Remove verified mark") : tr("Mark as verified")}
+            </Button>
           ) : null}
           {(l.status === "pending" || l.status === "approved") && (manager || l.submitted_by === access?.user_id) ? (
             <Button variant="ghost" onClick={() => act(() => api.post(`/orgs/${orgId}/marketplace/${l.id}/withdraw`), tr("Withdrawn."))}>

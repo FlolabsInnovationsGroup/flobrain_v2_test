@@ -8,5 +8,7 @@ urlpatterns = [
     path("orgs/<uuid:org_id>/marketplace/<uuid:listing_id>/install", views.ListingInstallView.as_view(), name="v2-marketplace-install"),
     path("orgs/<uuid:org_id>/marketplace/<uuid:listing_id>/versions", views.ListingVersionView.as_view(), name="v2-marketplace-versions"),
     path("orgs/<uuid:org_id>/marketplace/installs/<uuid:install_id>/update", views.InstallUpdateView.as_view(), name="v2-marketplace-update"),
+    path("orgs/<uuid:org_id>/marketplace/<uuid:listing_id>/ratings", views.ListingRatingView.as_view(), name="v2-marketplace-ratings"),
+    path("orgs/<uuid:org_id>/marketplace/<uuid:listing_id>/verified", views.ListingVerifiedView.as_view(), name="v2-marketplace-verified"),
     path("orgs/<uuid:org_id>/marketplace/<uuid:listing_id>/<str:decision>", views.ListingDecisionView.as_view(), name="v2-marketplace-decide"),
 ]

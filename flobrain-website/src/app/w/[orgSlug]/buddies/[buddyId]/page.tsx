@@ -6,8 +6,11 @@ import { useCallback, useEffect, useRef, useState } from "react";
 
 import { ScreenBody } from "@/components/v2/screens/ScreenBody";
 import { Button } from "@/components/v2/ui/button";
+import { Feedback, useThreadFeedback } from "@/components/v2/crew/Feedback";
 import { Badge, Notice, PageHeader } from "@/components/v2/ui/kit";
+import { BuddyVoiceInput } from "@/components/v2/voice/BuddyVoiceInput";
 import { useTr } from "@/i18n/phrases";
+import { flag } from "@/lib/v2/access";
 import { useAccess } from "@/lib/v2/AccessContext";
 import { api, errorText, rowsOf } from "@/lib/v2/api";
 import { useOrgData } from "@/lib/v2/useOrgData";
@@ -22,7 +25,7 @@ type Buddy = {
   share_status: string;
   preset_prompts: { label: string; prompt: string }[];
 };
-type Message = { role: "user" | "assistant" | "external"; text: string };
+type Message = { id?: number; role: "user" | "assistant" | "external"; text: string };
 type Citation = { n: number; title: string; excerpt: string; room?: string };
 type Proposal = { id: string; summary: string };
 type Thread = {
@@ -37,7 +40,7 @@ type Thread = {
 
 export default function BuddyChatPage() {
   const { orgSlug, buddyId } = useParams<{ orgSlug: string; buddyId: string }>();
-  const { orgId } = useAccess();
+  const { orgId, access } = useAccess();
   const tr = useTr();
   const { data: buddy, state, error, reload } = useOrgData<Buddy>(orgId, `/buddies/${buddyId}`);
   const [threads, setThreads] = useState<{ id: number; title: string }[]>([]);
@@ -46,6 +49,8 @@ export default function BuddyChatPage() {
   const [busy, setBusy] = useState(false);
   const [message, setMessage] = useState<{ kind: "ok" | "error"; text: string } | null>(null);
   const end = useRef<HTMLDivElement>(null);
+  const rateable = flag(access, "flo_router");
+  const { ratings } = useThreadFeedback(rateable ? orgId : null, thread?.id ?? null);
 
   const loadThreads = useCallback(() => {
     if (!orgId) return;
@@ -175,6 +180,7 @@ export default function BuddyChatPage() {
                     >
                       {m.text}
                     </p>
+                    {m.role === "assistant" && m.id && orgId && rateable ? <Feedback orgId={orgId} messageId={m.id} initial={ratings[m.id] ?? null} /> : null}
                   </div>
                 ))
               )}
@@ -234,6 +240,9 @@ export default function BuddyChatPage() {
               <Button type="submit" disabled={busy || !draft.trim()}>
                 {busy ? tr("Thinking…") : tr("Send")}
               </Button>
+              {flag(access, "voice_notes") && orgId ? (
+                <BuddyVoiceInput orgId={orgId} disabled={busy} onTranscript={(text) => setDraft((d) => (d.trim() ? `${d.trim()} ${text}` : text))} />
+              ) : null}
             </form>
           </div>
         </div>

@@ -40,6 +40,10 @@ class Listing(models.Model):
     decided_at = models.DateTimeField(blank=True, null=True)
     decision_note = models.CharField(max_length=500, blank=True, default="")
     installs = models.PositiveIntegerField(default=0)
+    # "Verified by FloBrain": set by platform staff only (growth round). Per version, like the snapshot it vouches for.
+    verified = models.BooleanField(default=False)
+    verified_by = models.ForeignKey("users.User", on_delete=models.SET_NULL, null=True, blank=True, related_name="+")
+    verified_at = models.DateTimeField(blank=True, null=True)
     created_at = models.DateTimeField(default=timezone.now)
 
     class Meta:
@@ -79,3 +83,26 @@ class Install(models.Model):
         db_table = "marketplace_installs"
         ordering = ["-created_at"]
         constraints = [models.UniqueConstraint(fields=["kind", "target_id"], name="one_install_per_copy")]
+
+
+class Rating(models.Model):
+    """One rating per person per listing (all versions share it through ``lineage``), only by people
+    who installed it. ``version`` is the version they had when they last rated."""
+
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    org = models.ForeignKey("organizations.Organization", on_delete=models.CASCADE, related_name="listing_ratings")
+    lineage = models.UUIDField(db_index=True)
+    version = models.PositiveIntegerField(default=1)
+    user = models.ForeignKey("users.User", on_delete=models.CASCADE, related_name="+")
+    stars = models.PositiveSmallIntegerField()
+    review = models.CharField(max_length=500, blank=True, default="")
+    created_at = models.DateTimeField(default=timezone.now)
+    updated_at = models.DateTimeField(default=timezone.now)
+
+    class Meta:
+        db_table = "marketplace_ratings"
+        ordering = ["-updated_at"]
+        constraints = [
+            models.UniqueConstraint(fields=["lineage", "user"], name="one_rating_per_user_per_listing"),
+            models.CheckConstraint(condition=models.Q(stars__gte=1, stars__lte=5), name="rating_stars_1_to_5"),
+        ]

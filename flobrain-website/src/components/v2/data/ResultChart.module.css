@@ -1,0 +1,24 @@
+/*
+ * Three categorical slots derived from the mission control tokens and checked with the dataviz
+ * palette validator (dark: #7c6bff, #00a1c2, #cc34ff on #14111f; light: #5b4ae6, #0088a3, #b02ddb
+ * on #ffffff; all checks pass). More series fold into "Other" in a muted ink.
+ */
+.viz {
+  --data-s0: var(--fb-v2-accent);
+  --data-s1: color-mix(in srgb, var(--fb-v2-cyan) 76%, black);
+  --data-s2: var(--fb-v2-magenta);
+  --data-other: var(--fb-v2-text-faint);
+}
+
+:global(.light) .viz {
+  --data-s1: color-mix(in srgb, var(--fb-v2-cyan) 64%, black);
+  --data-s2: color-mix(in srgb, var(--fb-v2-magenta) 86%, black);
+}
+
+.swatch {
+  display: inline-block;
+  width: 0.625rem;
+  height: 0.625rem;
+  border-radius: 2px;
+  flex-shrink: 0;
+}

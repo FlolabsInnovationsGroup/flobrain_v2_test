@@ -5,6 +5,7 @@ import { useState } from "react";
 import { BudgetMeter, type BudgetRow } from "@/components/v2/ai/BudgetMeter";
 import { ScreenBody } from "@/components/v2/screens/ScreenBody";
 import { Button } from "@/components/v2/ui/button";
+import { AiSeatMeter } from "@/components/v2/growth/AiSeatMeter";
 import { Notice, PageHeader, Section } from "@/components/v2/ui/kit";
 import { useTr } from "@/i18n/phrases";
 import { flag } from "@/lib/v2/access";
@@ -123,6 +124,7 @@ export function UsageScreen() {
           </div>
         }
       />
+      {flag(access, "budgets") ? <AiSeatMeter orgId={orgId} /> : null}
       {message ? <Notice kind="error">{message}</Notice> : null}
       {rowsOf<BudgetRow>(mine.data).length ? (
         <Section title={tr("Budgets that apply to you")}>

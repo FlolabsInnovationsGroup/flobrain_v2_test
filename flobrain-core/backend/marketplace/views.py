@@ -9,12 +9,16 @@
   snapshot of the same source; it waits for the same ``marketplace.manage`` approval as version 1
 - ``POST /orgs/{org}/marketplace/installs/{install}/update``: replace *your* installed copy with the current
   approved version (only your copy changes; see ``_update_buddy`` for what is kept)
+- ``GET /orgs/{org}/marketplace/{id}/versions``: the version history of the listing's lineage
+- ``GET|POST|DELETE /orgs/{org}/marketplace/{id}/ratings``: reviews; rate ``{stars: 1-5, review}`` once per
+  listing (updating replaces it), only after installing it, never your own listing
+- ``POST /orgs/{org}/marketplace/{id}/verified`` ``{verified: bool}``: "Verified by FloBrain" (platform staff only)
 """
 
 import uuid
 
 from django.db import IntegrityError, transaction
-from django.db.models import F, Q
+from django.db.models import Avg, Count, F, Q
 from django.shortcuts import get_object_or_404
 from django.utils import timezone
 from django.utils.text import slugify
@@ -22,7 +26,7 @@ from drf_spectacular.utils import extend_schema
 from rest_framework.response import Response
 
 from core_v2.views import V2APIView
-from marketplace.models import Install, Listing
+from marketplace.models import Install, Listing, Rating
 from organizations.flags import effective_flag
 from organizations.models import OrgMembership, Organization
 from organizations.permissions import HasPerm, IsActiveOrgMember
@@ -36,7 +40,7 @@ def _body(request):
     return request.data if isinstance(request.data, dict) else {}
 
 
-def _payload(listing, full=False, copies=None):
+def _payload(listing, full=False, copies=None, ratings=None, mine=None):
     data = {
         "id": str(listing.id),
         "kind": listing.kind,
@@ -51,7 +55,14 @@ def _payload(listing, full=False, copies=None):
         "decided_at": listing.decided_at.isoformat() if listing.decided_at else None,
         "decision_note": listing.decision_note,
         "created_at": listing.created_at.isoformat(),
+        "verified": listing.verified,
     }
+    if ratings is not None:
+        avg, count = ratings.get(listing.lineage, (None, 0))
+        data["rating"] = {"average": round(avg, 1) if avg is not None else None, "count": count}
+    if mine is not None:
+        own = mine.get(listing.lineage)
+        data["my_rating"] = {"stars": own.stars, "review": own.review, "version": own.version} if own else None
     if full:
         data["snapshot"] = listing.snapshot
     if copies is not None:
@@ -73,6 +84,14 @@ def _my_copies(user, org):
     alive = set(Buddy.objects.filter(org=org, pk__in=buddies, created_by=user).values_list("pk", flat=True))
     alive |= set(ContentTemplate.objects.filter(org=org, pk__in=templates).values_list("pk", flat=True))
     return [i for i in installs if i.target_id in alive]
+
+
+def _ratings_for(org, user, lineages):
+    """({lineage: (average, count)}, {lineage: my Rating}) for these listings."""
+    rows = Rating.objects.filter(org=org, lineage__in=lineages)
+    stats = {r["lineage"]: (r["avg"], r["n"]) for r in rows.values("lineage").annotate(avg=Avg("stars"), n=Count("id"))}
+    mine = {r.lineage: r for r in rows.filter(user=user)}
+    return stats, mine
 
 
 def _org(request, view, org_id, perm=None):
@@ -130,7 +149,9 @@ class ListingView(V2APIView):
         if status in dict(Listing.STATUS_CHOICES):
             listings = listings.filter(status=status)
         copies = _my_copies(request.user, org)
-        return Response([_payload(l, full=True, copies=copies) for l in listings[:200]])
+        rows = list(listings[:200])
+        ratings, mine = _ratings_for(org, request.user, {l.lineage for l in rows})
+        return Response([_payload(l, full=True, copies=copies, ratings=ratings, mine=mine) for l in rows])
 
     @extend_schema(summary="Submit a buddy or template you own for approval")
     def post(self, request, org_id):
@@ -309,6 +330,35 @@ def _template_fields(request, view, listing):
 class ListingVersionView(V2APIView):
     permission_classes = [IsActiveOrgMember]
 
+    @extend_schema(summary="Version history of a listing (approved and replaced versions; managers and the owner see all)")
+    def get(self, request, org_id, listing_id):
+        org = _org(request, self, org_id)
+        listing = get_object_or_404(Listing, pk=listing_id, org=org)
+        manager = can(request.user, "marketplace.manage", org)
+        if not (manager or listing.submitted_by_id == request.user.id or listing.status in (Listing.APPROVED, Listing.SUPERSEDED)):
+            return Response({"error": "not_found"}, status=404)
+        versions = Listing.objects.filter(org=org, lineage=listing.lineage).order_by("-version")
+        if not manager:
+            versions = versions.filter(Q(status__in=[Listing.APPROVED, Listing.SUPERSEDED]) | Q(submitted_by=request.user))
+        return Response(
+            {
+                "lineage": str(listing.lineage),
+                "results": [
+                    {
+                        "id": str(v.id),
+                        "version": v.version,
+                        "status": v.status,
+                        "changelog": v.changelog,
+                        "title": v.title,
+                        "verified": v.verified,
+                        "created_at": v.created_at.isoformat(),
+                        "decided_at": v.decided_at.isoformat() if v.decided_at else None,
+                    }
+                    for v in versions
+                ],
+            }
+        )
+
     @extend_schema(summary="Publish a new version of your listing (waits for marketplace.manage approval)")
     def post(self, request, org_id, listing_id):
         org = _org(request, self, org_id, "marketplace.submit")
@@ -437,3 +487,119 @@ class InstallUpdateView(V2APIView):
             setattr(template, key, value)
         template.save()
         return {"kind": current.kind, "id": str(template.id)}
+
+
+# --- ratings and "Verified by FloBrain" (growth round) ------------------------------------------
+
+MAX_REVIEW = 500
+
+
+def _rating_payload(rating, names=None):
+    return {
+        "id": str(rating.id),
+        "user": str(rating.user_id),
+        "name": (names or {}).get(rating.user_id, ""),
+        "stars": rating.stars,
+        "review": rating.review,
+        "version": rating.version,
+        "updated_at": rating.updated_at.isoformat(),
+    }
+
+
+def _rateable(request, org, listing_id):
+    """The listing as this person sees it: approved or replaced versions, or their own."""
+    listing = get_object_or_404(Listing, pk=listing_id, org=org)
+    visible = listing.status in (Listing.APPROVED, Listing.SUPERSEDED) or listing.submitted_by_id == request.user.id
+    if not visible and not can(request.user, "marketplace.manage", org):
+        return None
+    return listing
+
+
+class ListingRatingView(V2APIView):
+    permission_classes = [IsActiveOrgMember]
+
+    @extend_schema(summary="Ratings and reviews of a listing (all its versions)")
+    def get(self, request, org_id, listing_id):
+        from users.models import User
+
+        org = _org(request, self, org_id)
+        listing = _rateable(request, org, listing_id)
+        if listing is None:
+            return Response({"error": "not_found"}, status=404)
+        rows = list(Rating.objects.filter(org=org, lineage=listing.lineage)[:200])
+        names = {u.id: (u.username or u.email) for u in User.objects.filter(pk__in=[r.user_id for r in rows]).only("username", "email")}
+        stats, mine = _ratings_for(org, request.user, {listing.lineage})
+        avg, count = stats.get(listing.lineage, (None, 0))
+        installed = Install.objects.filter(org=org, lineage=listing.lineage, user=request.user).exists()
+        return Response(
+            {
+                "average": round(avg, 1) if avg is not None else None,
+                "count": count,
+                "can_rate": installed and listing.submitted_by_id != request.user.id,
+                "mine": _rating_payload(mine[listing.lineage]) if listing.lineage in mine else None,
+                "results": [_rating_payload(r, names) for r in rows],
+            }
+        )
+
+    @extend_schema(summary="Rate a listing you installed (1 to 5 stars and a short review); rating again replaces it")
+    def post(self, request, org_id, listing_id):
+        org = _org(request, self, org_id)
+        listing = _rateable(request, org, listing_id)
+        if listing is None:
+            return Response({"error": "not_found"}, status=404)
+        data = _body(request)
+        stars = data.get("stars")
+        if not isinstance(stars, int) or isinstance(stars, bool) or not 1 <= stars <= 5:
+            return Response({"error": "invalid", "details": "stars must be a whole number from 1 to 5"}, status=400)
+        review = str(data.get("review") or "").strip()
+        if len(review) > MAX_REVIEW:
+            return Response({"error": "invalid", "details": f"review is longer than {MAX_REVIEW} characters"}, status=400)
+        if listing.submitted_by_id == request.user.id:
+            return Response({"error": "permission_denied", "details": "You can't rate your own listing"}, status=403)
+        install = Install.objects.filter(org=org, lineage=listing.lineage, user=request.user).order_by("-version").first()
+        if install is None:
+            return Response({"error": "permission_denied", "details": "Install it before you rate it"}, status=403)
+        now = timezone.now()
+        with transaction.atomic():
+            rating, created = Rating.objects.select_for_update().get_or_create(
+                lineage=listing.lineage,
+                user=request.user,
+                defaults={"org": org, "stars": stars, "review": review, "version": install.version, "created_at": now, "updated_at": now},
+            )
+            if not created:
+                rating.stars, rating.review, rating.version, rating.updated_at = stars, review, install.version, now
+                rating.save(update_fields=["stars", "review", "version", "updated_at"])
+        audit(request.user, "marketplace.rate", target=listing, payload={"stars": stars, "updated": not created}, request=request, org=org)
+        return Response(_rating_payload(rating), status=201 if created else 200)
+
+    @extend_schema(summary="Remove your rating")
+    def delete(self, request, org_id, listing_id):
+        org = _org(request, self, org_id)
+        listing = _rateable(request, org, listing_id)
+        if listing is None:
+            return Response({"error": "not_found"}, status=404)
+        deleted, _ = Rating.objects.filter(org=org, lineage=listing.lineage, user=request.user).delete()
+        if not deleted:
+            return Response({"error": "not_found"}, status=404)
+        return Response(status=204)
+
+
+class ListingVerifiedView(V2APIView):
+    permission_classes = [IsActiveOrgMember]
+
+    @extend_schema(summary="Mark a listing version Verified by FloBrain (platform staff only)")
+    def post(self, request, org_id, listing_id):
+        org = _org(request, self, org_id)
+        # Not a permission key: org owners and admins hold every key, and this badge vouches for FloBrain.
+        if not getattr(request.user, "is_platform_admin", False):
+            return Response({"error": "permission_denied", "details": "Only FloBrain staff can verify listings"}, status=403)
+        listing = get_object_or_404(Listing, pk=listing_id, org=org)
+        value = _body(request).get("verified")
+        if not isinstance(value, bool):
+            return Response({"error": "invalid", "details": "verified must be true or false"}, status=400)
+        listing.verified = value
+        listing.verified_by = request.user if value else None
+        listing.verified_at = timezone.now() if value else None
+        listing.save(update_fields=["verified", "verified_by", "verified_at"])
+        audit(request.user, "marketplace.verify", target=listing, payload={"verified": value}, request=request, org=org)
+        return Response(_payload(listing))
