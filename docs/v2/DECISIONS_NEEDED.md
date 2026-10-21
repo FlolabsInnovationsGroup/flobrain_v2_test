@@ -2,6 +2,21 @@
 
 **Date:** 2026-10-21. **Use:** tick an answer, or write a different one, and send it back. Each line says what FloBrain does today, so nothing is blocked while you decide. Details are in `OPEN_QUESTIONS.md` (by Q number) and `TECH_DEBT.md` (by C number).
 
+## What Notion already says (checked 2026-10-21)
+
+Searched the FloLabs Notion for each item. Only these have something written down, and none is a final answer:
+
+| # | What Notion has | Still needed |
+|---|---|---|
+| Q22 | Legal review (15 Jul, "Legal Team Review and Recommended Payment Framework"): Stripe Managed Payments with Stripe Checkout and Stripe Billing; plans Free, Pro, Teams, Enterprise as "base subscription + included usage + overage". Approved for sandbox and cost checks only, not for production. Terms, privacy, refund and AI usage policies must exist before live payments. | The actual prices and the billable units. Also pick the plan names: the new site uses Crew, Fleet, Mission as placeholders; Legal's page uses Free, Pro, Teams, Enterprise. The code already uses server-side Stripe Checkout, which fits Managed Payments. |
+| Q18 | The business plan (Feb) lists ElevenLabs for text-to-speech. | Confirm ElevenLabs (Arabic, Egyptian and MSA, and English) or pick another. |
+| Q5 | GTM meeting (12 Apr): "35% of net revenue from leads". The commissions task (Aug) still says "confirm where the 35% applies". | Which products, gross or net, refunds. The code keeps the rate per project. |
+| Q40, Q42, Q20, Q24, Q16 | "FloBrain Terms, Conditions, and Privacy Analysis" (13 Oct) lists the same points as "Decision required": admin visibility, retention, integrations, providers. | Answers from legal and leadership. |
+| Q25 | "Create AI models table" (Oct) is marked Done but the table is empty. | The self-hosted model names from the AI team. |
+| Multimodal B1 to B7 | The multimodal team's plan (19 Sep) waits for the FloBrain backend on B1 to B7. | Answered in `multimodalsupport.md` section 10. Send it to them. |
+
+**Security note:** a shared Zoom account password sits in a synced block that appears in many Notion task pages (Legal flagged it on 15 Jul; it was still there on 7 Oct). Remove the block and change that password.
+
 ## Product and privacy
 
 | # | Decision | What the code does now (default) | Options | Who |
