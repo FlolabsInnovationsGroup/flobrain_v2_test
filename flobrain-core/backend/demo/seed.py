@@ -20,6 +20,7 @@ FLAGS = [
     "social_publishing", "voice_video", "webhooks", "learning", "commissions", "pulse", "privacy_center",
     "integrations", "meeting_bot", "cockpit", "status_page", "external_agents", "public_portfolio",
     "automations", "channels", "customer_buddy", "data_buddy", "write_integrations", "flo_router", "voice_notes", "academy", "packs",
+    "mcp_hub", "bridges", "einvoice", "buddy_memory", "buddy_evals", "imports", "compliance", "workspace_pricing",
 ]
 
 # key → (name, org role, description shown on the role picker)

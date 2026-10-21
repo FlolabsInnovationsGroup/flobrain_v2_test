@@ -96,6 +96,12 @@ INSTALLED_APPS = [
     "channels.apps.ChannelsConfig",
     "datasets.apps.DatasetsConfig",
     "growth.apps.GrowthConfig",
+    "bridges.apps.BridgesConfig",
+    "einvoice.apps.EinvoiceConfig",
+    "buddy_memory.apps.BuddyMemoryConfig",
+    "evals.apps.EvalsConfig",
+    "imports.apps.ImportsConfig",
+    "compliance.apps.ComplianceConfig",
 ]
 
 MIDDLEWARE = [

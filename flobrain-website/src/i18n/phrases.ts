@@ -37,6 +37,14 @@ import arConnectors from "../../messages/phrases/ar/connectors.json";
 import arCrew from "../../messages/phrases/ar/crew.json";
 import arAcademy from "../../messages/phrases/ar/academy.json";
 import arVoice from "../../messages/phrases/ar/voice.json";
+import arMcp from "../../messages/phrases/ar/mcp.json";
+import arBridges from "../../messages/phrases/ar/bridges.json";
+import arEinvoice from "../../messages/phrases/ar/einvoice.json";
+import arMemory from "../../messages/phrases/ar/memory.json";
+import arEvals from "../../messages/phrases/ar/evals.json";
+import arImports from "../../messages/phrases/ar/imports.json";
+import arCompliance from "../../messages/phrases/ar/compliance.json";
+import arBilling from "../../messages/phrases/ar/billing.json";
 import frAi from "../../messages/phrases/fr/ai.json";
 import frAiadmin from "../../messages/phrases/fr/aiadmin.json";
 import frCommon from "../../messages/phrases/fr/common.json";
@@ -58,6 +66,14 @@ import frConnectors from "../../messages/phrases/fr/connectors.json";
 import frCrew from "../../messages/phrases/fr/crew.json";
 import frAcademy from "../../messages/phrases/fr/academy.json";
 import frVoice from "../../messages/phrases/fr/voice.json";
+import frMcp from "../../messages/phrases/fr/mcp.json";
+import frBridges from "../../messages/phrases/fr/bridges.json";
+import frEinvoice from "../../messages/phrases/fr/einvoice.json";
+import frMemory from "../../messages/phrases/fr/memory.json";
+import frEvals from "../../messages/phrases/fr/evals.json";
+import frImports from "../../messages/phrases/fr/imports.json";
+import frCompliance from "../../messages/phrases/fr/compliance.json";
+import frBilling from "../../messages/phrases/fr/billing.json";
 import ptAi from "../../messages/phrases/pt/ai.json";
 import ptAiadmin from "../../messages/phrases/pt/aiadmin.json";
 import ptCommon from "../../messages/phrases/pt/common.json";
@@ -79,6 +95,14 @@ import ptConnectors from "../../messages/phrases/pt/connectors.json";
 import ptCrew from "../../messages/phrases/pt/crew.json";
 import ptAcademy from "../../messages/phrases/pt/academy.json";
 import ptVoice from "../../messages/phrases/pt/voice.json";
+import ptMcp from "../../messages/phrases/pt/mcp.json";
+import ptBridges from "../../messages/phrases/pt/bridges.json";
+import ptEinvoice from "../../messages/phrases/pt/einvoice.json";
+import ptMemory from "../../messages/phrases/pt/memory.json";
+import ptEvals from "../../messages/phrases/pt/evals.json";
+import ptImports from "../../messages/phrases/pt/imports.json";
+import ptCompliance from "../../messages/phrases/pt/compliance.json";
+import ptBilling from "../../messages/phrases/pt/billing.json";
 import trAi from "../../messages/phrases/tr/ai.json";
 import trAiadmin from "../../messages/phrases/tr/aiadmin.json";
 import trCommon from "../../messages/phrases/tr/common.json";
@@ -100,15 +124,23 @@ import trConnectors from "../../messages/phrases/tr/connectors.json";
 import trCrew from "../../messages/phrases/tr/crew.json";
 import trAcademy from "../../messages/phrases/tr/academy.json";
 import trVoice from "../../messages/phrases/tr/voice.json";
+import trMcp from "../../messages/phrases/tr/mcp.json";
+import trBridges from "../../messages/phrases/tr/bridges.json";
+import trEinvoice from "../../messages/phrases/tr/einvoice.json";
+import trMemory from "../../messages/phrases/tr/memory.json";
+import trEvals from "../../messages/phrases/tr/evals.json";
+import trImports from "../../messages/phrases/tr/imports.json";
+import trCompliance from "../../messages/phrases/tr/compliance.json";
+import trBilling from "../../messages/phrases/tr/billing.json";
 
 type Map = Record<string, string>;
 const merge = (...parts: Map[]): Map => Object.assign({}, ...parts);
 
 export const PHRASES: Record<Exclude<V2Locale, "en">, Map> = {
-  ar: merge(arAi, arCommon, arCreate, arPrivacy, arSettings, arWork, arRooms, arTasks, arPeople, arStudio, arAiadmin, arPlatform, arDocs, arMeetings, arAutomations, arChannels, arData, arConnectors, arCrew, arAcademy, arVoice),
-  tr: merge(trAi, trCommon, trCreate, trPrivacy, trSettings, trWork, trRooms, trTasks, trPeople, trStudio, trAiadmin, trPlatform, trDocs, trMeetings, trAutomations, trChannels, trData, trConnectors, trCrew, trAcademy, trVoice),
-  fr: merge(frAi, frCommon, frCreate, frPrivacy, frSettings, frWork, frRooms, frTasks, frPeople, frStudio, frAiadmin, frPlatform, frDocs, frMeetings, frAutomations, frChannels, frData, frConnectors, frCrew, frAcademy, frVoice),
-  pt: merge(ptAi, ptCommon, ptCreate, ptPrivacy, ptSettings, ptWork, ptRooms, ptTasks, ptPeople, ptStudio, ptAiadmin, ptPlatform, ptDocs, ptMeetings, ptAutomations, ptChannels, ptData, ptConnectors, ptCrew, ptAcademy, ptVoice),
+  ar: merge(arAi, arCommon, arCreate, arPrivacy, arSettings, arWork, arRooms, arTasks, arPeople, arStudio, arAiadmin, arPlatform, arDocs, arMeetings, arAutomations, arChannels, arData, arConnectors, arCrew, arAcademy, arVoice, arMcp, arBridges, arEinvoice, arMemory, arEvals, arImports, arCompliance, arBilling),
+  tr: merge(trAi, trCommon, trCreate, trPrivacy, trSettings, trWork, trRooms, trTasks, trPeople, trStudio, trAiadmin, trPlatform, trDocs, trMeetings, trAutomations, trChannels, trData, trConnectors, trCrew, trAcademy, trVoice, trMcp, trBridges, trEinvoice, trMemory, trEvals, trImports, trCompliance, trBilling),
+  fr: merge(frAi, frCommon, frCreate, frPrivacy, frSettings, frWork, frRooms, frTasks, frPeople, frStudio, frAiadmin, frPlatform, frDocs, frMeetings, frAutomations, frChannels, frData, frConnectors, frCrew, frAcademy, frVoice, frMcp, frBridges, frEinvoice, frMemory, frEvals, frImports, frCompliance, frBilling),
+  pt: merge(ptAi, ptCommon, ptCreate, ptPrivacy, ptSettings, ptWork, ptRooms, ptTasks, ptPeople, ptStudio, ptAiadmin, ptPlatform, ptDocs, ptMeetings, ptAutomations, ptChannels, ptData, ptConnectors, ptCrew, ptAcademy, ptVoice, ptMcp, ptBridges, ptEinvoice, ptMemory, ptEvals, ptImports, ptCompliance, ptBilling),
 };
 /** Kept for older imports and tests. */
 export const AR_PHRASES = PHRASES.ar;
