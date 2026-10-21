@@ -3,6 +3,7 @@
 import { Gauge, Plus } from "lucide-react";
 import Link from "next/link";
 
+import { BrandMark } from "@/components/v2/shell/BrandMark";
 import { useTr } from "@/i18n/phrases";
 import { has } from "@/lib/v2/access";
 import { useAccess } from "@/lib/v2/AccessContext";
@@ -30,10 +31,14 @@ export function ToolsRail({ orgSlug }: { orgSlug: string }) {
   const tr = useTr();
   const { orgId, access } = useAccess();
   const tools = useOrgData<ToolRow[]>(orgId, "/tools");
-  const item = "flex h-10 w-10 items-center justify-center rounded-xl text-xs font-semibold hover:bg-[color:var(--fb-v2-border)]";
+  const item =
+    "flex h-9 w-9 items-center justify-center rounded-[10px] text-xs font-semibold text-[color:var(--fb-v2-text-faint)] transition-colors hover:bg-[color:var(--fb-v2-raised)] hover:text-[color:var(--fb-v2-text)]";
 
   return (
-    <nav aria-label={tr("Tools")} className="hidden w-14 shrink-0 flex-col items-center gap-2 border-e border-[color:var(--fb-v2-border)] py-4 md:flex">
+    <nav aria-label={tr("Tools")} className="hidden w-14 shrink-0 flex-col items-center gap-2 border-e border-[color:var(--fb-v2-border)] bg-[color:var(--fb-v2-void)] py-3 md:flex">
+      <Link href={`/w/${orgSlug}`} className="mb-2 flex h-9 w-9 items-center justify-center" aria-label="FloBrain">
+        <BrandMark size={26} />
+      </Link>
       {has(access, "mission.view") ? (
         <Link href={`/w/${orgSlug}/mission-control`} className={item} title={tr("Mission Control")} aria-label={tr("Mission Control")}>
           <Gauge size={20} aria-hidden />
