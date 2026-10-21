@@ -6,6 +6,7 @@ not under tests. Every ``DEMO_TICK_SECONDS`` (60) it runs each tick command once
 PostgreSQL an advisory lock makes sure only one process of the deployment ticks at a time.
 """
 
+import io
 import logging
 import os
 import sys
@@ -47,7 +48,7 @@ def _tick_once():
     try:
         for name in COMMANDS:
             try:
-                call_command(name, verbosity=0)
+                call_command(name, verbosity=0, stdout=io.StringIO())  # keep the API window for real errors
             except Exception:  # noqa: BLE001 - one failing tick must not stop the others
                 logger.exception("demo tick %s failed", name)
     finally:

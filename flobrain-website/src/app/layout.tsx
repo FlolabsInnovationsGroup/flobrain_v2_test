@@ -41,7 +41,7 @@ export default function RootLayout({
           })(window,document,'script','dataLayer','${GTM_CONTAINER_ID}');`}
         </Script>
       </head>
-      <body className={inter.className}>
+      <body className={inter.className} suppressHydrationWarning>
         <noscript>
           <iframe
             src={`https://www.googletagmanager.com/ns.html?id=${GTM_CONTAINER_ID}`}
