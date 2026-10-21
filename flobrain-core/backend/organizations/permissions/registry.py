@@ -94,6 +94,15 @@ PERMISSION_CATALOG: dict[str, dict] = {
     "certificates.issue": {"label": "Issue and revoke certificates", "matrix": "org"},
     "pulse.view": {"label": "Use the Pulse console (AI quality, cost, traces, evaluations, routing)", "matrix": "org"},
     "commissions.manage": {"label": "Record commissions and change their amounts and statuses", "matrix": "org"},
+    "automations.use": {"label": "Build and run your own automations", "matrix": "org"},
+    "automations.manage": {"label": "Manage the organization's automations and their approval rules", "matrix": "org"},
+    "channels.manage": {"label": "Connect WhatsApp, Telegram and the website chat", "matrix": "org"},
+    "customers.view": {"label": "See customer conversations from the website chat and WhatsApp", "matrix": "org"},
+    "customers.reply": {"label": "Reply to customers and take over from the customer buddy", "matrix": "org"},
+    "data.use": {"label": "Ask questions about the organization's datasets", "matrix": "org"},
+    "data.manage": {"label": "Add, connect and remove datasets", "matrix": "org"},
+    "integrations.act": {"label": "Ask buddies to write to connected apps (each write is approved)", "matrix": "org"},
+    "packs.install": {"label": "Install industry packs (buddies, automations, rooms)", "matrix": "org"},
 }
 
 _MEMBER_DEFAULTS = {
@@ -123,6 +132,10 @@ _MEMBER_DEFAULTS = {
     "buddy.create",
     "content.use",
     "marketplace.submit",
+    "automations.use",
+    "data.use",
+    "integrations.act",
+    "customers.reply",
 }
 
 # Phase 17 review: held only by a real, active owner. Not in admin defaults, never grantable,

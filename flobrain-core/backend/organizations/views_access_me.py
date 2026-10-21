@@ -21,6 +21,7 @@ KNOWN_FLAGS = (
     "ai_actions", "api_access", "assign_suggestions", "auto_reports", "budgets", "buddies", "byok", "content_studio",
     "live_translation", "memory_search", "realtime", "room_ai", "scheduled_agents", "social_publishing", "voice_video",
     "webhooks", "learning", "commissions", "pulse", "integrations", "meeting_bot", "cockpit", "status_page", "external_agents", "public_portfolio",
+    "automations", "channels", "customer_buddy", "data_buddy", "write_integrations", "flo_router", "voice_notes", "academy", "packs",
 )
 
 

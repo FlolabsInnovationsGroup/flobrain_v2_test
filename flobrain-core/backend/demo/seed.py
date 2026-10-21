@@ -19,6 +19,7 @@ FLAGS = [
     "content_studio", "live_translation", "memory_search", "realtime", "room_ai", "scheduled_agents",
     "social_publishing", "voice_video", "webhooks", "learning", "commissions", "pulse", "privacy_center",
     "integrations", "meeting_bot", "cockpit", "status_page", "external_agents", "public_portfolio",
+    "automations", "channels", "customer_buddy", "data_buddy", "write_integrations", "flo_router", "voice_notes", "academy", "packs",
 ]
 
 # key → (name, org role, description shown on the role picker)

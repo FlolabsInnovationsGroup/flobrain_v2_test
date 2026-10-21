@@ -92,6 +92,10 @@ INSTALLED_APPS = [
     "pulse.apps.PulseConfig",
     "connectors.apps.ConnectorsConfig",
     "privacy.apps.PrivacyConfig",
+    "automations.apps.AutomationsConfig",
+    "channels.apps.ChannelsConfig",
+    "datasets.apps.DatasetsConfig",
+    "growth.apps.GrowthConfig",
 ]
 
 MIDDLEWARE = [
