@@ -4,7 +4,9 @@
   "private": true,
   "description": "FloBrain's own meeting assistant: joins Google Meet, Microsoft Teams or Zoom as a named guest, says it records, records audio and uploads it to FloBrain.",
   "type": "module",
-  "engines": { "node": ">=20" },
+  "engines": {
+    "node": ">=20"
+  },
   "scripts": {
     "start": "node src/index.js",
     "test": "node --test test/*.test.js"
